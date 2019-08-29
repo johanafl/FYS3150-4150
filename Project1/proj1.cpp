@@ -27,16 +27,16 @@ double func_f(double x)
 void gauss_elim(int n) 
 {
     b_prim[0] = b[0];
-    for (int i=1; i<=n; i++)
+    for (int i=0; i<n-1; i++)
     {
         b_prim[i+1] = b[i+1] - a[i]/b[i]*c[i];
-        f_prim[i+1] = b[i+1] - a[i]/b[i]*c[i];
+        f_prim[i+1] = f[i+1] - a[i]/b[i]*c[i];
     }
-    for (int i=n; i>=1; i--)
+    for (int i=n-1; i>=1; i--)
     {
         f_prim[i-1] = f_prim[i-1] - c[i-1]/b_prim[i]*f_prim[i];
     }
-    for (int i=0; i<=n; i++)
+    for (int i=0; i<n; i++)
     {
         v[i] = f_prim[i]/b_prim[i];
     }
@@ -70,18 +70,18 @@ int main(int argc, char *argv[])
 
     for (int i=0; i<n; i++)
     {
-        double x = h*i;
+        double x = h*(i+1);
         f[i] = func_f(x);
     }
 
 
-    for (int i=0; i<n; i++)
+    for (int i=0; i<n-1; i++)
     {
         a[i] = -1;
         b[i] = 2;
         c[i] = -1;
     }
-    b[n] = 2;
+    b[n-1] = 2;
 
     /* Write to file before delete!!!!!!!! */
     delete[] a;
