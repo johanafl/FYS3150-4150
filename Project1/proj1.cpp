@@ -21,7 +21,7 @@ void set_arrays(int n)
 */
 double func_f(double x)
 {
-    f[i] = 100*exp(-10*x);
+    return 100*exp(-10*x);
 }
 
 void gauss_elim(int n) 
@@ -40,6 +40,34 @@ void gauss_elim(int n)
     {
         v[i] = f_prim[i]/b_prim[i];
     }
+}
+
+void gauss_elim_spes(int n) 
+{
+    b_prim[0] = b[0];
+    for (int i=0; i<n-1; i++)
+    {
+        b_prim[i+1] = 2 - 1/2; // Are we allowed to assume b[i]=2 and precalculate b_prim[i]?
+        f_prim[i+1] = f[i+1] - 1/2;
+    }
+    for (int i=n-1; i>=1; i--)
+    {
+        f_prim[i-1] = f_prim[i-1] - 1/b_prim[i]*f_prim[i];
+    }
+    for (int i=0; i<n; i++)
+    {
+        v[i] = f_prim[i]/b_prim[i];
+    }
+}
+
+double fuck_u(double x)
+{
+    return 1 - (1 - exp(-10))*x - exp(-10*x);
+}
+
+double eps(double v, double u)
+{
+    return log10(abs((v - u)/u));
 }
 
 /*
