@@ -1,13 +1,27 @@
-
+#include <cmath>
+/*
 void set_arrays(int n) 
 {
-    a      = new double[n-1];
-    b      = new double[n];
-    c      = new double[n-1];
-    f      = new double[n];
-    v      = new double[n];
-    f_prim = new double[n];
-    b_prim = new double[n];
+    a      = new double[n-1]; // = -1
+    b      = new double[n];   // = 2
+    c      = new double[n-1]; // = -1
+    f      = new double[n];   // = func_val*h**2, where 1/(n+1)=h
+    v      = new double[n];   // = What we want to find
+    f_prim = new double[n];   // = func_val for calculation (values are set in fuction below)
+    b_prim = new double[n];   // = b array for calculation (values are set in fuction below)
+
+    for (int i=0; i<n; i++)
+    {
+        a[i] = -1;
+        b[i] = 2;
+        c[i] = -1;
+    }
+    b[n] = 2;
+}
+*/
+double func_f(double x)
+{
+    f[i] = 100*exp(-10*x);
 }
 
 void gauss_elim(int n) 
@@ -44,5 +58,39 @@ void gauss_elim(int n)
 int main(int argc, char *argv[]) 
 {
     n = argv[1];
-    return 0;
+    double h = 1/(n+1);
+
+    a      = new double[n-1]; // = -1
+    b      = new double[n];   // = 2
+    c      = new double[n-1]; // = -1
+    f      = new double[n];   // = func_val*h**2, where 1/(n+1)=h
+    v      = new double[n];   // = What we want to find
+    f_prim = new double[n];   // = func_val for calculation (values are set in fuction below)
+    b_prim = new double[n];   // = b array for calculation (values are set in fuction below)
+
+    for (int i=0; i<n; i++)
+    {
+        double x = h*i;
+        f[i] = func_f(x);
+    }
+
+
+    for (int i=0; i<n; i++)
+    {
+        a[i] = -1;
+        b[i] = 2;
+        c[i] = -1;
+    }
+    b[n] = 2;
+
+    /* Write to file before delete!!!!!!!! */
+    delete[] a;
+    delete[] b;
+    delete[] c;
+    delete[] f;
+    delete[] v;
+    delete[] f_prim;
+    delete[] b_prim;
+
+    return 1;
 }
