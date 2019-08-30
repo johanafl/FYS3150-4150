@@ -58,7 +58,7 @@ void gauss_elim(int n)
         v[i] = f_prim[i]/b_prim[i];
     }
     
-    std::string filename = "Johan_er_kul_n=" + std::to_string(n)
+    std::string filename = "Poisson_values_n_" + std::to_string(n)
                              + ".txt";
     write_to_file(filename, n, v);
 
@@ -114,7 +114,7 @@ void gauss_elim_spes(int n)
     }
 
     int value = n;
-    std::string filename = "Johan_er_kul_n=" + std::to_string(n)
+    std::string filename = "Poisson_values_n_" + std::to_string(n)
                              + ".txt";
     write_to_file(filename, n, v);
 
@@ -181,5 +181,5 @@ int main(int argc, char *argv[])
 
 double epsilon(double v, double u)
 {
-    return (abs((v - u)/u));
+    return (fabs((v - u)/u));
 }
