@@ -47,8 +47,13 @@ void gauss_elim(int n)
     for (int i=0; i<n-1; i++)
     {
         b_prim[i+1] = b[i+1] - a[i]/b[i]*c[i];
-        f_prim[i+1] = f[i+1] - a[i]/b[i]*c[i];
+        f_prim[i+1] = f[i+1] - a[i]/b[i]*f[i];
     }
+    // v[n-1] = f_prim[n-1];
+    // for (int i=n-1; i>=1; i--)
+    // {
+    //     v[i-1] = f_prim[i-1] - c[i-1]*v[i];
+    // }
     for (int i=n-1; i>=1; i--)
     {
         f_prim[i-1] = f_prim[i-1] - c[i-1]/b_prim[i]*f_prim[i];
