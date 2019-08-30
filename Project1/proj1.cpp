@@ -1,5 +1,6 @@
 #include <cmath>
 #include <iomanip>
+#include <iostream>
 #include <fstream>
 #include <string>
 
@@ -13,9 +14,11 @@ double func_u(double x)
     return 1 - (1 - exp(-10))*x - exp(-10*x);
 }
 
+void write_to_file(std::string filename, int n, double*v);
+
 void gauss_elim(int n) 
 {
-    double h = 1/(n+1);
+    double h = 1.0/(n+1);
 
     double* a      = new double[n-1]; 
     double* b      = new double[n];   
@@ -54,7 +57,11 @@ void gauss_elim(int n)
     {
         v[i] = f_prim[i]/b_prim[i];
     }
-    /* Write to file before delete!!!!!!!! */
+    
+    std::string filename = "Johan_er_kul_n=" + std::to_string(n)
+                             + ".txt";
+    write_to_file(filename, n, v);
+
     delete[] a;
     delete[] b;
     delete[] c;
@@ -66,7 +73,7 @@ void gauss_elim(int n)
 
 void gauss_elim_spes(int n) 
 {
-    double h = 1/(n+1);
+    double h = 1.0/(n+1);
 
     double* a      = new double[n-1]; 
     double* b      = new double[n];   
@@ -106,7 +113,11 @@ void gauss_elim_spes(int n)
         v[i] = f_prim[i]/b_prim[i];
     }
 
-    /* Write to file before delete!!!!!!!! */
+    int value = n;
+    std::string filename = "Johan_er_kul_n=" + std::to_string(n)
+                             + ".txt";
+    write_to_file(filename, n, v);
+
     delete[] a;
     delete[] b;
     delete[] c;
@@ -124,13 +135,20 @@ void write_to_file(std::string filename, int n, double*v)
     double* u   = new double[n];
     double* eps = new double[n];
 
-    double h    = 1/(n+1);
+    double h    = 1.0/(n+1);
 
     for (int i=0; i<n; i++)
     {
-        double x = h*i;
+        double x = h*(i+1);
         u[i]   = func_u(x);
-        eps[i] = epsilon(v[i], u[i]);
+        if(u[i] == 0)
+        {
+            eps[i] = -1;
+        }
+        else
+        {
+            eps[i] = epsilon(v[i], u[i]);
+        }    
     }
 
     std::ofstream results_file;
