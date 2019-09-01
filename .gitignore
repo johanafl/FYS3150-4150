@@ -2,6 +2,9 @@
 # Created by https://www.gitignore.io/api/c++,latex,python,jupyternotebooks
 # Edit at https://www.gitignore.io/?templates=c++,latex,python,jupyternotebooks
 
+### Self defined ###
+*.txt
+
 ### C++ ###
 # Prerequisites
 *.d
