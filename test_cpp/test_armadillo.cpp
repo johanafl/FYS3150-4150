@@ -1,6 +1,8 @@
 #include <iostream>
 #include <armadillo>
 
+// NB! maa kjores med 
+// g++ test.cpp -o test -DARMA_DONT_USE_WRAPPER -lopenblas -llapack
 int main(int argc, const char **argv) {
     // Initialize the random generator
     arma::arma_rng::set_seed_random();
