@@ -3,6 +3,9 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <armadillo>
+#include "time.h"   // Things from this does not work. Ask next time!
+#include <chrono>
 
 void write_to_file(std::string filename, int n, double*v);
 double relative_error(double v, double u);
@@ -18,7 +21,7 @@ double exact_solution(double x)
 }
 
 
-void gauss_elim(int n) 
+void gauss_elim(int n) // include diaginal variables
 {
     double stepsize = 1.0/(n+1);
 
@@ -48,6 +51,17 @@ void gauss_elim(int n)
     }
     diag[n-1] = 2.0;
 
+    ////////////////////////////////
+    // clock_t start, finish; // Gives only integer time. Not double!
+    // start = clock();
+
+    // time_t time0; // create timers.   // This also give wrong.
+    // time_t time1;
+    // time(&time0); // get current time.
+
+    std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now(); // Taken from this site: http://www.cplusplus.com/reference/chrono/steady_clock/
+    ////////////////////////////////
+
     for (int i=0; i<n-1; i++)
     {
         // std::cout << lower_diag[i] << std::endl;
@@ -66,6 +80,17 @@ void gauss_elim(int n)
         // computed[i-1] = (rhs_val[i-1] - upper_diag[i-1]*computed[i])/diag[i-1];
         computed[i-1] = (rhs_val[i-1] - upper_diag[i-1]*computed[i])/diag[i-1];
     }
+    ////////////////////////////////
+    // finish = clock();
+    // double tot_time = (finish - start)/CLOCKS_PER_SEC;
+
+    // time(&time1);   // get current time after time pass.
+    // double tot_time = time1 - time0;
+ 
+    std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
+    std::chrono::duration<double> tot_time = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
+    ////////////////////////////////
+    std::cout << std::setprecision(32) << tot_time.count() << std::endl; // NB! Gives time in seconds.
 
     std::string filename = "Poisson_values_n_" + std::to_string(n) + ".txt";
     write_to_file(filename, n, computed);
@@ -159,22 +184,32 @@ void gauss_elim_spes(int n)
         diag[i] = 2.0;
     }
 
+    ////////////////////////////////
+    std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now(); // Taken from this site: http://www.cplusplus.com/reference/chrono/steady_clock/
+    ////////////////////////////////
+
     for (int i=0; i<n-1; i++)
     {
         diag[i+1] = 2.0 - 1.0/diag[i];
         rhs_val[i+1] = rhs_val[i+1] + 1.0/diag[i]*rhs_val[i];
     }
+    // Counting 2 + 3 = 5 FLOPS. Is this correct? (Why 4?)
 
     computed[n-1] = rhs_val[n-1]/diag[n-1];
     for (int i=n-1; i>=1; i--)
     {
         computed[i-1] = (rhs_val[i-1] + computed[i])/diag[i-1];
     }
+    // Counting 2 + 3 = 5 FLOPS. Is this correct?
 
-    int value = n;
+    ////////////////////////////////
+    std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
+    std::chrono::duration<double> tot_time = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
+    ////////////////////////////////
+    std::cout << std::setprecision(32) << tot_time.count() << std::endl; // NB! Gives time in seconds.
+
     // Maybe change the name of the file to indecate that the specialized function was used?
-    std::string filename = "Poisson_values_n_" + std::to_string(n)
-                             + ".txt";
+    std::string filename = "Poisson_values_spes_n_" + std::to_string(n) + ".txt";
     write_to_file(filename, n, computed);
 
     delete[] diag;
@@ -344,7 +379,7 @@ int main(int argc, char *argv[])
 {
     int n = atoi(argv[1]);
     gauss_elim(n);
-    // gauss_elim_spes(n);
+    gauss_elim_spes(n);
  
     return 1;
 }
