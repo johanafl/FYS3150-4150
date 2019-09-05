@@ -426,7 +426,7 @@ void LU_arma(int n)
     std::cout << std::setprecision(32) << tot_time.count() << std::endl; // NB! Gives time in seconds.
 
     // Maybe change the name of the file to indecate that the specialized function was used?
-    std::string filename = "Poisson_values_spes_n_" + std::to_string(n) + ".txt";
+    std::string filename = "Poisson_values_LU_n_" + std::to_string(n) + ".txt";
     write_to_file(filename, n, computed);
 }
 
@@ -435,6 +435,7 @@ int main(int argc, char *argv[])
     int n = atoi(argv[1]);
     gauss_elim(n);
     gauss_elim_spes(n);
+    LU_arma(n);
  
     return 1;
 }
