@@ -9,6 +9,7 @@
 
 void write_to_file(std::string filename, int n, double*v);
 double relative_error(double v, double u);
+void LU_arma(int n);
 
 double rhs_func(double x)
 {
@@ -317,6 +318,17 @@ void write_to_file(std::string filename, int n, double*computed_val)
     results_file.close();
 }
 
+void write_to_file(std::string filename, int n, arma::vec computed_val)
+{
+    double* computed = new double[n];
+    for(int i=0; i<n; i++)
+    {
+        computed[i] = computed_val[i];
+    }
+    write_to_file(filename, n, computed);
+    delete[] computed;
+}
+
 /*
 // Old solution
 void write_to_file(std::string filename, int n, double*v)
@@ -374,6 +386,49 @@ double epsilon(double v, double u)
     return (fabs((v - u)/u));
 }
 */
+
+void LU_arma(int n) 
+{
+    double stepsize = 1.0/(n+1);
+
+    arma::mat A(n, n);
+
+    A.diag(0)  += 2.0;
+    A.diag(1)  += -1.0;
+    A.diag(-1) += -1.0;
+
+    arma::vec rhs_val(n);
+    arma::vec tmp(n);
+    arma::vec computed;
+
+    arma::mat L;
+    arma::mat U;
+
+   for (int i=0; i<n; i++)
+    {
+        double x = stepsize*(i+1);
+        rhs_val(i) = rhs_func(x)*(stepsize*stepsize);
+    }
+
+    ////////////////////////////////
+    std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now(); // Taken from this site: http://www.cplusplus.com/reference/chrono/steady_clock/
+    ////////////////////////////////
+
+    arma::lu(L, U, A);
+
+    arma::solve(tmp, L, rhs_val);
+    arma::solve(computed, U, tmp);
+
+    ////////////////////////////////
+    std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
+    std::chrono::duration<double> tot_time = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
+    ////////////////////////////////
+    std::cout << std::setprecision(32) << tot_time.count() << std::endl; // NB! Gives time in seconds.
+
+    // Maybe change the name of the file to indecate that the specialized function was used?
+    std::string filename = "Poisson_values_spes_n_" + std::to_string(n) + ".txt";
+    write_to_file(filename, n, computed);
+}
 
 int main(int argc, char *argv[]) 
 {
