@@ -15,6 +15,13 @@ int main()
     arma::mat U;
     arma::lu(L, U, A);
 
-    U.print();
+    arma::vec y = arma::randu<arma::vec>(10);
+
+    arma::vec z = arma::solve(L, y);
+    arma::vec x = arma::solve(U, z);
+
+    z.print();
+    std::cout << " " << std::endl;
+    x.print();
     return 0;
-}
+} 
