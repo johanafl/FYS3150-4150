@@ -4,7 +4,6 @@
 #include <fstream>
 #include <string>
 #include <armadillo>
-#include "time.h"   // Things from this does not work. Ask next time!
 #include <chrono>
 
 void write_to_file(std::string filename, int n, double*v);
@@ -13,7 +12,8 @@ void LU_arma(int n);
 
 double rhs_func(double x)
 /*
-Function for calculating the rhs, i.e., our f(x).
+Function for calculating the right-hand-side of the equation, i.e.,
+f(x) = 100e^(-10x).
 */
 {
     return 100*exp(-10*x);
@@ -21,16 +21,25 @@ Function for calculating the rhs, i.e., our f(x).
 
 double exact_solution(double x)
 /*
-Function for calculating the exact solution to our numerical problem.
+Function for calculating the exact solution to our numerical problem. This will
+be used for comparing the numerical precision for our computed solution.
 */
 {
     return 1 - (1 - exp(-10))*x - exp(-10*x);
 }
 
 
-void gauss_elim(int n) // include diaginal variables
+void thomas_algorithm(int n) // include diaginal variables
 /*
-Function for doing Gaussian elimination on our trigonal matrix.
+Function for doing Gaussian elimination on our trigonal matrix, i.e.,
+Thomas algorithm, and saving the the values to a .txt-file.
+
+Since we have a trigonal matrix, this function will iterate over three vectors
+instead of the whole nxn matrix; one vector with n elements which will
+represent the diagonal elements, and two vectors with n-1 elements which will
+represent the upper and lower diagonal elements.
+This function will print out the time used by the gaussian elimination
+algorithm.
 */
 {
     double stepsize = 1.0/(n+1);
@@ -41,7 +50,7 @@ Function for doing Gaussian elimination on our trigonal matrix.
     double* rhs_val    = new double[n];   
     double* computed   = new double[n];   
 
-   for (int i=0; i<n; i++)
+    for (int i=0; i<n; i++)
     {
         double x = stepsize*(i+1);
         rhs_val[i] = rhs_func(x)*(stepsize*stepsize);
@@ -88,9 +97,15 @@ Function for doing Gaussian elimination on our trigonal matrix.
     delete[] computed;
 }
 
-void gauss_elim_spes(int n)
+void thomas_algorithm_special(int n)
 /*
-Function for doing Gaussian elimination on our very special trigonal matrix.
+Function for doing Gaussian elimination for the special trigonal matrix, i.e.,
+Thomas algorithm on a special trigonal matrix, and saving the the values to a
+.txt-file.
+
+This function works just like the general Thomas algorithm function, only here
+we don't need to include the upper and lower diagonal elements of the matrix
+since they er both just one, saving us some FLOPS.
 */
 {
     double stepsize = 1.0/(n+1);
@@ -146,7 +161,8 @@ Function for doing Gaussian elimination on our very special trigonal matrix.
 void write_to_file(std::string filename, int n, double*computed_val)
 /*
 Function for writing the values to a .txt-file.
-Writing the exact and computed solution as well as the error for the computed.
+Writing the exact and computed solution as well as the error for the computed
+relative to the exact solution.
 */
 {
     double* exact_val = new double[n];
@@ -192,8 +208,9 @@ Writing the exact and computed solution as well as the error for the computed.
 void write_to_file(std::string filename, int n, arma::vec computed_val)
 /*
 Function for writing the values to a .txt-file.
-Writing the exact and computed solution as well as the error for the computed.
-This function is used when we use armadillo to calculate the computed solution.
+Writing the exact and computed solution as well as the error for the computed
+relative to the exact solution.
+This function is used when we use armadillo to do the Thomas algorithm.
 */
 {
     double* computed = new double[n];
@@ -216,7 +233,9 @@ to the exact solution.
 
 void LU_arma(int n)
 /*
-Function for calculating the computed values using the armadillo library.
+Function for calculating the Thomas algorithm using the armadillo library.
+
+This function also prints the time it takes to run the algorithm.
 */
 {
     double stepsize = 1.0/(n+1);
@@ -262,8 +281,8 @@ Function for calculating the computed values using the armadillo library.
 int main(int argc, char *argv[]) 
 {
     int n = atoi(argv[1]);
-    gauss_elim(n);
-    gauss_elim_spes(n);
+    thomas_algorithm(n);
+    thomas_algorithm_special(n);
     LU_arma(n);
  
     return 1;
