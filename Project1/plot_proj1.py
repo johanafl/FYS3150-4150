@@ -2,8 +2,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 
-# Branch maso
-
 def plot_func(axis, n, args=False, exact=False):
 
     try:
