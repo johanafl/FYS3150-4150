@@ -4,7 +4,6 @@
 #include <fstream>
 #include <string>
 #include <armadillo>
-#include "time.h"   // Things from this does not work. Ask next time!
 #include <chrono>
 
 void write_to_file(std::string filename, int n, double*v);
