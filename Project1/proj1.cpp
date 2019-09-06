@@ -51,39 +51,36 @@ algorithm.
     double* computed   = new double[n];   
 
     for (int i=0; i<n; i++)
-    {
+    {   // calculating the r.h.s. values
         double x = stepsize*(i+1);
         rhs_val[i] = rhs_func(x)*(stepsize*stepsize);
     }
 
     for (int i=0; i<n-1; i++)
-    {
+    {   // inserting values in the diagonals
         lower_diag[i] = -1.0;
         diag[i]       = 2.0;
         upper_diag[i] = -1.0;
     }
     diag[n-1] = 2.0;
 
-    ////////////////////////////////
-    std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now(); // Taken from this site: http://www.cplusplus.com/reference/chrono/steady_clock/
-    ////////////////////////////////
+    // Copied from: http://www.cplusplus.com/reference/chrono/steady_clock/
+    std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
 
     for (int i=0; i<n-1; i++)
-    {
+    {   // elimination of bottom diagonal by forward substitution
         diag[i+1] = diag[i+1] - lower_diag[i]/diag[i]*upper_diag[i];
         rhs_val[i+1] = rhs_val[i+1] - lower_diag[i]/diag[i]*rhs_val[i];
     }
 
     computed[n-1] = rhs_val[n-1]/diag[n-1];
     for (int i=n-1; i>=1; i--)
-    {
+    {   // elimination of top diagonal by backwards substitution
         computed[i-1] = (rhs_val[i-1] - upper_diag[i-1]*computed[i])/diag[i-1];
     }
 
-    ////////////////////////////////
     std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
-    std::chrono::duration<double> tot_time = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
-    ////////////////////////////////
+    std::chrono::duration<double> tot_time = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1);
     
     std::cout << std::setprecision(32) << tot_time.count() << std::endl; // NB! Gives time in seconds.
 
@@ -115,39 +112,39 @@ since they er both just one, saving us some FLOPS.
     double* computed = new double[n];   
 
    for (int i=0; i<n; i++)
-    {
+    {   // calculating the r.h.s.
         double x = stepsize*(i+1);
         rhs_val[i] = rhs_func(x)*(stepsize*stepsize);
     }
 
     for (int i=0; i<n; i++)
-    {
+    {   // inserting values in the diagonal
         diag[i] = 2.0;
     }
 
-    ////////////////////////////////
-    std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now(); // Taken from this site: http://www.cplusplus.com/reference/chrono/steady_clock/
-    ////////////////////////////////
+    for (int i=0; i<n-1; i++)
+    {   // forward substituting, separate loop to exclude from timing
+        diag[i+1] = 2.0 - 1.0/diag[i];
+    }
+
+    // starting timer
+    std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
 
     for (int i=0; i<n-1; i++)
-    {
-        diag[i+1] = 2.0 - 1.0/diag[i];
-        rhs_val[i+1] = rhs_val[i+1] + 1.0/diag[i]*rhs_val[i];
+    {   // forward substituting
+        rhs_val[i+1] = rhs_val[i+1] + rhs_val[i]/diag[i];
     }
-    // Counting 2 + 3 = 5 FLOPS. Is this correct? (Why 4?)
 
     computed[n-1] = rhs_val[n-1]/diag[n-1];
     for (int i=n-1; i>=1; i--)
-    {
+    {   // backward substituting
         computed[i-1] = (rhs_val[i-1] + computed[i])/diag[i-1];
     }
-    // Counting 2 + 3 = 5 FLOPS. Is this correct?
 
-    ////////////////////////////////
+    // ending timer
     std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
-    std::chrono::duration<double> tot_time = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
-    ////////////////////////////////
-    
+    std::chrono::duration<double> tot_time = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1);
+
     std::cout << std::setprecision(32) << tot_time.count() << std::endl; // NB! Gives time in seconds.
 
     std::string filename = "Poisson_values_spes_n_" + std::to_string(n) + ".txt";
@@ -168,20 +165,15 @@ relative to the exact solution.
     double* exact_val = new double[n];
     double* eps       = new double[n];
 
-    double stepsize    = 1.0/(n+1);
+    double stepsize   = 1.0/(n+1);
 
     for (int i=0; i<n; i++)
+    
     {
         double x = stepsize*(i+1);
-        exact_val[i]     = exact_solution(x);
-        if(exact_val[i] == 0)
-        {
-            eps[i] = -1;
-        }
-        else
-        {
-            eps[i] = relative_error(computed_val[i], exact_val[i]);
-        }    
+        exact_val[i] = exact_solution(x);
+        eps[i] = relative_error(computed_val[i], exact_val[i]);
+           
     }
 
     std::ofstream results_file;
@@ -259,31 +251,29 @@ This function also prints the time it takes to run the algorithm.
         rhs_val(i) = rhs_func(x)*(stepsize*stepsize);
     }
 
-    ////////////////////////////////
-    std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now(); // Taken from this site: http://www.cplusplus.com/reference/chrono/steady_clock/
-    ////////////////////////////////
+    // starting timer
+    std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
 
     arma::lu(L, U, A);
-
     arma::solve(tmp, L, rhs_val);
     arma::solve(computed, U, tmp);
 
-    ////////////////////////////////
+    // ending timer
     std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
-    std::chrono::duration<double> tot_time = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
-    ////////////////////////////////
+    std::chrono::duration<double> tot_time = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1);
+
     std::cout << std::setprecision(32) << tot_time.count() << std::endl; // NB! Gives time in seconds.
 
     std::string filename = "Poisson_values_LU_n_" + std::to_string(n) + ".txt";
     write_to_file(filename, n, computed);
 }
 
-int main(int argc, char *argv[]) 
+int main(int argc, char *argv[])
 {
     int n = atoi(argv[1]);
     thomas_algorithm(n);
-    thomas_algorithm_special(n);
-    LU_arma(n);
+    // thomas_algorithm_special(n);
+    // LU_arma(n);
  
     return 1;
 }
