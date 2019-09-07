@@ -2,6 +2,28 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 
+def compare_times():
+    """
+    Function for plotting and comparing timing values for the different
+    algorithms.
+    """
+
+    algos = ["Thomas", "Thomas special", "LU"]
+    data = np.loadtxt("compare_times.txt", skiprows=1)
+
+    runs = int(data[0][0])          # number of runs for each grid size value
+    grid_values = int(data[1][0])   # number of grid size values
+    data = data[2:]
+
+    mean_vals = np.zeros(grid_values)
+
+    for i in range(grid_values):
+        print(data[i*(runs+1):(i+1)*(runs+1), :])
+
+    
+
+
+
 def plot_func(axis, n, args=False, exact=False):
 
     try:
@@ -23,31 +45,33 @@ def plot_func(axis, n, args=False, exact=False):
 
 
 if __name__ == "__main__":
-    num_of_args = len(sys.argv)
-    fig, ax  = plt.subplots(1, 2)
+    compare_times()
+    # num_of_args = len(sys.argv)
+    # fig, ax  = plt.subplots(1, 2)
     
-    if num_of_args >= 2:
-        num_n    = num_of_args - 1
-        exact    = False
+    # if num_of_args >= 2:
+    #     num_n    = num_of_args - 1
+    #     exact    = False
 
-        for i in range(1, num_n + 1):
-            if i == num_n:
-                exact = True
+    #     for i in range(1, num_n + 1):
+    #         if i == num_n:
+    #             exact = True
 
-            filename = str(sys.argv[i])
-            values   = np.loadtxt(filename, skiprows=1)
-            n        = len(values[:, 0]) - 2
+    #         filename = str(sys.argv[i])
+    #         values   = np.loadtxt(filename, skiprows=1)
+    #         n        = len(values[:, 0]) - 2
 
-            plot_func(ax, n, args=values, exact=exact)
+    #         plot_func(ax, n, args=values, exact=exact)
 
-    else:
-        num_n = 3
-        exact = False
+    # else:
+    #     num_n = 3
+    #     exact = False
 
-        for i in range(1, num_n + 1):
-            if i == num_n:
-                exact = True
-            plot_func(ax, 10**i, exact=exact)
+    #     for i in range(1, num_n + 1):
+    #         if i == num_n:
+    #             exact = True
+    #         plot_func(ax, 10**i, exact=exact)
     
-    ax[0].legend()
-    plt.show()
+    # ax[0].legend()
+    # plt.show()
+    pass
