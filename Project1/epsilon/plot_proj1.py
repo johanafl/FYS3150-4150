@@ -28,21 +28,20 @@ def plot_func(axis, n, args=False, exact=False, filename=False, method=True):
         epsilon_general = args
         epsilon_special = filename
 
-        axis[0].plot(n, epsilon_general, label=r"Max(\epsilon(n)),\
-                                                 general solution.")
-        axis[0].set_xlabel("n")
-        axis[0].set_ylabel("Relative error")
-        axis[1].plot(n, epsilon_special, label=r"Max(\epsilon(n)),\
-                                                 special solution.")
-        axis[1].set_xlabel("n")
-        axis[1].set_ylabel("Relative error")
+        axis.set_title("Relative error for the general Thomas algorithm")
+        axis.semilogy(n, epsilon_general, label=r"Max($\epsilon(n)$)")
+        axis.set_xlabel("n")
+        axis.set_ylabel("Relative error")
+        # axis[1].set_title("Relative error for the special Thomas algorithm")
+        # axis[1].semilogy(n, epsilon_special, label=r"Max($\epsilon(n)$)")
+        # axis[1].set_xlabel("n")
+        # axis[1].set_ylabel("Relative error")
 
 if __name__ == "__main__":
     num_of_args = len(sys.argv)
-    fig, ax  = plt.subplots(1, 2)
 
     arg = np.array(["Methheds", "Epstasy"])
-    run = arg[1]
+    run = arg[0]
     
     # if num_of_args >= 2:
     #     num_n    = num_of_args - 1
@@ -62,6 +61,7 @@ if __name__ == "__main__":
     #     plt.show()
 
     if run == arg[0]:
+        fig, ax  = plt.subplots(1, 2)
         filenames = np.array(["Poisson_values_n_{:d}.txt",
                               "Poisson_values_spes_n_{:d}.txt",
                               "Poisson_values_LU_n_{:d}.txt"])
@@ -83,16 +83,13 @@ if __name__ == "__main__":
             plt.savefig(methods[j].format(1000))
     
     else:
-        filenames = np.array(["Poisson_values_n_{:d}.txt",
-                              "Poisson_values_spes_n_{:d}.txt",
-                              "Poisson_values_LU_n_{:d}.txt"])
-        methods   = np.array(["General Thomas n={:d}", "Special Thomas n={:d}",
-                              "LU armadillo n={:d}"])
+        fig, ax  = plt.subplots()
         
         num_n      = 71
         n_array    = np.linspace(1e1, 1e7, 61)
-        error_gen  = np.zeros(num_n-10)
-        error_spes = np.zeros(num_n-10)
+
+        # error_gen  = np.zeros(num_n-10)
+        # error_spes = np.zeros(num_n-10)
 
         # bar = IncrementalBar("Processing", max=61)
 
@@ -114,10 +111,15 @@ if __name__ == "__main__":
         #     bar.next()
         # bar.finish()
         # errors.close()
+
+        relative_errors = np.loadtxt("relative_errors.txt", skiprows=1)
+        error_general   = relative_errors[:, 0]
+        error_special   = relative_errors[:, 1]
         
-        plot_func(ax, n_array, args=error_gen, filename=error_spes,
-                     method=False)
+        for i in range(2):
+            plot_func(ax, n_array, args=error_general, filename=error_special,
+                        method=False)
     
-        ax[0].legend(loc="best")
-        ax[1].legend(loc="best")
-        plt.savefig(r"\epsilon(n) (Maximum relative error per n)")
+            ax.legend(loc="best")
+            plt.show()
+        #plt.savefig("$Maximum relative error per n")
