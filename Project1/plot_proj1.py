@@ -19,7 +19,13 @@ def plot_func(axis, n, args=False, exact=False, filename=False, method=True):
         error = values[:, 2]
 
         axis[0].plot(x, v, "-", label=method.format(n))
+        axis[0].set_title("Numerical/exact solution")
+        axis[0].set_xlabel("x")
+        axis[0].set_ylabel("u(x)/v(x)")
         axis[1].loglog(n, np.max(error), "o", label="exact, n={:d}".format(n))
+        axis[1].set_title(r"Relative error")
+        axis[1].set_xlabel("n")
+        axis[1].set_ylabel(r"$\epsilon_{max}(n)$")
 
         if exact:
             axis[0].plot(x, u, label="u(x)")
@@ -80,7 +86,7 @@ if __name__ == "__main__":
                             method=methods[j])
     
             ax[0].legend()
-            plt.savefig(methods[j].format(1000))
+            plt.show()
     
     else:
         fig, ax  = plt.subplots()
