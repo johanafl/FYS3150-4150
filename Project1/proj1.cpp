@@ -182,7 +182,7 @@ n : int
     return total_time.count();
 }
 
-void write_to_file(std::string filename, int n, double*computed_val)
+void write_to_file(std::string filename, int n, double* computed_val)
 /*
 Function for writing the values to a .txt-file.
 Writing the exact and computed solution as well as the error for the computed
@@ -264,7 +264,6 @@ to the exact solution.
 double LU_arma(int n, bool write)
 /*
 Function for calculating the Thomas algorithm using the armadillo library.
-
 This function also prints the time it takes to run the algorithm.
 */
 {
@@ -295,7 +294,6 @@ This function also prints the time it takes to run the algorithm.
     // starting timer
     std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
 
-
     arma::lu(L, U, A);
     arma::solve(tmp, L, rhs_val);
     arma::solve(computed, U, tmp);
@@ -324,31 +322,39 @@ Each grid size is calculated 10 times, and all timings are written to a text
 file compare_times.txt.
 */
 {
-    int N[4];
-    
+    int grid_values = 4;    // number of different grid values
+    int N[grid_values];
+    int runs = 10;          // number of runs for each grid size
     N[0] = 40;
     N[1] = 100;
     N[2] = 1000;
     N[3] = 1000;
 
-    double LU_time;
-
+    // creating file and writing headers
     std::string filename = "compare_times.txt";
     std::ofstream compare_times_file;
     compare_times_file.open(filename);
     compare_times_file  << std::setw(40) << "thomas algorithm"
                         << std::setw(40) << "thomas algorithm special"
-                        << std::setw(40) << "LU\n";
+                        << std::setw(40) << "LU\n"
+                        << std::setw(40) << runs
+                        << std::setw(40) << runs
+                        << std::setw(40) << runs << "\n"
+                        << std::setw(40) << grid_values
+                        << std::setw(40) << grid_values
+                        << std::setw(40) << grid_values << "\n";
 
     for (int i=0; i<4; i++)
-    {
-        compare_times_file  << std::setw(40) << std::to_string(N[i]) + "x" + std::to_string(N[i])
-                            << std::setw(40) << std::to_string(N[i]) + "x" + std::to_string(N[i])
-                            << std::setw(40) << std::to_string(N[i]) + "x" + std::to_string(N[i])
+    {   // looping over each grid size
+        // writing grid size info to file
+        compare_times_file  << std::setw(40) << std::to_string(N[i])
+                            << std::setw(40) << std::to_string(N[i])
+                            << std::setw(40) << std::to_string(N[i])
                             << "\n";
         
-        for (int _=0; _<10; _++)
-        {   
+        for (int _=0; _<runs; _++)
+        {   // looping over each grid size 'runs' amount of times
+            // writing timing data to file
             compare_times_file  << std::setw(40) << std::setprecision(32) 
                                 << thomas_algorithm(N[i], false)
                                 << std::setw(40) << std::setprecision(32)
