@@ -34,7 +34,7 @@ x : double
 }
 
 
-void thomas_algorithm(int n, bool write)
+double thomas_algorithm(int n, bool write)
 /*
 Function for doing Gaussian elimination on our trigonal matrix, i.e.,
 Thomas algorithm, and saving the the values to a .txt-file.
@@ -106,9 +106,11 @@ write : bool
     delete[] upper_diag;
     delete[] rhs_val;
     delete[] computed;
+
+    return total_time.count();
 }
 
-void thomas_algorithm_special(int n, bool write)
+double thomas_algorithm_special(int n, bool write)
 /*
 Function for doing Gaussian elimination for the special trigonal matrix, i.e.,
 Thomas algorithm on a special trigonal matrix, and saving the the values to a
@@ -162,13 +164,13 @@ n : int
 
     // ending timer
     std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
-    std::chrono::duration<double> tot_time = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1);
+    std::chrono::duration<double> total_time = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1);
 
 
 
     if (write) 
     {   
-        std::cout << std::setprecision(32) << tot_time.count() << std::endl; // NB! Gives time in seconds.
+        std::cout << std::setprecision(32) << total_time.count() << std::endl; // NB! Gives time in seconds.
         std::string filename = "Poisson_values_spes_n_" + std::to_string(n) + ".txt";
         write_to_file(filename, n, computed);
     }
@@ -176,6 +178,8 @@ n : int
     delete[] diag;
     delete[] rhs_val;
     delete[] computed;
+
+    return total_time.count();
 }
 
 void write_to_file(std::string filename, int n, double*computed_val)
@@ -298,29 +302,31 @@ This function also prints the time it takes to run the algorithm.
 
     // ending timer
     std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
-    std::chrono::duration<double> tot_time = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1);
+    std::chrono::duration<double> total_time = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1);
 
 
     if (write)
     {
-        std::cout << std::setprecision(32) << tot_time.count() << std::endl; // NB! Gives time in seconds.
+        std::cout << std::setprecision(32) << total_time.count() << std::endl; // NB! Gives time in seconds.
         std::string filename = "Poisson_values_LU_n_" + std::to_string(n) + ".txt";
         write_to_file(filename, n, computed);
     }
 
-    return tot_time.count();
+    return total_time.count();
 
 
 }
 
 void compare_times()
 /*
-Strenge problem with arma solver error when n is low.
+Function for comparing computation times of thomas, thomas special, and LU.
+Each grid size is calculated 10 times, and all timings are written to a text
+file compare_times.txt.
 */
 {
     int N[4];
     
-    N[0] = 23;
+    N[0] = 40;
     N[1] = 100;
     N[2] = 1000;
     N[3] = 1000;
@@ -330,20 +336,25 @@ Strenge problem with arma solver error when n is low.
     std::string filename = "compare_times.txt";
     std::ofstream compare_times_file;
     compare_times_file.open(filename);
-    compare_times_file  << std::setw(38) << "thomas algorithm"
-                        << std::setw(38) << "thomas algorithm special"
-                        << std::setw(38) << "LU\n";
+    compare_times_file  << std::setw(40) << "thomas algorithm"
+                        << std::setw(40) << "thomas algorithm special"
+                        << std::setw(40) << "LU\n";
 
-    for (int i=0; i<1; i++)
+    for (int i=0; i<4; i++)
     {
-        for (int _=0; _<1000; _++)
+        compare_times_file  << std::setw(40) << std::to_string(N[i]) + "x" + std::to_string(N[i])
+                            << std::setw(40) << std::to_string(N[i]) + "x" + std::to_string(N[i])
+                            << std::setw(40) << std::to_string(N[i]) + "x" + std::to_string(N[i])
+                            << "\n";
+        
+        for (int _=0; _<10; _++)
         {   
-            std::cout << _ << std::endl;
-            LU_arma(N[i], false);
-            // thomas_algorithm(N[i], false);
-            // thomas_algorithm_special(N[i], false);
-            // compare_times_file << std::setw(20) << std::setprecision(32) 
-            //                 << LU_time << std::endl;
+            compare_times_file  << std::setw(40) << std::setprecision(32) 
+                                << thomas_algorithm(N[i], false)
+                                << std::setw(40) << std::setprecision(32)
+                                << thomas_algorithm_special(N[i], false)
+                                << std::setw(40) << std::setprecision(32)
+                                << LU_arma(N[i], false) << std::endl;
         }
     }
 
