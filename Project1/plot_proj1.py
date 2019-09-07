@@ -9,16 +9,35 @@ def compare_times():
     """
 
     algos = ["Thomas", "Thomas special", "LU"]
-    data = np.loadtxt("compare_times.txt", skiprows=1)
+    data  = np.loadtxt("compare_times.txt", skiprows=1)
 
-    runs = int(data[0][0])          # number of runs for each grid size value
-    grid_values = int(data[1][0])   # number of grid size values
-    data = data[2:]
+    runs = int(data[0][0])            # number of runs for each grid size value
+    num_grid_values = int(data[1][0]) # number of grid size values
+    data = data[2:]                   # slicing away 'runs' and 'num_grid_values'
 
-    mean_vals = np.zeros(grid_values)
+    thomas      = np.zeros(num_grid_values)
+    thomas_s    = np.zeros(num_grid_values)
+    LU          = np.zeros(num_grid_values)
+    mean_vals   = np.zeros(num_grid_values)
+    grid_values = np.zeros(num_grid_values)
 
-    for i in range(grid_values):
-        print(data[i*(runs+1):(i+1)*(runs+1), :])
+    for i in range(num_grid_values):
+        tmp = data[i*(runs+1):(i+1)*(runs+1), :]
+        grid_values[i] = int(tmp[0][0])
+        thomas[i], thomas_s[i], LU[i] = np.mean(tmp[1:], axis=0)
+
+    LU[np.where(LU == -1)] = np.nan
+
+    plt.loglog(grid_values, thomas, label="Thomas")
+    plt.loglog(grid_values, thomas_s, label="Thomas special")
+    plt.loglog(grid_values, LU, label="LU")
+    plt.legend(loc="best")
+    plt.ylabel("Seconds")
+    plt.xlabel("Grid points")
+    plt.grid()
+    plt.tight_layout(pad=2)
+    plt.show()
+
 
     
 
