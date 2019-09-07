@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import sys, os
+from progress.bar import IncrementalBar
 
 def plot_func(axis, n, args=False, exact=False, filename=False, method=True):
 
@@ -24,7 +25,17 @@ def plot_func(axis, n, args=False, exact=False, filename=False, method=True):
             axis[0].plot(x, u, label="u(x)")
     
     else:
-        pass
+        epsilon_general = args
+        epsilon_special = filename
+
+        axis[0].plot(n, epsilon_general, label=r"Max(\epsilon(n)),\
+                                                 general solution.")
+        axis[0].set_xlabel("n")
+        axis[0].set_ylabel("Relative error")
+        axis[1].plot(n, epsilon_special, label=r"Max(\epsilon(n)),\
+                                                 special solution.")
+        axis[1].set_xlabel("n")
+        axis[1].set_ylabel("Relative error")
 
 if __name__ == "__main__":
     num_of_args = len(sys.argv)
@@ -78,12 +89,35 @@ if __name__ == "__main__":
         methods   = np.array(["General Thomas n={:d}", "Special Thomas n={:d}",
                               "LU armadillo n={:d}"])
         
-        num_n = 71
+        num_n      = 71
+        n_array    = np.linspace(1e1, 1e7, 61)
+        error_gen  = np.zeros(num_n-10)
+        error_spes = np.zeros(num_n-10)
 
-        for i in range(num_n):
-            str = "./proj1_test.out {:d}".format(int(10**(i/10.0)))
-            os.system(str)
+        # bar = IncrementalBar("Processing", max=61)
 
-            values = np.loadtxt("Poisson_values_n_{:d}.txt".format(int(10**(i/10.0))),
-                                skiprows=1)
-            error  = np.max(values[:, 2])
+        # errors = open("relative_errors.txt", "w")
+        # errors.write("Thomas              |   Thomas special\n")
+
+        # for i in range(10, num_n):
+        #     # str = "./proj1_test.out {:d}".format(int(10**(i/10.0)))
+        #     # os.system(str)
+        #     values_gen    = np.loadtxt("Poisson_values_n_{:d}.txt"
+        #                             .format(int(10**(i/10.0))), skiprows=1)
+        #     values_spes   = np.loadtxt("Poisson_values_spes_n_{:d}.txt"
+        #                             .format(int(10**(i/10.0))), skiprows=1)
+        #     error_gen[i-10]  = np.max(values_gen[:, 2])
+        #     error_spes[i-10] = np.max(values_spes[:, 2])
+        #     errors.write(str(error_gen[i-10]) + "   " + str(error_spes[i-10])
+        #                  + "\n")
+
+        #     bar.next()
+        # bar.finish()
+        # errors.close()
+        
+        plot_func(ax, n_array, args=error_gen, filename=error_spes,
+                     method=False)
+    
+        ax[0].legend(loc="best")
+        ax[1].legend(loc="best")
+        plt.savefig(r"\epsilon(n) (Maximum relative error per n)")
