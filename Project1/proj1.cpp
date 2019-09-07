@@ -322,13 +322,27 @@ Each grid size is calculated 10 times, and all timings are written to a text
 file compare_times.txt.
 */
 {
-    int grid_values = 4;    // number of different grid values
+    int grid_values = 16;    // number of different grid values
     int N[grid_values];
     int runs = 10;          // number of runs for each grid size
-    N[0] = 40;
-    N[1] = 100;
-    N[2] = 1000;
-    N[3] = 1000;
+
+    N[0]  = 10;
+    N[1]  = 100;
+    N[2]  = 500;
+    N[3]  = 1000;
+    N[4]  = 5000;
+    N[5]  = 10000;
+    N[6]  = 50000;
+    N[7]  = 100000;
+    N[8]  = 500000;
+    N[9]  = 1000000;
+    N[10] = 5000000;
+    N[11] = 10000000;
+    N[12] = 50000000;
+    N[13] = 100000000;
+    N[14] = 500000000;
+    N[15] = 1000000000;
+
 
     // creating file and writing headers
     std::string filename = "compare_times.txt";
@@ -344,9 +358,11 @@ file compare_times.txt.
                         << std::setw(40) << grid_values
                         << std::setw(40) << grid_values << "\n";
 
-    for (int i=0; i<4; i++)
+    for (int i=0; i<grid_values; i++)
     {   // looping over each grid size
         // writing grid size info to file
+        std::cout << "calculating grid size " + std::to_string(N[i])
+            + " of " + std::to_string(N[grid_values-1]) << std::endl;
         compare_times_file  << std::setw(40) << std::to_string(N[i])
                             << std::setw(40) << std::to_string(N[i])
                             << std::setw(40) << std::to_string(N[i])
@@ -358,9 +374,21 @@ file compare_times.txt.
             compare_times_file  << std::setw(40) << std::setprecision(32) 
                                 << thomas_algorithm(N[i], false)
                                 << std::setw(40) << std::setprecision(32)
-                                << thomas_algorithm_special(N[i], false)
-                                << std::setw(40) << std::setprecision(32)
+                                << thomas_algorithm_special(N[i], false);
+            
+            if (N[i] <= 10000)
+            {   // limits the gid size for LU since the calculations are
+                // impossible with normal hardware at values approaching 100000
+            compare_times_file  << std::setw(40) << std::setprecision(32)
                                 << LU_arma(N[i], false) << std::endl;
+            }
+            
+            else
+            {   // writes -1 if LU is incapable of providing results
+            compare_times_file  << std::setw(40) << std::setprecision(32)
+                                << -1 << std::endl;  
+            }
+                                
         }
     }
 
@@ -374,7 +402,7 @@ int main(int argc, char *argv[])
     // thomas_algorithm(n);
     // thomas_algorithm_special(n);
     // LU_arma(n);
-    compare_times();
+    // compare_times();
  
     return 1;
 }
