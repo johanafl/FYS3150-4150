@@ -6,8 +6,9 @@
 #include <armadillo>
 #include <chrono>
 
-void write_to_file(std::string filename, int n, double*v);
-double relative_error(double v, double u);
+void write_to_file(std::string filename, int n, double* computed);
+void write_to_file_error(std::string filename, int n, double* computed);
+double relative_error(double computed, double exact);
 void LU_arma(int n);
 
 double rhs_func(double x)
@@ -34,7 +35,7 @@ x : double
 }
 
 
-double thomas_algorithm(int n, bool write)
+double thomas_algorithm(int n, bool write, bool write_error_max)
 /*
 Function for doing Gaussian elimination on our trigonal matrix, i.e.,
 Thomas algorithm, and saving the the values to a .txt-file.
@@ -101,7 +102,11 @@ write : bool
         write_to_file(filename, n, computed);
     }
 
-    return computed;
+    if (write_error_max)
+    {
+        std::string filename = "relative_error.txt";
+        write_to_file_error(filename, n, computed);
+    }
 
     delete[] lower_diag;
     delete[] diag;
@@ -112,7 +117,7 @@ write : bool
     return total_time.count();
 }
 
-double thomas_algorithm_special(int n, bool write)
+double thomas_algorithm_special(int n, bool write, bool write_error_max)
 /*
 Function for doing Gaussian elimination for the special trigonal matrix, i.e.,
 Thomas algorithm on a special trigonal matrix, and saving the the values to a
@@ -177,7 +182,11 @@ n : int
         write_to_file(filename, n, computed);
     }
 
-    return computed;
+    if (write_error_max)
+    {
+        std::string filename = "relative_error_special.txt";
+        write_to_file_error(filename, n, computed);
+    }
 
     delete[] diag;
     delete[] rhs_val;
@@ -269,7 +278,7 @@ Function for writing the relative error to a .txt-file.
     for (int i=0; i<n; i++)
     {
         double x = stepsize*(i+1);
-        exact_val     = exact_solution(x);
+        exact_val = exact_solution(x);
         if(eps < relative_error(computed_val[i], exact_val))
         {
             eps = relative_error(computed_val[i], exact_val);
@@ -402,9 +411,9 @@ file compare_times.txt.
         {   // looping over each grid size 'runs' amount of times
             // writing timing data to file
             compare_times_file  << std::setw(40) << std::setprecision(32) 
-                                << thomas_algorithm(N[i], false)
+                                << thomas_algorithm(N[i], false, false)
                                 << std::setw(40) << std::setprecision(32)
-                                << thomas_algorithm_special(N[i], false);
+                                << thomas_algorithm_special(N[i], false, false);
             
             if (N[i] <= 10000)
             {   // limits the gid size for LU since the calculations are
@@ -429,8 +438,8 @@ file compare_times.txt.
 int main(int argc, char *argv[])
 {
     int n = atoi(argv[1]);
-    // thomas_algorithm(n);
-    // thomas_algorithm_special(n);
+    thomas_algorithm(n, false, true);
+    thomas_algorithm_special(n, false, true);
     // LU_arma(n);
     // compare_times();
  
