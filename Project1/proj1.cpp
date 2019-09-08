@@ -29,7 +29,7 @@ be used for comparing the numerical precision for our computed solution.
 }
 
 
-void thomas_algorithm(int n) // include diaginal variables
+double* thomas_algorithm(int n) // include diaginal variables
 /*
 Function for doing Gaussian elimination on our trigonal matrix, i.e.,
 Thomas algorithm, and saving the the values to a .txt-file.
@@ -90,6 +90,8 @@ algorithm.
     std::string filename = "Poisson_values_n_" + std::to_string(n) + ".txt";
     write_to_file(filename, n, computed);
 
+    return computed;
+
     delete[] lower_diag;
     delete[] diag;
     delete[] upper_diag;
@@ -97,7 +99,7 @@ algorithm.
     delete[] computed;
 }
 
-void thomas_algorithm_special(int n)
+double* thomas_algorithm_special(int n)
 /*
 Function for doing Gaussian elimination for the special trigonal matrix, i.e.,
 Thomas algorithm on a special trigonal matrix, and saving the the values to a
@@ -152,6 +154,8 @@ since they er both just one, saving us some FLOPS.
 
     std::string filename = "Poisson_values_spes_n_" + std::to_string(n) + ".txt";
     write_to_file(filename, n, computed);
+
+    return computed;
 
     delete[] diag;
     delete[] rhs_val;
@@ -222,6 +226,32 @@ This function is used when we use armadillo to do the Thomas algorithm.
     delete[] computed;
 }
 
+void write_to_file_error(std::string filename, int n, double*computed_val)
+/*
+Function for writing the relative error to a .txt-file.
+*/
+{
+    double exact_val;
+    double eps = 0;
+
+    double stepsize    = 1.0/(n+1);
+
+    for (int i=0; i<n; i++)
+    {
+        double x = stepsize*(i+1);
+        exact_val     = exact_solution(x);
+        if(eps < relative_error(computed_val[i], exact_val))
+        {
+            eps = relative_error(computed_val[i], exact_val);
+        }
+    }
+
+    std::ofstream error_file;
+    error_file.open(filename, std::ios_base::app);
+    error_file << std::setw(25) << std::setprecision(16) << eps << std::endl;
+    error_file.close();
+}
+
 double relative_error(double computed_val, double exact_val)
 /*
 Function for calculating the relative error for the computed solution relative
@@ -281,9 +311,11 @@ This function also prints the time it takes to run the algorithm.
 int main(int argc, char *argv[]) 
 {
     int n = atoi(argv[1]);
-    thomas_algorithm(n);
+    double* computed_val = thomas_algorithm(n);
     thomas_algorithm_special(n);
     LU_arma(n);
+    std::string filename = "error.txt";
+    write_to_file_error(filename, n, computed_val);
  
     return 1;
 }

@@ -19,13 +19,13 @@ def plot_func(axis, n, args=False, exact=False, filename=False, method=True):
         error = values[:, 2]
 
         axis[0].plot(x, v, "-", label=method.format(n))
-        axis[0].set_title("Numerical/exact solution")
-        axis[0].set_xlabel("x")
-        axis[0].set_ylabel("u(x)/v(x)")
+        axis[0].set_title("Numerical/exact solution", fontsize=18)
+        axis[0].set_xlabel("x", fontsize=18)
+        axis[0].set_ylabel("u(x)/v(x)", fontsize=18)
         axis[1].loglog(n, np.max(error), "o", label="exact, n={:d}".format(n))
-        axis[1].set_title(r"Relative error")
-        axis[1].set_xlabel("n")
-        axis[1].set_ylabel(r"$\epsilon_{max}(n)$")
+        axis[1].set_title(r"Relative error", fontsize=18)
+        axis[1].set_xlabel("n", fontsize=18)
+        axis[1].set_ylabel(r"$\epsilon_{max}(n)$", fontsize=18)
 
         if exact:
             axis[0].plot(x, u, label="u(x)")
@@ -67,7 +67,7 @@ if __name__ == "__main__":
     #     plt.show()
 
     if run == arg[0]:
-        fig, ax  = plt.subplots(1, 2)
+        fig, ax   = plt.subplots(1, 2)
         filenames = np.array(["Poisson_values_n_{:d}.txt",
                               "Poisson_values_spes_n_{:d}.txt",
                               "Poisson_values_LU_n_{:d}.txt"])
