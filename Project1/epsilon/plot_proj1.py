@@ -1,47 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import sys
-import os
-
-def compare_times():
-    """
-    Function for plotting and comparing timing values for the different
-    algorithms.
-    """
-
-    data = np.loadtxt("compare_times.txt", skiprows=1)
-
-    runs = int(data[0][0])            # number of runs for each grid size value
-    num_grid_values = int(data[1][0]) # number of grid size values
-    data = data[2:]                   # slicing away 'runs' and 'num_grid_values'
-
-    thomas      = np.zeros(num_grid_values)
-    thomas_s    = np.zeros(num_grid_values)
-    LU          = np.zeros(num_grid_values)
-    mean_vals   = np.zeros(num_grid_values)
-    grid_values = np.zeros(num_grid_values)
-
-    for i in range(num_grid_values):
-        tmp = data[i*(runs+1):(i+1)*(runs+1), :]
-        grid_values[i] = int(tmp[0][0])
-        thomas[i], thomas_s[i], LU[i] = np.mean(tmp[1:], axis=0)
-
-    LU[np.where(LU == -1)] = np.nan     # all -1 values are values not computed
-
-    plt.loglog(grid_values, thomas, label="Thomas")
-    plt.loglog(grid_values, thomas_s, label="Thomas special")
-    plt.loglog(grid_values, LU, label="LU")
-    plt.legend(loc="best")
-    plt.ylabel("Seconds")
-    plt.xlabel("Grid points")
-    plt.grid()
-    plt.tight_layout(pad=2)
-    plt.show()
-
-
-    
-
-
+import sys, os
+from progress.bar import IncrementalBar
 
 def plot_func(axis, n, args=False, exact=False, filename=False, method=True):
 
@@ -59,13 +19,7 @@ def plot_func(axis, n, args=False, exact=False, filename=False, method=True):
         error = values[:, 2]
 
         axis[0].plot(x, v, "-", label=method.format(n))
-        axis[0].set_title("Numerical/exact solution", fontsize=18)
-        axis[0].set_xlabel("x", fontsize=18)
-        axis[0].set_ylabel("u(x)/v(x)", fontsize=18)
         axis[1].loglog(n, np.max(error), "o", label="exact, n={:d}".format(n))
-        axis[1].set_title(r"Relative error", fontsize=18)
-        axis[1].set_xlabel("n", fontsize=18)
-        axis[1].set_ylabel(r"$\epsilon_{max}(n)$", fontsize=18)
 
         if exact:
             axis[0].plot(x, u, label="u(x)")
@@ -107,7 +61,7 @@ if __name__ == "__main__":
     #     plt.show()
 
     if run == arg[0]:
-        fig, ax   = plt.subplots(1, 2)
+        fig, ax  = plt.subplots(1, 2)
         filenames = np.array(["Poisson_values_n_{:d}.txt",
                               "Poisson_values_spes_n_{:d}.txt",
                               "Poisson_values_LU_n_{:d}.txt"])
@@ -126,7 +80,7 @@ if __name__ == "__main__":
                             method=methods[j])
     
             ax[0].legend()
-            plt.show()
+            plt.savefig(methods[j].format(1000))
     
     else:
         fig, ax  = plt.subplots()

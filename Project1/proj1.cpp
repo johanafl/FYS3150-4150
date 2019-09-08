@@ -101,6 +101,8 @@ write : bool
         write_to_file(filename, n, computed);
     }
 
+    return computed;
+
     delete[] lower_diag;
     delete[] diag;
     delete[] upper_diag;
@@ -174,6 +176,8 @@ n : int
         std::string filename = "Poisson_values_spes_n_" + std::to_string(n) + ".txt";
         write_to_file(filename, n, computed);
     }
+
+    return computed;
 
     delete[] diag;
     delete[] rhs_val;
@@ -250,6 +254,32 @@ This function is used when we use armadillo to do the Thomas algorithm.
     }
     write_to_file(filename, n, computed);
     delete[] computed;
+}
+
+void write_to_file_error(std::string filename, int n, double*computed_val)
+/*
+Function for writing the relative error to a .txt-file.
+*/
+{
+    double exact_val;
+    double eps = 0;
+
+    double stepsize    = 1.0/(n+1);
+
+    for (int i=0; i<n; i++)
+    {
+        double x = stepsize*(i+1);
+        exact_val     = exact_solution(x);
+        if(eps < relative_error(computed_val[i], exact_val))
+        {
+            eps = relative_error(computed_val[i], exact_val);
+        }
+    }
+
+    std::ofstream error_file;
+    error_file.open(filename, std::ios_base::app);
+    error_file << std::setw(25) << std::setprecision(16) << eps << std::endl;
+    error_file.close();
 }
 
 double relative_error(double computed_val, double exact_val)
