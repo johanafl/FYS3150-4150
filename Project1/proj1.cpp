@@ -7,52 +7,54 @@
 #include <chrono>
 
 void write_to_file(std::string filename, int n, double*v);
+void write_to_file_error(std::string filename, int n, double*v);
 double relative_error(double v, double u);
 void LU_arma(int n);
 
-double rhs_func(double x)
-/*
-Function for calculating the right-hand-side of the equation, i.e.,
-f(x) = 100e^(-10x).
-*/
-{
+double rhs_func(double x) {
+    /*
+    Function for calculating the right-hand-side of the equation, i.e.,
+    f(x) = 100e^(-10x).
+
+    Parameters
+    ----------
+    x : double
+        Function variable.
+    */
     return 100*exp(-10*x);
 }
 
-double exact_solution(double x)
-/*
-Function for calculating the exact solution to our numerical problem. This will
-be used for comparing the numerical precision for our computed solution.
+double exact_solution(double x) {
+    /*
+    Function for calculating the exact solution to our numerical problem. This will
+    be used for comparing the numerical precision for our computed solution.
 
-Parameters
-----------
-x : double
-    Function variable.
-*/
-{
+    Parameters
+    ----------
+    x : double
+        Function variable.
+    */
     return 1 - (1 - exp(-10))*x - exp(-10*x);
 }
 
+double thomas_algorithm(int n, bool write, bool write_error) {
+    /*
+    Function for doing Gaussian elimination on our trigonal matrix, i.e.,
+    Thomas algorithm, and saving the the values to a .txt-file.
 
-double thomas_algorithm(int n, bool write)
-/*
-Function for doing Gaussian elimination on our trigonal matrix, i.e.,
-Thomas algorithm, and saving the the values to a .txt-file.
+    Since we have a trigonal matrix, this function will iterate over three vectors
+    instead of the whole nxn matrix; one vector with n elements which will
+    represent the diagonal elements, and two vectors with n-1 elements which will
+    represent the upper and lower diagonal elements.
 
-Since we have a trigonal matrix, this function will iterate over three vectors
-instead of the whole nxn matrix; one vector with n elements which will
-represent the diagonal elements, and two vectors with n-1 elements which will
-represent the upper and lower diagonal elements.
+    Parameters
+    ----------
+    n : int
+        Dimension of matrix. Number of discrete points.
 
-Parameters
-----------
-n : int
-    Dimension of matrix. Number of discrete points.
-
-write : bool
-    Boolean for toggling write to file on/off.
-*/
-{
+    write : bool
+        Boolean for toggling write to file on/off.
+    */
     double stepsize = 1.0/(n+1);
 
     double* lower_diag = new double[n-1]; 
@@ -96,13 +98,15 @@ write : bool
 
     if (write) 
     {
-        std::cout << std::setprecision(32) << total_time.count() << std::endl; // NB! Gives time in seconds.
-        std::string filename = "Poisson_values_n_" + std::to_string(n) + ".txt";
+        std::string filename = "thomas_algorithm_n_" + std::to_string(n) + ".txt";
         write_to_file(filename, n, computed);
     }
 
-    return computed;
-
+    if (write_error)
+    {
+        std::string filename = "thomas_algorithm_error.txt";
+        write_to_file_error(filename, n, computed);
+    }
     delete[] lower_diag;
     delete[] diag;
     delete[] upper_diag;
@@ -112,22 +116,24 @@ write : bool
     return total_time.count();
 }
 
-double thomas_algorithm_special(int n, bool write)
-/*
-Function for doing Gaussian elimination for the special trigonal matrix, i.e.,
-Thomas algorithm on a special trigonal matrix, and saving the the values to a
-.txt-file.
+double thomas_algorithm_special(int n, bool write, bool write_error) {
+    /*
+    Function for doing Gaussian elimination for the special trigonal matrix, i.e.,
+    Thomas algorithm on a special trigonal matrix, and saving the the values to a
+    .txt-file.
 
-This function works just like the general Thomas algorithm function, only here
-we don't need to include the upper and lower diagonal elements of the matrix
-since they er both just one, saving us some FLOPS.
+    This function works just like the general Thomas algorithm function, only here
+    we don't need to include the upper and lower diagonal elements of the matrix
+    since they er both just one, saving us some FLOPS.
 
-Parameters
-----------
-n : int
-    Dimension of matrix. Number of discrete points.
-*/
-{
+    Parameters
+    ----------
+    n : int
+        Dimension of matrix. Number of discrete points.
+
+    write : bool
+        Boolean for toggling write to file on/off.
+    */
     double stepsize = 1.0/(n+1);
 
     double* diag     = new double[n];   
@@ -172,12 +178,15 @@ n : int
 
     if (write) 
     {   
-        std::cout << std::setprecision(32) << total_time.count() << std::endl; // NB! Gives time in seconds.
-        std::string filename = "Poisson_values_spes_n_" + std::to_string(n) + ".txt";
+        std::string filename = "thomas_algorithm_special_n_" + std::to_string(n) + ".txt";
         write_to_file(filename, n, computed);
     }
 
-    return computed;
+    if (write_error)
+    {
+        std::string filename = "thomas_algorithm_special_error.txt";
+        write_to_file_error(filename, n, computed);
+    }
 
     delete[] diag;
     delete[] rhs_val;
@@ -186,21 +195,23 @@ n : int
     return total_time.count();
 }
 
-void write_to_file(std::string filename, int n, double* computed_val)
-/*
-Function for writing the values to a .txt-file.
-Writing the exact and computed solution as well as the error for the computed
-relative to the exact solution.
+void write_to_file(std::string filename, int n, double* computed_val) {
+    /*
+    Function for writing the values to a .txt-file.
+    Writing the exact and computed solution as well as the error for the computed
+    relative to the exact solution.
 
-Parameters
-----------
-filename : std::string
-    A string input with the name of the file which data are written to.
+    Parameters
+    ----------
+    filename : std::string
+        A string input with the name of the file which data are written to.
 
-n : int
-    Dimension of matrix. Number of discrete points.
-*/
-{
+    n : int
+        Dimension of matrix. Number of discrete points.
+
+    computed_val : double*
+        Pointer to array of computed values to be written to file.
+    */
     
     double* exact_val = new double[n];
     double* eps       = new double[n];
@@ -239,14 +250,24 @@ n : int
     results_file.close();
 }
 
-void write_to_file(std::string filename, int n, arma::vec computed_val)
-/*
-Function for writing the values to a .txt-file.
-Writing the exact and computed solution as well as the error for the computed
-relative to the exact solution.
-This function is used when we use armadillo to do the Thomas algorithm.
-*/
-{
+void write_to_file(std::string filename, int n, arma::vec computed_val) {
+    /*
+    Function for writing the values to a .txt-file.
+    Writing the exact and computed solution as well as the error for the computed
+    relative to the exact solution.
+    This function is used when we use armadillo to do the Thomas algorithm.
+
+    Parameters
+    ----------
+    filename : std::string
+        Filename of output textfile.
+
+    computed_val : arma::vec
+        Vector with computed values.
+
+    n : int
+        Dimension of matrix. nxn.
+    */
     double* computed = new double[n];
     for(int i=0; i<n; i++)
     {
@@ -256,47 +277,99 @@ This function is used when we use armadillo to do the Thomas algorithm.
     delete[] computed;
 }
 
-void write_to_file_error(std::string filename, int n, double*computed_val)
-/*
-Function for writing the relative error to a .txt-file.
-*/
-{
-    double exact_val;
-    double eps = 0;
+void write_to_file_error(std::string filename, int n, double* computed_val) {
+    /*
+    Function for writing the relative error to a .txt-file.
 
-    double stepsize    = 1.0/(n+1);
+    Parameters
+    ----------
+    filename : std::string
+        Filename of output textfile.
+
+    n : int
+        Dimension of matrix. nxn.
+
+    computed_val : double*
+        Pointer to array with calculated values.
+    */
+    double exact_val;
+    double max_rel_error = 0;
+    double stepsize = 1.0/(n+1);
 
     for (int i=0; i<n; i++)
     {
         double x = stepsize*(i+1);
-        exact_val     = exact_solution(x);
-        if(eps < relative_error(computed_val[i], exact_val))
-        {
-            eps = relative_error(computed_val[i], exact_val);
+        exact_val = exact_solution(x);
+        double rel_error = relative_error(computed_val[i], exact_val);
+        
+        if (max_rel_error < rel_error)
+        {   // checks if the relative error is larger than 
+            max_rel_error = rel_error;
         }
     }
 
     std::ofstream error_file;
     error_file.open(filename, std::ios_base::app);
-    error_file << std::setw(25) << std::setprecision(16) << eps << std::endl;
+    error_file << std::setw(10) << n;
+    error_file << std::setw(25) << std::setprecision(16) << max_rel_error << std::endl;
     error_file.close();
 }
 
-double relative_error(double computed_val, double exact_val)
-/*
-Function for calculating the relative error for the computed solution relative
-to the exact solution.
-*/
-{
+void write_to_file_error(std::string filename, int n, arma::vec computed_val) {
+    /*
+    Overloaded function for passing arma::vec instead of double*.
+
+    Parameters
+    ----------
+    filename : std::string
+        Filename of output textfile.
+
+    computed_val : arma::vec
+        Vector with computed values.
+
+    n : int
+        Dimension of matrix. nxn.
+    */
+    double* computed = new double[n];
+    
+    for(int i=0; i<n; i++)
+    {
+        computed[i] = computed_val[i];
+    }
+    
+    write_to_file_error(filename, n, computed);
+    
+    delete[] computed;
+}
+
+double relative_error(double computed_val, double exact_val) {
+    /*
+    Function for calculating the relative error for the computed solution relative
+    to the exact solution.
+
+    Parameters
+    ----------
+    computed_val : double
+        A single computed value.
+
+    exact_val : double
+        A single exact value.
+    */
     return fabs((computed_val - exact_val)/exact_val);
 }
 
-double LU_arma(int n, bool write)
-/*
-Function for calculating the Thomas algorithm using the armadillo library.
-This function also prints the time it takes to run the algorithm.
-*/
-{
+double LU_arma(int n, bool write, bool write_error) {
+    /*
+    Function for calculating the Thomas algorithm using the armadillo library.
+    This function also prints the time it takes to run the algorithm.
+
+    Parameters
+    ----------
+    n : int
+        Dimension of matrix. Number of discrete points.
+    write : bool
+        Boolean value for toggling write to file on/off.
+    */
     double stepsize = 1.0/(n+1);
 
     arma::mat A(n, n);
@@ -335,9 +408,14 @@ This function also prints the time it takes to run the algorithm.
 
     if (write)
     {
-        std::cout << std::setprecision(32) << total_time.count() << std::endl; // NB! Gives time in seconds.
-        std::string filename = "Poisson_values_LU_n_" + std::to_string(n) + ".txt";
+        std::string filename = "LU_n_" + std::to_string(n) + ".txt";
         write_to_file(filename, n, computed);
+    }
+
+    if (write_error)
+    {
+        std::string filename = "LU_error.txt";
+        write_to_file_error(filename, n, computed);
     }
 
     return total_time.count();
@@ -345,16 +423,15 @@ This function also prints the time it takes to run the algorithm.
 
 }
 
-void compare_times()
-/*
-Function for comparing computation times of thomas, thomas special, and LU.
-Each grid size is calculated 10 times, and all timings are written to a text
-file compare_times.txt.
-*/
-{
+void compare_times() {
+    /*
+    Function for comparing computation times of thomas, thomas special, and LU.
+    Each grid size is calculated 'runs' amount of times, and all timings are written
+    to a text file compare_times.txt.
+    */
     int grid_values = 16;    // number of different grid values
-    int N[grid_values];
     int runs = 10;          // number of runs for each grid size
+    int N[grid_values];
 
     N[0]  = 10;
     N[1]  = 100;
@@ -402,15 +479,15 @@ file compare_times.txt.
         {   // looping over each grid size 'runs' amount of times
             // writing timing data to file
             compare_times_file  << std::setw(40) << std::setprecision(32) 
-                                << thomas_algorithm(N[i], false)
+                                << thomas_algorithm(N[i], false, false)
                                 << std::setw(40) << std::setprecision(32)
-                                << thomas_algorithm_special(N[i], false);
+                                << thomas_algorithm_special(N[i], false, false);
             
             if (N[i] <= 10000)
             {   // limits the gid size for LU since the calculations are
                 // impossible with normal hardware at values approaching 100000
             compare_times_file  << std::setw(40) << std::setprecision(32)
-                                << LU_arma(N[i], false) << std::endl;
+                                << LU_arma(N[i], false, false) << std::endl;
             }
             
             else
@@ -429,9 +506,9 @@ file compare_times.txt.
 int main(int argc, char *argv[])
 {
     int n = atoi(argv[1]);
-    // thomas_algorithm(n);
-    // thomas_algorithm_special(n);
-    // LU_arma(n);
+    // thomas_algorithm(n, false, true);
+    // thomas_algorithm_special(n, false, true);
+    LU_arma(n, false, true);
     // compare_times();
  
     return 1;
