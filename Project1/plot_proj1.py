@@ -87,24 +87,7 @@ if __name__ == "__main__":
     num_of_args = len(sys.argv)
 
     arg = np.array(["Methheds", "Epstasy"])
-    run = arg[0]
-    
-    # if num_of_args >= 2:
-    #     num_n    = num_of_args - 1
-    #     exact    = False
-
-    #     for i in range(1, num_n + 1):
-    #         if i == num_n:
-    #             exact = True
-
-    #         filename = str(sys.argv[i])
-    #         values   = np.loadtxt(filename, skiprows=1)
-    #         n        = len(values[:, 0]) - 2
-
-    #         plot_func(ax, n, args=values, exact=exact)
-        
-    #     ax[0].legend()
-    #     plt.show()
+    run = arg[1]
 
     if run == arg[0]:
         fig, ax   = plt.subplots(1, 2)
@@ -132,31 +115,31 @@ if __name__ == "__main__":
         fig, ax  = plt.subplots()
         
         num_n      = 71
-        n_array    = np.linspace(1e1, 1e7, 61)
+        n_array    = np.linspace(1e1, 1e7, 10)
 
-        # error_gen  = np.zeros(num_n-10)
-        # error_spes = np.zeros(num_n-10)
+        error_gen  = np.zeros(num_n-10)
+        error_spes = np.zeros(num_n-10)
 
-        # bar = IncrementalBar("Processing", max=61)
+        bar = IncrementalBar("Processing", max=61)
 
-        # errors = open("relative_errors.txt", "w")
-        # errors.write("Thomas              |   Thomas special\n")
+        errors = open("relative_errors.txt", "w")
+        errors.write("Thomas              |   Thomas special\n")
 
-        # for i in range(10, num_n):
-        #     # str = "./proj1_test.out {:d}".format(int(10**(i/10.0)))
-        #     # os.system(str)
-        #     values_gen    = np.loadtxt("Poisson_values_n_{:d}.txt"
-        #                             .format(int(10**(i/10.0))), skiprows=1)
-        #     values_spes   = np.loadtxt("Poisson_values_spes_n_{:d}.txt"
-        #                             .format(int(10**(i/10.0))), skiprows=1)
-        #     error_gen[i-10]  = np.max(values_gen[:, 2])
-        #     error_spes[i-10] = np.max(values_spes[:, 2])
-        #     errors.write(str(error_gen[i-10]) + "   " + str(error_spes[i-10])
-        #                  + "\n")
+        for i in range(10, num_n):
+            str = "./proj1_test.out {:d}".format(int(10**(i/10.0)))
+            os.system(str)
+            values_gen    = np.loadtxt("Poisson_values_n_{:d}.txt"
+                                    .format(int(10**(i/10.0))), skiprows=1)
+            values_spes   = np.loadtxt("Poisson_values_spes_n_{:d}.txt"
+                                    .format(int(10**(i/10.0))), skiprows=1)
+            error_gen[i-10]  = np.max(values_gen[:, 2])
+            error_spes[i-10] = np.max(values_spes[:, 2])
+            errors.write(str(error_gen[i-10]) + "   " + str(error_spes[i-10])
+                         + "\n")
 
-        #     bar.next()
-        # bar.finish()
-        # errors.close()
+            bar.next()
+        bar.finish()
+        errors.close()
 
         relative_errors = np.loadtxt("relative_errors.txt", skiprows=1)
         error_general   = relative_errors[:, 0]
