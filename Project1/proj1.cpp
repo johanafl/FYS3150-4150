@@ -502,14 +502,62 @@ void compare_times() {
     compare_times_file.close();
 }
 
+void calculate_error() {
+    /*
+    Function for running the three different algorithms in error write mode for
+    a set of grid point values.
+    */
+
+    int end = 1000;
+    int tmp = 0;
+
+    for (int i=145; i<=end; i++)
+    {   // iterating over a set of grid values
+        int n = (int)std::pow(10, 7.0/end*i);
+        
+        if (n != tmp)
+        {   // excluding equal values caused by rounding from double to int
+            tmp = n;
+            std::cout << "calculating n = " + std::to_string(n) << std::endl;
+            
+            thomas_algorithm(n, false, true);
+            thomas_algorithm_special(n, false, true);
+            
+            if (n < 50000)
+            {   // LU decomp demands too much resources beyond this point
+                LU_arma(n, false, true);
+            }
+        }
+    }
+}
+
+void calculate_data() {
+    /*
+    Function for running the three different algorithms for a set of grid point
+    values. Data is written to three .txt files.
+    */
+
+    int n;
+
+    for (int i=1; i<4; i++)
+    {   // looping over a set of grid values
+        n = (int)std::pow(10, i);
+        
+        thomas_algorithm(n, true, false);
+        thomas_algorithm_special(n, true, false);
+        LU_arma(n, true, false);      
+    }
+}
+
+
 
 int main(int argc, char *argv[])
 {
     int n = atoi(argv[1]);
-    // thomas_algorithm(n, false, true);
-    // thomas_algorithm_special(n, false, true);
-    LU_arma(n, false, true);
+
     // compare_times();
+    // calculate_error();
+    calculate_data();
  
-    return 1;
+    return 0;
 }

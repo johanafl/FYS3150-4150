@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from scipy import stats
 import numpy as np
 import sys
 import os
@@ -32,12 +33,17 @@ def compare_times():
     LU[np.where(LU == -1)] = np.nan     # all -1 values are values not computed
                                         # set to nan so that plot is unaffected
 
-    plt.loglog(grid_values, thomas,   label="Thomas")
-    plt.loglog(grid_values, thomas_s, label="Thomas special")
-    plt.loglog(grid_values, LU,       label="LU")
+    slope0, intercept0, _, _, _ = stats.linregress(grid_values, thomas)
+    slope1, intercept1, _, _, _ = stats.linregress(grid_values, thomas_s)
+    print(intercept0 - intercept1)
+
+    plt.loglog(grid_values, thomas,   "-o", label="Thomas")
+    plt.loglog(grid_values, thomas_s, "-o", label="Thomas special")
+    plt.loglog(grid_values, LU,       "-o", label="LU")
     
     plt.ylabel("Seconds")
     plt.xlabel("Grid points")
+    plt.title("Calculation time, mean of 10 runs")
     
     plt.legend(loc="best")
     plt.grid()
@@ -47,16 +53,38 @@ def compare_times():
 
 def visualize_error():
     """
-
+    Function for plotting and comparing error values for the different
+    algorithms. Reads data from text file computed by accompanying C++ program.
     """
+
     filenames = ["thomas_algorithm_error.txt",
                  "thomas_algorithm_special_error.txt", "LU_error.txt"]
-    fig, ax = plt.subplots(figsize=(10,8))
+
+    special_values = np.array([10, 100, 1000])
+    num_special_values = len(special_values)
+
 
     for name in filenames:
-        n, error = np.loadtxt(name, unpack=True)
+        # unpacking error data and number of grid points
+             
+        fig, ax = plt.subplots(figsize=(10,8))
+        n, max_rel_error = np.loadtxt(name, unpack=True)
+        
+        for i in range(num_special_values):
+            # finding the closest grid value to a set of 'special' values we
+            # wish to highlight in the plot
+            idx = np.argmin(np.abs(n - special_values[i]))
+            ax.plot(n[idx], max_rel_error[idx], "ro")
+        
+        ax.loglog(n, max_rel_error)
+        ax.set_xlabel("number of grid points, n", fontsize=18)
+        ax.set_ylabel("max relative error", fontsize=18)
+        ax.set_title(name[:-10], fontsize=18)
+        ax.grid()
+        
+        plt.tight_layout()
+        plt.show()
 
-    
 
 
 
@@ -65,7 +93,7 @@ def visualize_data():
     Function for reading data files, organizing them into arrays, and passing
     the data to the plot function plot_data. The input text files contains
     three columns. Column 1 is exact values, column 2 is computed values, and
-    column 3 is relative error.s
+    column 3 is relative error.
     """
 
     filenames   = ["thomas_algorithm_n_", "thomas_algorithm_special_n_", "LU_n_"]
@@ -200,5 +228,6 @@ def plot_func(axis, n, args=False, exact=False, filename=False, method=True):
 
 if __name__ == "__main__":
     # visualize_data()
-    visualize_error()
-    
+    # visualize_error()
+    compare_times()
+    pass
