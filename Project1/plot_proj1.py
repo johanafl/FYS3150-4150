@@ -8,8 +8,7 @@ def compare_times():
     algorithms.
     """
 
-    algos = ["Thomas", "Thomas special", "LU"]
-    data  = np.loadtxt("compare_times.txt", skiprows=1)
+    data = np.loadtxt("compare_times.txt", skiprows=1)
 
     runs = int(data[0][0])            # number of runs for each grid size value
     num_grid_values = int(data[1][0]) # number of grid size values
@@ -26,7 +25,7 @@ def compare_times():
         grid_values[i] = int(tmp[0][0])
         thomas[i], thomas_s[i], LU[i] = np.mean(tmp[1:], axis=0)
 
-    LU[np.where(LU == -1)] = np.nan
+    LU[np.where(LU == -1)] = np.nan     # all -1 values are values not computed
 
     plt.loglog(grid_values, thomas, label="Thomas")
     plt.loglog(grid_values, thomas_s, label="Thomas special")
