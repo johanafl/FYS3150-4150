@@ -227,7 +227,7 @@ def plot_func(axis, n, args=False, exact=False, filename=False, method=True):
         # axis[1].set_ylabel("Relative error")
 
 if __name__ == "__main__":
-    # visualize_data()
+    visualize_data()
     # visualize_error()
-    compare_times()
+    # compare_times()
     pass

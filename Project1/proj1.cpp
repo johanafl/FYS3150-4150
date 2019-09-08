@@ -165,6 +165,7 @@ double thomas_algorithm_special(int n, bool write, bool write_error) {
     }
 
     computed[n-1] = rhs_val[n-1]/diag[n-1];
+    
     for (int i=n-1; i>=1; i--)
     {   // backward substituting
         computed[i-1] = (rhs_val[i-1] + computed[i])/diag[i-1];
