@@ -554,8 +554,6 @@ void calculate_data() {
 
 int main(int argc, char *argv[])
 {
-    int n = atoi(argv[1]);
-
     // compare_times();
     // calculate_error();
     calculate_data();
