@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-from scipy import stats
 import numpy as np
 import sys
 import os
@@ -10,6 +9,12 @@ def compare_times():
     algorithms. Reads data from text file computed by accompanying C++ program.
     Computes mean values for timings of same grid size and same algorithm, and
     presents them as a plot.
+    
+    The data file contains three columns. Each column starts with the name of
+    the algorithm, followed by the number of iterations per grid point value,
+    followed by the number of different grid point values tested. Before each
+    block of timing data, the number of grid points for that block of timing
+    data is specified.
     """
 
     timing_data = np.loadtxt("compare_times.txt", skiprows=1)
@@ -33,10 +38,6 @@ def compare_times():
     LU[np.where(LU == -1)] = np.nan     # all -1 values are values not computed
                                         # set to nan so that plot is unaffected
 
-    slope0, intercept0, _, _, _ = stats.linregress(grid_values, thomas)
-    slope1, intercept1, _, _, _ = stats.linregress(grid_values, thomas_s)
-    print(intercept0 - intercept1)
-
     plt.loglog(grid_values, thomas,   "-o", label="Thomas")
     plt.loglog(grid_values, thomas_s, "-o", label="Thomas special")
     plt.loglog(grid_values, LU,       "-o", label="LU")
@@ -55,12 +56,14 @@ def visualize_error():
     """
     Function for plotting and comparing error values for the different
     algorithms. Reads data from text file computed by accompanying C++ program.
+    Each algorithm has a separate text file with one column containing the
+    number of grid points, and the other column the actual error data.
     """
 
     filenames = ["thomas_algorithm_error.txt",
                  "thomas_algorithm_special_error.txt", "LU_error.txt"]
 
-    special_values = np.array([10, 100, 1000])
+    special_values = np.array([10, 100, 1000])  # special values to highlight in the plot
     num_special_values = len(special_values)
 
 
@@ -84,9 +87,6 @@ def visualize_error():
         
         plt.tight_layout()
         plt.show()
-
-
-
 
 def visualize_data():
     """
@@ -127,8 +127,6 @@ def visualize_data():
 
         plt.show()
 
-        
-
 def plot_data(ax, computed, exact=False):
     """
     A simple function for automation of plotting of computed and exact values.
@@ -153,78 +151,6 @@ def plot_data(ax, computed, exact=False):
     if not isinstance(exact, bool):
         ax.plot(x, exact, label="exact")
 
-
-
-
-
-    
-
-
-
-def plot_func(axis, n, args=False, exact=False, filename=False, method=True):
-    """
-    her skjer noe
-
-    parameters
-    ----------
-    axis : ax object from plt.subplots()
-
-    n : int
-        Number of grid points
-
-    kwargs
-    ------
-    args : False
-        kjører på vanlig måte, hvis ikke er det argumenter fra komandolinjen
-
-    exact : False
-        Hvis true plottes ekstakte løsningen for den gitte n verdien
-
-    filename : False
-        Filnavnet data skal hentes fra
-
-    method : True
-        hvis true plottes metoden 
-        hvis false plottes kun relativ error
-    """
-
-    try:
-        if not args:
-            values = np.loadtxt(filename.format(n), skiprows=1)
-    except ValueError:
-        values = args
-    
-    if method:
-
-        x     = np.linspace(0, 1, n+2)
-        u     = values[:, 0]
-        v     = values[:, 1]
-        error = values[:, 2]
-
-        axis[0].plot(x, v, "-", label=method.format(n))
-        axis[0].set_title("Numerical/exact solution", fontsize=18)
-        axis[0].set_xlabel("x", fontsize=18)
-        axis[0].set_ylabel("function value", fontsize=18)
-        axis[1].loglog(n, np.max(error), "o", label="exact, n={:d}".format(n))
-        axis[1].set_title(r"Relative error", fontsize=18)
-        axis[1].set_xlabel("number of grid points, n", fontsize=18)
-        axis[1].set_ylabel(r"$\epsilon_{max}(n)$", fontsize=18)
-
-        if exact:
-            axis[0].plot(x, u, label="exact")
-    
-    else:
-        epsilon_general = args
-        epsilon_special = filename
-
-        axis.set_title("Relative error for the general Thomas algorithm")
-        axis.semilogy(n, epsilon_general, label=r"Max($\epsilon(n)$)")
-        axis.set_xlabel("n")
-        axis.set_ylabel("Relative error")
-        # axis[1].set_title("Relative error for the special Thomas algorithm")
-        # axis[1].semilogy(n, epsilon_special, label=r"Max($\epsilon(n)$)")
-        # axis[1].set_xlabel("n")
-        # axis[1].set_ylabel("Relative error")
 
 if __name__ == "__main__":
     visualize_data()
