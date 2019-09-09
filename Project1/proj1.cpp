@@ -77,7 +77,7 @@ double thomas_algorithm(int n, bool write, bool write_error) {
     }
     diag[n-1] = 2.0;
 
-    // Copied from: http://www.cplusplus.com/reference/chrono/steady_clock/
+    // start of timing
     std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
 
     for (int i=0; i<n-1; i++)
@@ -92,6 +92,7 @@ double thomas_algorithm(int n, bool write, bool write_error) {
         computed[i-1] = (rhs_val[i-1] - upper_diag[i-1]*computed[i])/diag[i-1];
     }
 
+    // end of timing
     std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
     std::chrono::duration<double> total_time = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1);
     
@@ -512,7 +513,7 @@ void calculate_error() {
     int end = 1000;
     int tmp = 0;
 
-    for (int i=145; i<=end; i++)
+    for (int i=663; i<=end; i++)
     {   // iterating over a set of grid values
         int n = (int)std::pow(10, 7.0/end*i);
         
@@ -555,8 +556,8 @@ void calculate_data() {
 int main(int argc, char *argv[])
 {
     // compare_times();
-    // calculate_error();
-    calculate_data();
+    calculate_error();
+    // calculate_data();
  
     return 0;
 }
