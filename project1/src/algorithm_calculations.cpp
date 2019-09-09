@@ -54,7 +54,11 @@ double thomas_algorithm(int n, bool write, bool write_error) {
 
     write : bool
         Boolean for toggling write to file on/off.
+
+    write_error : bool
+        Boolean value for toggling write error to file on/off.
     */
+
     double stepsize = 1.0/(n+1);
 
     double* lower_diag = new double[n-1]; 
@@ -134,7 +138,11 @@ double thomas_algorithm_special(int n, bool write, bool write_error) {
 
     write : bool
         Boolean for toggling write to file on/off.
+
+    write_error : bool
+        Boolean value for toggling write error to file on/off.
     */
+
     double stepsize = 1.0/(n+1);
 
     double* diag     = new double[n];   
@@ -199,9 +207,9 @@ double thomas_algorithm_special(int n, bool write, bool write_error) {
 
 void write_to_file(std::string filename, int n, double* computed_val) {
     /*
-    Function for writing the values to a .txt-file.
-    Writing the exact and computed solution as well as the error for the computed
-    relative to the exact solution.
+    Function for writing the values to a .txt-file. Writing the exact and
+    computed solution as well as the error for the computed relative to the
+    exact solution. If a file with 'filename' already exixts, it is overwritten.
 
     Parameters
     ----------
@@ -255,9 +263,10 @@ void write_to_file(std::string filename, int n, double* computed_val) {
 void write_to_file(std::string filename, int n, arma::vec computed_val) {
     /*
     Function for writing the values to a .txt-file.
-    Writing the exact and computed solution as well as the error for the computed
-    relative to the exact solution.
-    This function is used when we use armadillo to do the Thomas algorithm.
+    Writing the exact and computed solution as well as the error for the
+    computed relative to the exact solution. This function is used when we use
+    armadillo to do the Thomas algorithm.  If a file with 'filename' already
+    exixts, it is overwritten.
 
     Parameters
     ----------
@@ -281,7 +290,8 @@ void write_to_file(std::string filename, int n, arma::vec computed_val) {
 
 void write_to_file_error(std::string filename, int n, double* computed_val) {
     /*
-    Function for writing the relative error to a .txt-file.
+    Function for writing the relative error to a .txt-file. Appends values to
+    already existing file with 'filename'.
 
     Parameters
     ----------
@@ -319,7 +329,8 @@ void write_to_file_error(std::string filename, int n, double* computed_val) {
 
 void write_to_file_error(std::string filename, int n, arma::vec computed_val) {
     /*
-    Overloaded function for passing arma::vec instead of double*.
+    Overloaded function for passing arma::vec instead of double*. Appends values
+    to already existing file with 'filename'.
 
     Parameters
     ----------
@@ -332,6 +343,7 @@ void write_to_file_error(std::string filename, int n, arma::vec computed_val) {
     n : int
         Dimension of matrix. nxn.
     */
+
     double* computed = new double[n];
     
     for(int i=0; i<n; i++)
@@ -369,11 +381,15 @@ double LU_arma(int n, bool write, bool write_error) {
     ----------
     n : int
         Dimension of matrix. Number of discrete points.
+    
     write : bool
         Boolean value for toggling write to file on/off.
-    */
-    double stepsize = 1.0/(n+1);
 
+    write_error : bool
+        Boolean value for toggling write error to file on/off.
+    */
+
+    double stepsize = 1.0/(n+1);
     arma::mat A(n, n);
 
     A.diag(0)  += 2.0;
@@ -428,9 +444,11 @@ double LU_arma(int n, bool write, bool write_error) {
 void compare_times() {
     /*
     Function for comparing computation times of thomas, thomas special, and LU.
-    Each grid size is calculated 'runs' amount of times, and all timings are written
-    to a text file compare_times.txt.
+    Each grid size is calculated 'runs' amount of times, and all timings are
+    written to a text file compare_times.txt. If file with 'filename' already
+    exists, it is overwritten.
     */
+
     int grid_values = 16;    // number of different grid values
     int runs = 10;          // number of runs for each grid size
     int N[grid_values];
@@ -507,7 +525,7 @@ void compare_times() {
 void calculate_error() {
     /*
     Function for running the three different algorithms in error write mode for
-    a set of grid point values.
+    a set of grid point values. The error data are written to three .txt files.
     */
 
     int end = 1000;
