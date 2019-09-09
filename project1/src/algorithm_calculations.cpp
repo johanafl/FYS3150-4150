@@ -513,7 +513,7 @@ void calculate_error() {
     int end = 1000;
     int tmp = 0;
 
-    for (int i=663; i<=end; i++)
+    for (int i=145; i<=end; i++)
     {   // iterating over a set of grid values
         int n = (int)std::pow(10, 7.0/end*i);
         
@@ -525,8 +525,8 @@ void calculate_error() {
             thomas_algorithm(n, false, true);
             thomas_algorithm_special(n, false, true);
             
-            if (n < 50000)
-            {   // LU decomp demands too much resources beyond this point
+            if (n < 1500)
+            {   // sets a limit for the LU decomp. because of hardware limitations
                 LU_arma(n, false, true);
             }
         }
