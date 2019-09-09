@@ -449,7 +449,7 @@ void compare_times() {
     exists, it is overwritten.
     */
 
-    int grid_values = 16;    // number of different grid values
+    int grid_values = 12;    // number of different grid values
     int runs = 10;          // number of runs for each grid size
     int N[grid_values];
 
@@ -465,10 +465,7 @@ void compare_times() {
     N[9]  = 1000000;
     N[10] = 5000000;
     N[11] = 10000000;
-    N[12] = 50000000;
-    N[13] = 100000000;
-    N[14] = 500000000;
-    N[15] = 1000000000;
+
 
 
     // creating file and writing headers
@@ -503,7 +500,7 @@ void compare_times() {
                                 << std::setw(40) << std::setprecision(32)
                                 << thomas_algorithm_special(N[i], false, false);
             
-            if (N[i] <= 10000)
+            if (N[i] <= 5000)
             {   // limits the gid size for LU since the calculations are
                 // impossible with normal hardware at values approaching 100000
             compare_times_file  << std::setw(40) << std::setprecision(32)
@@ -571,11 +568,11 @@ void calculate_data() {
 
 
 
-int main(int argc, char *argv[])
+int main()
 {
-    // compare_times();
+    compare_times();
     calculate_error();
-    // calculate_data();
+    calculate_data();
  
     return 0;
 }

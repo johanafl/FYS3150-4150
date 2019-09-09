@@ -118,7 +118,8 @@ def visualize_data():
                 plot_data(ax, computed)
 
         ax.legend(fontsize=18)
-        plt.tight_layout(pad=2.5)
+        ax.tick_params(labelsize=18)
+        # plt.tight_layout(pad=2.5)
 
         ax.set_title(name[:-3], fontsize=18)
         ax.set_xlabel("x", fontsize=18)
@@ -154,6 +155,6 @@ def plot_data(ax, computed, exact=False):
 
 if __name__ == "__main__":
     visualize_data()
-    # visualize_error()
-    # compare_times()
+    visualize_error()
+    compare_times()
     pass
