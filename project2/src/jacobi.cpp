@@ -67,7 +67,7 @@ arma::mat construct_diag_matrix(int n, double up_low_diag, arma::vec diag) {
     return A;
 }
 
-double find_max(int n, arma::mat A, int idx_row, int idx_column) {
+double find_max(int n, arma::mat A, int* idx_row, int* idx_column) {
     /*
     Finds the max value of the off-diagonal elements of the matrix. Saves
     the indexes of the max value.
@@ -104,8 +104,8 @@ double find_max(int n, arma::mat A, int idx_row, int idx_column) {
                 if (matrix_elemet > max_val)
                 {
                     max_val = matrix_elemet;
-                    idx_row = row;
-                    idx_column = column;
+                    idx_row & = row;
+                    idx_column & = column;
                 }
             }
         }
@@ -113,11 +113,36 @@ double find_max(int n, arma::mat A, int idx_row, int idx_column) {
     return max_val;
 }
 
-void test() {
+void test_find_max() {
     /*
     Test function that tests the most important functionality of the Jacobi class.
     */
-
+    int n = 5;
+    double maximum = 5555;
+    arma::mat A(n,n);
+    A.zeros();
+    for (int i=0; i<5; i++)
+    {
+        for (int j=0; j<5; j++)
+        {
+            A(i,j) = i*j*1.5;
+        }
+    }
+    A(3,2) = maximum;
+    int* idx_row, int* idx_column;
+    double max_val = double find_max(n, A, idx_row, idx_column);
+    if (max_val != maximum)
+    {
+        A.print();
+        std::cout << "Wrong element! Maximum value was" << maximum << ". Got"
+                  << max_val << std::endl;
+    }
+    if ((idx_row & != 3) && (idx_column & != 2)) // NB! I do not remember what 'or' is in C++. Have set 'and' for now.
+    {
+        A.print();
+        std::cout << "Wrong indecies! Indecies was" << 3 << " and " << 2 
+                  << ". Got" << idx_row & << " and " << idx_column << std::endl;
+    }
 }
 
 
@@ -128,5 +153,6 @@ int main(int argc, char* argv[]) {
 
     arma::mat A = construct_diag_matrix(n);
     A.print();
+    test_find_max();
     return 1;
 }
