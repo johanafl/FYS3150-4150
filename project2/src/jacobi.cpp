@@ -7,31 +7,6 @@
 #include <chrono>
 
 
-void step_forward() {
-    /*
-    Not implemented yet. Perhaps call the create_transformation_matrix. Supposed to 
-    multiply the transformation matrix with the matrix we have. 
-    */
-    // Compute next step
-}
-
-
-void find_eigenvalues() {
-    /*
-    Not implemented yet. Check if norm is less than epsilon. If not, continue to 
-    find eigenvalues
-    */
-    // (old)    implement a while loop. norm(mat,"fro") should take the frobenius norm (http://arma.sourceforge.net/docs.html)
-    // (update) We are supposed to use the maximum value. use the find_max function.
-
-    // while ( > tolerance)
-    // {
-    //     step_forward();
-    // }
-}
-
-
-
 arma::mat construct_diag_matrix(int n) {
     /*
     Function for creating a diagonal armadillo matrix.
@@ -46,7 +21,6 @@ arma::mat construct_diag_matrix(int n) {
     return A;
 }
 
-
 arma::mat construct_diag_matrix(int n, double up_low_diag, arma::vec diag) {
     /*
     Function for creating a diagonal armadillo matrix.
@@ -60,7 +34,6 @@ arma::mat construct_diag_matrix(int n, double up_low_diag, arma::vec diag) {
 
     return A;
 }
-
 
 double find_max(int n, arma::mat A, int* idx_row, int* idx_column) {
     /*
@@ -108,7 +81,6 @@ double find_max(int n, arma::mat A, int* idx_row, int* idx_column) {
     return max_val;
 }
 
-
 void transform(int n, arma::mat* A, int idx_col, int idx_row) {
     /*
     This function rotatetes the (symmetric) matrix A by an angle theta in the 
@@ -145,13 +117,20 @@ void transform(int n, arma::mat* A, int idx_col, int idx_row) {
     B(idx_col,idx_col) = B(idx_col,idx_col)*c*c - 2*B(idx_col,idx_row)*c*s + B(idx_row,idx_row)*s*s;
 }
 
-void find_eig(arma::mat A){
+arma::mat find_eig(int n, arma::mat A, double eps) {
     /*
     Not implemented yet.
     */
-    // int idx_col;
-    // int idx_row;
-    // double max_val = find_max(A);
+    arma::mat B = A;
+    int idx_col;
+    int idx_row;
+    double max_val = find_max(n, B, & idx_col, & idx_row);
+    while (max_val > eps)
+    {
+        transform(n, & B, idx_col, idx_row);
+        max_val = find_max(n, B, & idx_col, & idx_row);
+    }
+    return B;
 }
 
 void test_find_max() {
@@ -213,6 +192,34 @@ void test_inner_product_conserved() {
     }
 }
 
+void test_find_eig() {
+    /*
+    Checks that the find_eig function finds eigenvalues up to a set error eps.
+    */
+    double eps_eig = 0.01;
+    double eps_test = 1;
+    int n = 5;
+    arma::mat A = construct_diag_matrix(n);
+    arma::vec lam(n);
+    double d = 2;
+    double a = -1;
+    double pi = 3.14159265358979323846;
+    for (int i=0; i<n; i++)
+    {
+        lam(i) = d + 2*a*std::cos(i*pi/(n+1));
+    }
+    
+    arma::mat B = find_eig(n, A, eps_eig);
+    for (int i=0; i<n; i++)
+    {
+        if (fabs(lam(i) - B(i,i)) > eps_test)
+        {
+            std::cout << "Something went wrong!\n" << "Exact eigenvalue = " 
+                      << lam(i) << ", computed eigenvalue = " << B(i,i)
+                      << "." << std::endl;
+        }
+    }
+}
 
 int main(int argc, char* argv[]) {
     // int n = 5;
@@ -222,7 +229,8 @@ int main(int argc, char* argv[]) {
     // arma::mat A = construct_diag_matrix(n);
     // A.print();
     // test_find_max();
-    test_inner_product_conserved();
+    // test_inner_product_conserved();
+    test_find_eig();
 
     return 1;
 }
