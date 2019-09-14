@@ -7,14 +7,6 @@
 #include <chrono>
 
 
-
-void create_transformation_matrix(double theta, int l) {
-/*
-Not implemented yet. Supposed to create an orthogonal transformation matrix.
-Think this function is unnessesary.
-*/
-}
-
 void step_forward() {
 /*
 Not implemented yet. Perhaps call the create_transformation_matrix. Supposed to 
@@ -114,6 +106,25 @@ double find_max(int n, arma::mat A, int* idx_row, int* idx_column) {
     return max_val;
 }
 
+void transform(arma::mat A, int idx_col, int idx_row) {
+    /*
+    Not implemented yet.
+    */
+    a_ll = A(idx_row, idx_row);
+    a_kk = A(idx_col, idx_col);
+    a_lk = A(idx_row, idx_col);
+    
+}
+
+// void find_eig(arma::mat A){
+//     /*
+//     Not implemented yet.
+//     */
+//     int idx_col;
+//     int idx_row;
+//     double max_val = find_max(A);
+// }
+
 void test_find_max() {
     /*
     Test function that tests the most important functionality of the Jacobi class.
@@ -151,10 +162,16 @@ void test_inner_product_conserved() {
     /*
     Not implemented yet.
     */
-    // Want to define at least two vectors, use an orthogonal transformation on
-    // them, and check that the inner product is perserved. 
-    // Since we have an algorithm for the transformation (chapter 7 in Morten's
-    // compendium), we want to use this insted of the entire matrix.
+    arma::mat A(3,3);
+    double eps = 1;
+    A.zeros();
+    A(0,2) = 1; A(1,0) = 1; A(2,1) = 1;
+    // transform(A); // This must be implemented.
+    double inner_prod = arma::dot(A.col(0),A.col(1));
+    if (fabs(inner_prod) < eps)
+    {
+        std::cout << "Something went wrong!" << std::endl;
+    }
 }
 
 
