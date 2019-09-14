@@ -46,6 +46,7 @@ arma::mat construct_diag_matrix(int n) {
     return A;
 }
 
+
 arma::mat construct_diag_matrix(int n, double up_low_diag, arma::vec diag) {
     /*
     Function for creating a diagonal armadillo matrix.
@@ -59,6 +60,7 @@ arma::mat construct_diag_matrix(int n, double up_low_diag, arma::vec diag) {
 
     return A;
 }
+
 
 double find_max(int n, arma::mat A, int* idx_row, int* idx_column) {
     /*
@@ -106,13 +108,18 @@ double find_max(int n, arma::mat A, int* idx_row, int* idx_column) {
     return max_val;
 }
 
-void transform(arma::mat A, int idx_col, int idx_row) {
+
+void transform(arma::mat* A, int idx_col, int idx_row) {
     /*
     Not implemented yet.
     */
-    a_ll = A(idx_row, idx_row);
-    a_kk = A(idx_col, idx_col);
-    a_lk = A(idx_row, idx_col);
+    double a_ll = A(idx_row, idx_row);
+    double a_kk = A(idx_col, idx_col);
+    double a_kl = A(idx_col, idx_row);
+
+    double tau = (a_ll - a_kk)/(2*a_kl);
+
+    t = -tau + std::sqrt(1 + tau*tau);
     
 }
 
@@ -158,17 +165,29 @@ void test_find_max() {
     }
 }
 
+
 void test_inner_product_conserved() {
     /*
-    Not implemented yet.
+    Checks that the inner product is preserved after one rotation with the
+    transformation matrix.
     */
     arma::mat A(3,3);
-    double eps = 1;
     A.zeros();
-    A(0,2) = 1; A(1,0) = 1; A(2,1) = 1;
-    // transform(A); // This must be implemented.
+    A(0, 2) = 1;
+    A(1, 0) = 1;
+    A(2, 1) = 1;
+    
+    double tol = 1;
+    int idx_row = 0;
+    int idx_column = 2;
+
+    // find_max(A, idx_row, idx_row);
+
+
+    // transform(A, idx_row, idx_column); // This must be implemented.
     double inner_prod = arma::dot(A.col(0),A.col(1));
-    if (fabs(inner_prod) < eps)
+    
+    if (fabs(inner_prod) < tol)
     {
         std::cout << "Something went wrong!" << std::endl;
     }
@@ -178,12 +197,6 @@ void test_inner_product_conserved() {
 int main(int argc, char* argv[]) {
     int n = 5;
     double stepsize = 1/(n+1);
-
-
-
-
-
-
 
 
     // arma::mat A = construct_diag_matrix(n);
