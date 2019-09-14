@@ -63,6 +63,7 @@ arma::mat construct_diag_matrix(int n, double up_low_diag, arma::vec diag) {
 
     A.diag(0) = diag;
     A.diag(-1) += up_low_diag;
+    A.diag(1) += up_low_diag;
 
     return A;
 }
@@ -104,8 +105,8 @@ double find_max(int n, arma::mat A, int* idx_row, int* idx_column) {
                 if (matrix_elemet > max_val)
                 {
                     max_val = matrix_elemet;
-                    idx_row & = row;
-                    idx_column & = column;
+                    * idx_row = row;
+                    * idx_column = column;
                 }
             }
         }
@@ -129,30 +130,48 @@ void test_find_max() {
         }
     }
     A(3,2) = maximum;
-    int* idx_row, int* idx_column;
-    double max_val = double find_max(n, A, idx_row, idx_column);
+    int idx_row; 
+    int idx_column;
+    double max_val = find_max(n, A, & idx_row, & idx_column);
     if (max_val != maximum)
     {
         A.print();
-        std::cout << "Wrong element! Maximum value was" << maximum << ". Got"
+        std::cout << "Wrong element! Maximum value was " << maximum << ". Got "
                   << max_val << std::endl;
     }
-    if ((idx_row & != 3) && (idx_column & != 2)) // NB! I do not remember what 'or' is in C++. Have set 'and' for now.
+    if ((idx_row != 3) || (idx_column != 2))
     {
         A.print();
-        std::cout << "Wrong indecies! Indecies was" << 3 << " and " << 2 
-                  << ". Got" << idx_row & << " and " << idx_column << std::endl;
+        std::cout << "Wrong indecies! Indecies was " << 3 << " and " << 2 
+                  << ". Got " << idx_row << " and " << idx_column << std::endl;
     }
 }
 
+void test_inner_product_conserved() {
+    /*
+    Not implemented yet.
+    */
+    // Want to define at least two vectors, use an orthogonal transformation on
+    // them, and check that the inner product is perserved. 
+    // Since we have an algorithm for the transformation (chapter 7 in Morten's
+    // compendium), we want to use this insted of the entire matrix.
+}
 
 
 int main(int argc, char* argv[]) {
     int n = 5;
     double stepsize = 1/(n+1);
 
-    arma::mat A = construct_diag_matrix(n);
-    A.print();
-    test_find_max();
+
+
+
+
+
+
+
+    // arma::mat A = construct_diag_matrix(n);
+    // A.print();
+    // test_find_max();
+
     return 1;
 }
