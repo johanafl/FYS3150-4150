@@ -36,7 +36,7 @@ arma::mat construct_diag_matrix(int n, double up_low_diag, arma::vec diag) {
     return A;
 }
 
-double find_max(int n, arma::mat A, int& idx_row, int& idx_col)
+double find_max(int n, arma::mat& A, int& idx_row, int& idx_col)
 {   
     /*
     Finds the max value of the off-diagonal elements of the matrix. Saves
@@ -44,8 +44,8 @@ double find_max(int n, arma::mat A, int& idx_row, int& idx_col)
 
     Parameters
     ----------
-    A : arma::mat
-        Matrix of which we want to find the maximum element.
+    A : arma::mat&
+        Reference to matrix of which we want to find the maximum value element.
 
     idx_row : int&
         Reference to index of the row with the maximum value element.
@@ -144,24 +144,21 @@ void transform(int n, arma::mat& A, int idx_row, int idx_col) {
 }
 
 
-arma::mat find_eig(int n, arma::mat A, double tol)
+void find_eig(int n, arma::mat& A, double tol)
 {
     /*
     Not implemented yet.
     */
     
-    arma::mat B = A;
-    
     int idx_col;
     int idx_row;
-    double max_val = find_max(n, B, idx_col, idx_row);
+    double max_val = find_max(n, A, idx_col, idx_row);
     
     while (max_val > tol)
     {
-        transform(n, B, idx_col, idx_row);    // no B is returned, runs forever
-        max_val = find_max(n, B, idx_col, idx_row);
+        transform(n, A, idx_col, idx_row);
+        max_val = find_max(n, A, idx_col, idx_row);
     }
-    return B;
 }
 
 void test_find_max() {
@@ -249,35 +246,36 @@ void test_inner_product_conserved() {
     // }
 }
 
-void test_find_eig() {
+void test_find_eig()
+{
     /*
     Checks that the find_eig function finds eigenvalues up to a set error eps.
     */
     
-    double tol_eig  = 0.01; // tolerance of non-diagonal elements
-    double tol_test = 1;    // tolerance of eigenvalues
-    int n = 5;              // dimension of matrix
+    double tol_off_diag = 0.01; // tolerance of off-diagonal elements
+    double tol_eig = 1;         // tolerance of eigenvalues
+    int n = 5;                  // dimension of matrix
     
     arma::mat A = construct_diag_matrix(n);
     arma::vec eigenvalues(n);
     
-    double d = 2;   // diagonal elements
-    double a = -1;  // off-diagonal elements
-    double pi = 3.14159265358979323846;
+    double pi       = 3.14159265358979323846;
+    double diag     = 2;   // diagonal elements
+    double off_diag = -1;  // off-diagonal elements
     
     for (int i=0; i<n; i++)
     {   // generating analytical eigenvalues
-        eigenvalues(i) = d + 2*a*std::cos(i*pi/(n+1));
+        eigenvalues(i) = diag + 2*off_diag*std::cos(i*pi/(n+1));
     }
     
-    arma::mat B = find_eig(n, A, tol_eig);
+    find_eig(n, A, tol_off_diag); // numerical eigenvalues
     
     for (int i=0; i<n; i++)
     {   // checking that analytical and numerical results match to a given tolerance
-        if (fabs(eigenvalues(i) - B(i,i)) > tol_test)
+        if (fabs(eigenvalues(i) - A(i,i)) > tol_eig)
         {
             std::cout << "Something went wrong!\n" << "Exact eigenvalue = " 
-                      << eigenvalues(i) << ", computed eigenvalue = " << B(i,i)
+                      << eigenvalues(i) << ", computed eigenvalue = " << A(i,i)
                       << "." << std::endl;
         }
     }
@@ -291,9 +289,9 @@ int main(int argc, char* argv[]) {
 
     // arma::mat A = construct_diag_matrix(n);
     // A.print();
-    test_find_max();
+    // test_find_max();
     // test_inner_product_conserved();
-    // test_find_eig();
+    test_find_eig();
 
 
     return 1;
