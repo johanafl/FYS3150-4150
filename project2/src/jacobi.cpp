@@ -36,7 +36,7 @@ arma::mat construct_diag_matrix(int n, double up_low_diag, arma::vec diag) {
     return A;
 }
 
-double find_max(int n, arma::mat A, int* idx_row, int* idx_column)
+double find_max(int n, arma::mat A, int& idx_row, int& idx_col)
 {   
     /*
     Finds the max value of the off-diagonal elements of the matrix. Saves
@@ -47,11 +47,11 @@ double find_max(int n, arma::mat A, int* idx_row, int* idx_column)
     A : arma::mat
         Matrix of which we want to find the maximum element.
 
-    idx_row : int
-        Index of the row with maximum element.
+    idx_row : int&
+        Reference to index of the row with the maximum value element.
 
-    idx_column : int
-        Index of the column with maximum element.
+    idx_col : int&
+        Reference to index of the column with the maximum value element.
 
 
     Returns
@@ -65,18 +65,18 @@ double find_max(int n, arma::mat A, int* idx_row, int* idx_column)
     for (int row=0; row<n; row++)
     {   // loops over rows
         
-        for (int column=0; column<n; column++)
+        for (int col=0; col<n; col++)
         {   // loops over columns
             
-            if (row != column)
+            if (row != col)
             {   // exclude diagonal elements
-                matrix_elemet = fabs(A(row,column));
+                matrix_elemet = fabs(A(row,col));
                 
                 if (matrix_elemet > max_val)
                 {
                     max_val = matrix_elemet;
-                    * idx_row = row;
-                    * idx_column = column;
+                    idx_row = row;
+                    idx_col = col;
                 }
             }
         }
@@ -123,8 +123,8 @@ void transform(int n, arma::mat& A, int idx_row, int idx_col) {
         t = -1.0/(-tau + std::sqrt(1 + tau*tau));
     }
     
-    double c   = 1/std::sqrt(1 + t*t);
-    double s   = t*c;
+    double c = 1/std::sqrt(1 + t*t);
+    double s = t*c;
     double a_ki;
 
     for (int i=0; i<n; i++)
@@ -139,7 +139,7 @@ void transform(int n, arma::mat& A, int idx_row, int idx_col) {
 
     A(idx_col, idx_row) = A(idx_row, idx_col) = 0; // by virtue of the algorithm (this is how we found theta!).
     A(idx_row, idx_row) = a_kk*c*c - 2*a_lk*c*s + a_ll*s*s;
-    A(idx_col, idx_col) = a_ll*c*c + 2*a_lk*c*s + a_kk*s*s; // check with Johan if + is correct
+    A(idx_col, idx_col) = a_ll*c*c + 2*a_lk*c*s + a_kk*s*s;
 
 }
 
@@ -154,12 +154,12 @@ arma::mat find_eig(int n, arma::mat A, double tol)
     
     int idx_col;
     int idx_row;
-    double max_val = find_max(n, B, & idx_col, & idx_row);
+    double max_val = find_max(n, B, idx_col, idx_row);
     
     while (max_val > tol)
     {
         transform(n, B, idx_col, idx_row);    // no B is returned, runs forever
-        max_val = find_max(n, B, & idx_col, & idx_row);
+        max_val = find_max(n, B, idx_col, idx_row);
     }
     return B;
 }
@@ -190,7 +190,7 @@ void test_find_max() {
     
     int idx_row;
     int idx_column;
-    double max_val = find_max(n, A, & idx_row, & idx_column);
+    double max_val = find_max(n, A, idx_row, idx_column);
     
     if (max_val != maximum)
     {
@@ -214,6 +214,8 @@ void test_inner_product_conserved() {
     /*
     Checks that the inner product is preserved after one rotation with the
     transformation matrix.
+
+    This test works.
     */
     
     int n = 3;  // dimension of matrix
@@ -289,8 +291,8 @@ int main(int argc, char* argv[]) {
 
     // arma::mat A = construct_diag_matrix(n);
     // A.print();
-    // test_find_max();
-    test_inner_product_conserved();
+    test_find_max();
+    // test_inner_product_conserved();
     // test_find_eig();
 
 
