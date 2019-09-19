@@ -9,8 +9,9 @@
 
 arma::mat construct_diag_matrix(int n) {
     /*
-    Function for creating a diagonal armadillo matrix.
+    Function for creating a tridiagonal matrix. Second derivative discretized.
     */
+
     arma::mat A(n, n);
     A.zeros();
 
@@ -35,10 +36,11 @@ arma::mat construct_diag_matrix(int n, double up_low_diag, arma::vec diag) {
     return A;
 }
 
-double find_max(int n, arma::mat A, int* idx_row, int* idx_column) {
+double find_max(int n, arma::mat A, int* idx_row, int* idx_column)
+{   
     /*
     Finds the max value of the off-diagonal elements of the matrix. Saves
-    the indexes of the max value.
+    the indices of the max value.
 
     Parameters
     ----------
@@ -65,8 +67,9 @@ double find_max(int n, arma::mat A, int* idx_row, int* idx_column) {
         
         for (int column=0; column<n; column++)
         {   // loops over columns
+            
             if (row != column)
-            {
+            {   // exclude diagonal elements
                 matrix_elemet = fabs(A(row,column));
                 
                 if (matrix_elemet > max_val)
@@ -78,6 +81,7 @@ double find_max(int n, arma::mat A, int* idx_row, int* idx_column) {
             }
         }
     }
+    
     return max_val;
 }
 
@@ -96,38 +100,52 @@ void transform(int n, arma::mat* A, int idx_col, int idx_row) {
         The index k of one of the unit vectors that are used in the rotation.
     idx_col : int
         The index l of the other unit vector that are used in the rotation.
-    */
-    arma::mat B = *A;
-    double a_ll = B(idx_row, idx_row);
-    double a_kk = B(idx_col, idx_col);
-    double a_kl = B(idx_col, idx_row);
 
-    double tau = (a_ll - a_kk)/(2*a_kl); // We have defined tau = cot(2*theta), where theta is unknown. We are choosing thata s.t. the element b_kl = b_lk = 0, where B is the new matrix after the transformation with elements b_ij.
-    double t = -tau + std::sqrt(1 + tau*tau); // We have defined t = tan(theta). We could have choosen minus instead of pluss in front of the square root, and gotten the same result (by virtue of the algorithm).
-    double c = 1/std::sqrt(1 + t*t);
-    double s = t*c;
+    MATRIX A WILL NEVER BE CHANGED, LOOPS FOREVER
+    */
+
+    arma::mat B = *A;       // quick fix since pointing and indexing doesnt work as expected
+    
+    double a_kk = B(idx_row, idx_row);
+    double a_ll = B(idx_col, idx_col);
+    double a_lk = B(idx_col, idx_row);
+
+    double tau = (a_ll - a_kk)/(2*a_lk); // We have defined tau = cot(2*theta), where theta is unknown. We are choosing thata s.t. the element b_kl = b_lk = 0, where B is the new matrix after the transformation with elements b_ij.
+    double t   = -tau + std::sqrt(1 + tau*tau); // We have defined t = tan(theta). We could have choosen minus instead of pluss in front of the square root, and gotten the same result (by virtue of the algorithm).
+    double c   = 1/std::sqrt(1 + t*t);
+    double s   = t*c;
+    double tmp;
 
     for (int i=0; i<n; i++) // NB! In project description: idx_row = k and idx_col = l.
-    {
-        B(i,idx_row) = B(idx_row,i) = B(idx_row,i)*c - B(idx_col,i)*s;
-        B(i,idx_col) = B(idx_col,i) = B(idx_col,i)*c + B(idx_row,i)*s;
-    }    
-    // B(idx_col,idx_row) = B(idx_row,idx_col) = 0; // By virtue of the algorithm (this is how we found theta!).
-    B(idx_row,idx_row) = B(idx_row,idx_row)*c*c - 2*B(idx_col,idx_row)*c*s + B(idx_col,idx_col)*s*s;
-    B(idx_col,idx_col) = B(idx_col,idx_col)*c*c - 2*B(idx_col,idx_row)*c*s + B(idx_row,idx_row)*s*s;
+    {   // elements kk, ll, lk, kl should not be changed, but it is fixed after
+        // the loop instead of using an if-test in the loop (vectorization)
+        
+        tmp = B(idx_row, i);    // since this matrix element will be overwritten
+        
+        B(i, idx_row) = B(idx_row, i) = tmp*c - B(idx_col, i)*s;
+        B(i, idx_col) = B(idx_col, i) = B(idx_col, i)*c + tmp*s;
+    }
+
+    B(idx_col, idx_row) = B(idx_row, idx_col) = 0; // By virtue of the algorithm (this is how we found theta!).
+    B(idx_row, idx_row) = a_kk*c*c - 2*a_lk*c*s + a_ll*s*s;
+    B(idx_col, idx_col) = a_ll*c*c - 2*a_lk*c*s + a_kk*s*s;
 }
 
-arma::mat find_eig(int n, arma::mat A, double eps) {
+arma::mat find_eig(int n, arma::mat A, double tol)
+{
     /*
     Not implemented yet.
     */
+    
     arma::mat B = A;
+    
     int idx_col;
     int idx_row;
     double max_val = find_max(n, B, & idx_col, & idx_row);
-    while (max_val > eps)
+    
+    while (max_val > tol)
     {
-        transform(n, & B, idx_col, idx_row);
+        transform(n, & B, idx_col, idx_row);    // no B is returned, runs forever
         max_val = find_max(n, B, & idx_col, & idx_row);
     }
     return B;
@@ -137,21 +155,27 @@ void test_find_max() {
     /*
     Test function that tests the most important functionality of the Jacobi class.
     */
-    int n = 5;
-    double maximum = 5555;
+    
+    
+    int n = 5;                  // dimension of test matrix
+    double maximum = 5555;      // arbitrary max value in matrix
+    
     arma::mat A(n,n);
     A.zeros();
-    for (int i=0; i<5; i++)
-    {
-        for (int j=0; j<5; j++)
-        {
-            A(i,j) = i*j*1.5;
+    
+    for (int i=0; i<5; i++) {
+        
+        for (int j=0; j<5; j++) {
+            A(i, j) = i*j*1.5;
         }
     }
+
     A(3,2) = maximum;
-    int idx_row; 
+    
+    int idx_row;
     int idx_column;
     double max_val = find_max(n, A, & idx_row, & idx_column);
+    
     if (max_val != maximum)
     {
         A.print();
@@ -172,9 +196,12 @@ void test_inner_product_conserved() {
     Checks that the inner product is preserved after one rotation with the
     transformation matrix.
     */
-    int n = 3;
-    arma::mat A(n,n);
+    
+    int n = 3;  // dimension of matrix
+    
+    arma::mat A(n, n);
     A.zeros();
+    
     A(0, 2) = 1;
     A(1, 0) = 1;
     A(2, 1) = 1;
@@ -183,7 +210,7 @@ void test_inner_product_conserved() {
     int idx_row = 0;
     int idx_column = 2;
 
-    transform(n, & A, idx_row, idx_column); // This must be implemented.
+    transform(n, & A, idx_row, idx_column); // transform doesnt work
     double inner_prod = arma::dot(A.col(0),A.col(1));
     
     if (fabs(inner_prod) > tol)
@@ -196,29 +223,46 @@ void test_find_eig() {
     /*
     Checks that the find_eig function finds eigenvalues up to a set error eps.
     */
-    double eps_eig = 0.01;
-    double eps_test = 1;
-    int n = 5;
+    
+    double tol_eig  = 0.01; // tolerance of non-diagonal elements
+    double tol_test = 1;    // tolerance of eigenvalues
+    int n = 5;              // dimension of matrix
+    
     arma::mat A = construct_diag_matrix(n);
-    arma::vec lam(n);
-    double d = 2;
-    double a = -1;
+    arma::vec eigenvalues(n);
+    
+    double d = 2;   // diagonal elements
+    double a = -1;  // off-diagonal elements
     double pi = 3.14159265358979323846;
+    
     for (int i=0; i<n; i++)
-    {
-        lam(i) = d + 2*a*std::cos(i*pi/(n+1));
+    {   // generating analytical eigenvalues
+        eigenvalues(i) = d + 2*a*std::cos(i*pi/(n+1));
     }
     
-    arma::mat B = find_eig(n, A, eps_eig);
+    arma::mat B = find_eig(n, A, tol_eig);
+    
     for (int i=0; i<n; i++)
-    {
-        if (fabs(lam(i) - B(i,i)) > eps_test)
+    {   // checking that analytical and numerical results match to a given tolerance
+        if (fabs(eigenvalues(i) - B(i,i)) > tol_test)
         {
             std::cout << "Something went wrong!\n" << "Exact eigenvalue = " 
-                      << lam(i) << ", computed eigenvalue = " << B(i,i)
+                      << eigenvalues(i) << ", computed eigenvalue = " << B(i,i)
                       << "." << std::endl;
         }
     }
+}
+
+
+void test_test()
+{   
+    /*
+    This does not work.
+    */
+    arma::mat A(2, 2);
+    arma::mat* B = & A;
+
+    // std::cout << * B(0, 0) << std::endl;
 }
 
 int main(int argc, char* argv[]) {
@@ -230,7 +274,9 @@ int main(int argc, char* argv[]) {
     // A.print();
     // test_find_max();
     // test_inner_product_conserved();
-    test_find_eig();
+    // test_find_eig();
+
+    test_test();
 
     return 1;
 }
