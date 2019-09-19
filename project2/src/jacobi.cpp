@@ -7,9 +7,20 @@
 #include <chrono>
 
 
-arma::mat construct_diag_matrix(int n) {
+arma::mat construct_diag_matrix(int n)
+{
     /*
     Function for creating a tridiagonal matrix. Second derivative discretized.
+
+    Parameters
+    ----------
+    n : int
+        Dimension of matrix.
+
+    Returns
+    -------
+    A : arma::mat
+        Tridiagonal matrix representing the second derivative discretized.
     */
 
     arma::mat A(n, n);
@@ -22,19 +33,24 @@ arma::mat construct_diag_matrix(int n) {
     return A;
 }
 
-arma::mat construct_diag_matrix(int n, double up_low_diag, arma::vec diag) {
-    /*
-    Function for creating a diagonal armadillo matrix.
-    */
-    arma::mat A(n, n);
-    A.zeros();
 
+arma::mat construct_diag_matrix(int n, double up_low_diag, arma::vec diag)
+{
+    /*
+    Function for creating a tridiagonal matrix. With vector inputs for
+    populating the upper and lower diagonal.
+    */
+
+    arma::mat A(n, n);
+    
+    A.zeros();
     A.diag(0) = diag;
     A.diag(-1) += up_low_diag;
     A.diag(1) += up_low_diag;
 
     return A;
 }
+
 
 double find_max(int n, arma::mat& A, int& idx_row, int& idx_col)
 {   
@@ -44,28 +60,34 @@ double find_max(int n, arma::mat& A, int& idx_row, int& idx_col)
 
     Parameters
     ----------
+    n : int
+        Dimension of matrix.
+
     A : arma::mat&
         Reference to matrix of which we want to find the maximum value element.
 
     idx_row : int&
-        Reference to index of the row with the maximum value element.
+        Reference to row index value where the row index of the maximum value
+        will be stored.
 
     idx_col : int&
-        Reference to index of the column with the maximum value element.
+        Reference to column index value where the column index of the maximum
+        value will be stored.
 
 
     Returns
     -------
-    max_val
+    max_val : double
+        The maximum value in matrix A.
     */
 
     double max_val = 0;     // final max value
     double matrix_elemet;   // placeholder for matrix element value to check
 
-    for (int row=0; row<n; row++)
+    for (int row = 0; row < n; row++)
     {   // loops over rows
         
-        for (int col=0; col<n; col++)
+        for (int col = 0; col < n; col++)
         {   // loops over columns
             
             if (row != col)
@@ -73,7 +95,8 @@ double find_max(int n, arma::mat& A, int& idx_row, int& idx_col)
                 matrix_elemet = fabs(A(row,col));
                 
                 if (matrix_elemet > max_val)
-                {
+                {   // saves value and position if it is larger than the
+                    // previous max value
                     max_val = matrix_elemet;
                     idx_row = row;
                     idx_col = col;
@@ -85,7 +108,9 @@ double find_max(int n, arma::mat& A, int& idx_row, int& idx_col)
     return max_val;
 }
 
-void transform(int n, arma::mat& A, int idx_row, int idx_col) {
+
+void transform(int n, arma::mat& A, int idx_row, int idx_col)
+{
     /*
     This function rotatetes the (symmetric) matrix A by an angle theta in the 
     plane spanned by the unit vectors e_l and e_k, where 
@@ -104,7 +129,6 @@ void transform(int n, arma::mat& A, int idx_row, int idx_col) {
         The index l of the other unit vector that are used in the rotation.
 
     */
-
 
     double a_kk = A(idx_row, idx_row);
     double a_ll = A(idx_col, idx_col);
@@ -127,7 +151,7 @@ void transform(int n, arma::mat& A, int idx_row, int idx_col) {
     double s = t*c;
     double a_ki;
 
-    for (int i=0; i<n; i++)
+    for (int i = 0; i < n; i++)
     {   // elements kk, ll, lk, kl should not be changed, but it is fixed after
         // the loop instead of using an if-test in the loop (vectorization)
         
@@ -161,6 +185,7 @@ void find_eig(int n, arma::mat& A, double tol)
     }
 }
 
+
 void test_find_max() {
     /*
     Test function that tests the most important functionality of the Jacobi class.
@@ -175,9 +200,10 @@ void test_find_max() {
     arma::mat A(n, n);
     A.zeros();
     
-    for (int i=0; i<5; i++)
+    for (int i = 0; i < 5; i++)
     {   // loops over rows
-        for (int j=0; j<5; j++)
+        
+        for (int j = 0; j < 5; j++)
         {   // loops over columns
             A(i, j) = i*j*1.5;  // populating the array with arbitrary values
         }
@@ -207,33 +233,36 @@ void test_find_max() {
 }
 
 
-void test_inner_product_conserved() {
+void test_inner_product_conserved()
+{
     /*
-    Checks that the inner product is preserved after one rotation with the
-    transformation matrix.
+    Checks that the inner product is preserved after rotation with the
+    transformation matrix. Sets up an anti diagonal matrix where the columns are
+    R^(3x3) basis vectors. Checks that the resulting inner product of all
+    combinations of different vectors is 0.
 
     This test works.
     */
     
-    int n = 3;  // dimension of matrix
-    
+    int n = 3;          // dimension of matrix
+    int idx_row = 0;
+    int idx_col = 2;
+    // double tol  = 1;
     arma::mat A(n, n);
-    A.zeros();
     
+    A.zeros();
     A(0, 2) = 1;
     A(1, 1) = 1;
     A(2, 0) = 1;
     
-    double tol  = 1;
-    int idx_row = 0;
-    int idx_col = 2;
 
     transform(n, A, idx_row, idx_col);
 
-    for (int i=0; i<n; i++)
-    {
-        for (int j=0; j<n; j++)
-        {
+    for (int i = 0; i < n; i++)
+    {   // loops over all column vectors
+        
+        for (int j = 0; j < n; j++)
+        {   // loops over all column vectors
             std::cout << arma::dot(A.col(i), A.col(j)) << std::endl;
         }
     }
@@ -246,31 +275,31 @@ void test_inner_product_conserved() {
     // }
 }
 
+
 void test_find_eig()
 {
     /*
     Checks that the find_eig function finds eigenvalues up to a set error eps.
     */
     
+    double pi = 3.14159265358979323846;
     double tol_off_diag = 0.01; // tolerance of off-diagonal elements
-    double tol_eig = 1;         // tolerance of eigenvalues
+    double tol_eig  = 1;        // tolerance of eigenvalues
+    double diag     = 2;        // diagonal elements
+    double off_diag = -1;       // off-diagonal elements
     int n = 5;                  // dimension of matrix
     
     arma::mat A = construct_diag_matrix(n);
     arma::vec eigenvalues(n);
     
-    double pi       = 3.14159265358979323846;
-    double diag     = 2;   // diagonal elements
-    double off_diag = -1;  // off-diagonal elements
-    
-    for (int i=0; i<n; i++)
+    for (int i = 0; i < n; i++)
     {   // generating analytical eigenvalues
         eigenvalues(i) = diag + 2*off_diag*std::cos(i*pi/(n+1));
     }
     
     find_eig(n, A, tol_off_diag); // numerical eigenvalues
     
-    for (int i=0; i<n; i++)
+    for (int i = 0; i < n; i++)
     {   // checking that analytical and numerical results match to a given tolerance
         if (fabs(eigenvalues(i) - A(i,i)) > tol_eig)
         {
