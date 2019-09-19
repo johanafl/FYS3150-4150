@@ -120,7 +120,7 @@ double find_max(int n, arma::mat& A, int& idx_row, int& idx_col)
 }
 
 
-void transform(int n, arma::mat& A, int idx_row, int idx_col)
+void transform(int n, arma::mat& A, arma::mat& R, int idx_row, int idx_col)
 {
     /*
     This function rotatetes the (symmetric) matrix A by an angle theta in the 
@@ -131,7 +131,10 @@ void transform(int n, arma::mat& A, int idx_row, int idx_col)
     Parameters
     ----------
     A : arma::mat&
-        Reference to matrix A
+        Reference to matrix A.
+
+    R : arma::mat&
+        Reference to eigenvector matrix R.
 
     idx_row : int
         The index k of one of the unit vectors that are used in the rotation.
@@ -140,9 +143,13 @@ void transform(int n, arma::mat& A, int idx_row, int idx_col)
         The index l of the other unit vector that are used in the rotation.
     */
 
+
+
     double a_kk = A(idx_row, idx_row);
     double a_ll = A(idx_col, idx_col);
     double a_lk = A(idx_col, idx_row);
+    double r_ik;
+    double r_il;
 
     double tau = (a_ll - a_kk)/(2*a_lk); // We have defined tau = cot(2*theta), where theta is unknown. We are choosing thata s.t. the element b_kl = b_lk = 0, where B is the new matrix after the transformation with elements b_ij.
     double t;
@@ -169,6 +176,12 @@ void transform(int n, arma::mat& A, int idx_row, int idx_col)
         
         A(i, idx_row) = A(idx_row, i) = a_ki*c - A(idx_col, i)*s;
         A(i, idx_col) = A(idx_col, i) = A(idx_col, i)*c + a_ki*s;
+
+        r_ik = R(i, idx_row);
+        r_il = R(i, idx_col);
+
+        R(i, idx_row) = c*r_ik - s*r_il;
+        R(i, idx_row) = c*r_il + s*r_ik;
     }
 
     A(idx_col, idx_row) = A(idx_row, idx_col) = 0; // by virtue of the algorithm (this is how we found theta!).
@@ -185,6 +198,8 @@ void find_eig(int n, arma::mat& A, double tol_off_diag)
     in the array. Uses transform to eliminate off-diagonal elements. Repeats the
     process untill all diagonal elements are smaller than tol_off_diag.
 
+    Creates a matrix R, for storing eigenvectors.
+
     Parameters
     ----------
     n : int
@@ -196,6 +211,10 @@ void find_eig(int n, arma::mat& A, double tol_off_diag)
     tol_off_diag : double
         Tolerance for the largest allowed value of the off-diagonal elements.
     */
+
+    arma::mat R(n, n);      // matrix for storing the eigenvectors of A
+    R.zeros();
+    R.diag(0) += 1;
     
     int idx_col;
     int idx_row;
@@ -203,9 +222,11 @@ void find_eig(int n, arma::mat& A, double tol_off_diag)
     
     while (max_val > tol_off_diag)
     {
-        transform(n, A, idx_col, idx_row);
+        transform(n, A, R, idx_col, idx_row);
         max_val = find_max(n, A, idx_col, idx_row);
     }
+
+    R.print();
 }
 
 
@@ -271,9 +292,12 @@ void test_inner_product_conserved()
     int n = 4;          // dimension of matrix
     int idx_row = 0;
     int idx_col = 3;
-    // double tol  = 1;
-    arma::mat A(n, n);
     
+    arma::mat R(n, n);      // matrix for storing the eigenvectors of A
+    R.zeros();
+    R.diag(0) += 1;
+    
+    arma::mat A(n, n);
     A.zeros();
     A(0, 3) = 1;
     A(1, 2) = 1;
@@ -281,7 +305,7 @@ void test_inner_product_conserved()
     A(3, 0) = 1;
     
 
-    transform(n, A, idx_row, idx_col);
+    transform(n, A, R, idx_row, idx_col);
     A.print();
 
     for (int i = 0; i < n; i++)
@@ -292,13 +316,6 @@ void test_inner_product_conserved()
             std::cout << arma::dot(A.col(i), A.col(j)) << std::endl;
         }
     }
-
-    // std::cout << inner_prod << std::endl;
-    
-    // if (fabs(inner_prod) > tol)
-    // {
-    //     std::cout << "Something went wrong!" << std::endl;
-    // }
 }
 
 
@@ -330,7 +347,7 @@ void test_find_eig()
     
     find_eig(n, A, tol_off_diag); // numerical eigenvalues
 
-    arma::vec sorted_diag = A.diag(0);//arma::sort(A.diag(0));
+    arma::vec sorted_diag = arma::sort(A.diag(0));
     
     for (int i = 0; i < n; i++)
     {   // checking that analytical and numerical results match to a given tolerance
