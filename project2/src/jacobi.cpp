@@ -219,6 +219,4 @@ void jac::find_eig(int n, arma::mat& A, double tol_off_diag)
         transform(n, A, R, idx_col, idx_row);
         max_val = find_max(n, A, idx_col, idx_row);
     }
-
-    R.print();
 }

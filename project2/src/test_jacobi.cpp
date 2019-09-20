@@ -5,7 +5,7 @@
 using namespace jac;
 
 
-void test_find_max()
+TEST_CASE("test_find_max")
 {
     /*
     Test function that tests the most important functionality of the Jacobi class.
@@ -34,26 +34,15 @@ void test_find_max()
     int idx_row;
     int idx_column;
     double max_val = find_max(n, A, idx_row, idx_column);
-    
-    if (max_val != maximum)
-    {
-        A.print();
-        std::cout << "Wrong element! Maximum value was " << maximum << ". Got "
-                  << max_val << std::endl;
-    }
-    if ((idx_row != 3) || (idx_column != 2))
-    {
-        A.print();
-        std::cout << "Wrong indecies! Indecies was " << 3 << " and " << 2 
-                  << ". Got " << idx_row << " and " << idx_column << std::endl;
-    }
 
+    REQUIRE(max_val == maximum);
+    REQUIRE(idx_row == 3);
+    REQUIRE(idx_column == 2);
 
-    // std::cout << max_val << std::endl;  // debug, remove later
 }
 
 
-void test_inner_product_conserved()
+TEST_CASE("test_inner_product_conserved")
 {
     /*
     Checks that the inner product is preserved after rotation with the
@@ -67,6 +56,7 @@ void test_inner_product_conserved()
     int n = 4;          // dimension of matrix
     int idx_row = 0;
     int idx_col = 3;
+    double tol = std::pow(10, -10);
     
     arma::mat R(n, n);      // matrix for storing the eigenvectors of A
     R.zeros();
@@ -88,7 +78,11 @@ void test_inner_product_conserved()
         
         for (int j = 0; j < n; j++)
         {   // loops over all column vectors
-            std::cout << arma::dot(A.col(i), A.col(j)) << std::endl;
+            
+            if (i != j)
+            {   // discards equal vectors
+                REQUIRE(fabs(arma::dot(A.col(i), A.col(j))) < tol);
+            }
         }
     }
 }
@@ -101,12 +95,12 @@ TEST_CASE("test_find_eig")
     */
     
     double pi = 3.14159265358979323846;
-    int n = 5;                       // dimension of matrix
+    int n = 5;                                  // dimension of matrix
     double step     = 1.0/n;
-    double diag     = 2/(step*step);    // diagonal elements
-    double off_diag = -1/(step*step);   // off-diagonal elements
+    double diag     = 2/(step*step);            // diagonal elements
+    double off_diag = -1/(step*step);           // off-diagonal elements
     double tol_off_diag = std::pow(10, -15);    // tolerance of off-diagonal elements
-    double tol_eig  = 1;                // tolerance of eigenvalues
+    double tol_eig  = std::pow(10, -4);         // tolerance of eigenvalues
     
     arma::mat A = construct_diag_matrix(n, off_diag, diag);
     arma::vec eigenvalues(n);
@@ -124,15 +118,8 @@ TEST_CASE("test_find_eig")
     for (int i = 0; i < n; i++)
     {   // checking that analytical and numerical results match to a given tolerance
         
-        std::cout << ((eigenvalues(i) - sorted_diag(i)) > tol_eig) << std::endl;
-        // REQUIRE(fabs(eigenvalues(i) - sorted_diag(i)) > tol_eig);
+        REQUIRE(fabs(eigenvalues(i) - sorted_diag(i)) < tol_eig);
     }
-}
-
-
-TEST_CASE("test")
-{
-    REQUIRE(1 == 1);
 }
 
 // int main()
