@@ -1,6 +1,6 @@
-run.out: jacobi.h jacobi.cpp
+test.out: jacobi.h jacobi.cpp test_jacobi.cpp
 
-	g++ -o run.out jacobi.cpp -std=c++17 -larmadillo
+	g++ -o test.out jacobi.cpp test_jacobi.cpp -std=c++17 -larmadillo
 
 clean:
 
