@@ -1,3 +1,5 @@
+#define CATCH_CONFIG_MAIN
+#include "catch.hpp"
 #include "jacobi.h"
 
 using namespace jac;
@@ -92,7 +94,7 @@ void test_inner_product_conserved()
 }
 
 
-void test_find_eig()
+TEST_CASE("test_find_eig")
 {
     /*
     Checks that the find_eig function finds eigenvalues up to a fixed tolerance.
@@ -105,11 +107,8 @@ void test_find_eig()
     double off_diag = -1/(step*step);   // off-diagonal elements
     double tol_off_diag = std::pow(10, -15);    // tolerance of off-diagonal elements
     double tol_eig  = 1;                // tolerance of eigenvalues
-
-    // std::cout << diag << std::endl;
     
     arma::mat A = construct_diag_matrix(n, off_diag, diag);
-    // arma::mat A = construct_diag_matrix(n);
     arma::vec eigenvalues(n);
 
     
@@ -125,20 +124,19 @@ void test_find_eig()
     for (int i = 0; i < n; i++)
     {   // checking that analytical and numerical results match to a given tolerance
         
-        if (fabs(eigenvalues(i) - sorted_diag(i)) > tol_eig)
-        {   
-            std::cout << "ERROR: Exact eigenvalue = " 
-                << eigenvalues(i) << ", computed eigenvalue = "
-                << sorted_diag(i) << "." << std::endl;
-        }
-
+        std::cout << ((eigenvalues(i) - sorted_diag(i)) > tol_eig) << std::endl;
+        // REQUIRE(fabs(eigenvalues(i) - sorted_diag(i)) > tol_eig);
     }
-    // A.print();
 }
 
 
-int main()
+TEST_CASE("test")
 {
-    test_find_eig();
-    return 0;
+    REQUIRE(1 == 1);
 }
+
+// int main()
+// {
+//     test_find_eig();
+//     return 0;
+// }

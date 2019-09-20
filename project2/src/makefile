@@ -4,4 +4,4 @@ test.out: jacobi.h jacobi.cpp test_jacobi.cpp
 
 clean:
 
-	rm run.out
+	rm test.out
