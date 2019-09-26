@@ -1,4 +1,6 @@
 #include "jacobi.h"
+#include <fstream>
+#include <iomanip>
 
 
 int main()
@@ -23,17 +25,31 @@ int main()
     // constructing tri-diagonal matrix and vector for analytical eigenvalues
     arma::mat A = construct_diag_matrix(n, off_diag, diag);
     arma::vec analytical_eig(n);
+    analytical_eig(0) = 3;  // initial value
     
     // using Jacobis method to extract the eigenvalues of the tri-diagonal matrix
     find_eig(n, A, tol_off_diag);
     arma::vec sorted_diag = arma::sort(A.diag(0));
 
-    for (int i = 0; i < 5; i++)
-    {   
-        analytical_eig(i) = diag(i) + 2*off_diag*std::cos(i*3.1415/(n + 1));
+
+    std::ofstream data_file;
+    data_file.open("eigenvalues.txt");
+    data_file << "calculated     exact     error\n";
+
+    
+    
+    for (int i = 0; i < 8; i++)
+    {   // writing data to file
         
-        std::cout << sorted_diag(i) << "  " << analytical_eig(i) << std::endl;
+        analytical_eig(i + 1) = analytical_eig(i) + 4;
+        data_file << std::setw(10) << sorted_diag(i);
+        data_file << std::setw(10) << analytical_eig(i);
+        data_file << std::setw(10) << fabs(analytical_eig(i) - sorted_diag(i));
+        data_file << "\n";
+
     }
+
+    data_file.close();
 
     return 0;
 }
