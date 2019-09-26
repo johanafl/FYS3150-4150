@@ -6,6 +6,8 @@ arma::mat jac::construct_diag_matrix(int n)
     /*
     Function for creating a tridiagonal matrix. Second derivative discretized.
 
+    CURRENTLY NOT USED
+
     Parameters
     ----------
     n : int
@@ -31,7 +33,7 @@ arma::mat jac::construct_diag_matrix(int n)
 arma::mat jac::construct_diag_matrix(int n, double off_diag, double diag)
 {
     /*
-    Function for creating a tridiagonal matrix. With vector inputs for
+    Function for creating a tridiagonal matrix. With inputs for
     populating the upper and lower diagonal.
 
     Parameters
@@ -50,6 +52,34 @@ arma::mat jac::construct_diag_matrix(int n, double off_diag, double diag)
     
     A.zeros();
     A.diag(0)  += diag;
+    A.diag(-1) += off_diag;
+    A.diag(1)  += off_diag;
+
+    return A;
+}
+
+arma::mat jac::construct_diag_matrix(int n, double off_diag, arma::vec diag)
+{
+    /*
+    Function for creating a tridiagonal matrix. With inputs for
+    populating the upper and lower diagonal where diagonal input is a vector.
+
+    Parameters
+    ----------
+    n : int
+        Dimension of matrix.
+
+    off_diag : double
+        Value for the upper and lower diagonal elements.
+
+    diag : arma::vec
+        Values for the diagonal elements.
+    */
+
+    arma::mat A(n, n);
+    
+    A.zeros();
+    A.diag(0)  = diag;
     A.diag(-1) += off_diag;
     A.diag(1)  += off_diag;
 
