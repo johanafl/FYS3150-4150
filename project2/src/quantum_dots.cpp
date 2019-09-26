@@ -10,10 +10,9 @@ void quantum_data()
     method, and writes data to a text file for visualization with Python.
     */
 
-
     bool progress = true;   // boolean for toggling progress info on/off
     double eig;             // analytical eigenvalue
-    int n = 180;            // grid size
+    int n = 100;            // grid size
     double rho_min = 0;
     double rho_max = 5;         // approx infty
     double tmp = rho_max;
@@ -27,13 +26,15 @@ void quantum_data()
     int num_eig    = 8;           // number of eigenvalues to write to file
     double rho_end = 10;        // end rho_max value for the loop
     double num_rho = (rho_end - rho_max)/d_rho; // number of rho_max values tested
+    int num_n = (n_end - n)/dn;
     int n_end = 200;    // end grid value
     int dn    = 10;     // grid step size
+
 
     // generating data file
     std::ofstream data_file;
     data_file.open("eigenvalues.txt", std::ios_base::app);
-    data_file << num_eig << " " << num_rho << "\n";
+    data_file << num_eig << " " << num_rho << " " << num_n "\n";
     data_file << "calculated     exact     error     rho_max     n\n";
 
     if (progress)
