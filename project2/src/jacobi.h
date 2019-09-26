@@ -15,4 +15,6 @@ void transform(int n, arma::mat& A, arma::mat& R, int idx_row, int idx_col);
 void find_eig(int n, arma::mat& A, double tol_off_diag);
 void test_function_for_checking_header_implementation();
 
+const double pi = 3.14159265358979323846;
+
 #endif
