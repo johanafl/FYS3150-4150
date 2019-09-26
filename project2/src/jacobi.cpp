@@ -1,7 +1,7 @@
 #include "jacobi.h"
 
 
-arma::mat jac::construct_diag_matrix(int n)
+arma::mat construct_diag_matrix(int n)
 {
     /*
     Function for creating a tridiagonal matrix. Second derivative discretized.
@@ -30,7 +30,7 @@ arma::mat jac::construct_diag_matrix(int n)
 }
 
 
-arma::mat jac::construct_diag_matrix(int n, double off_diag, double diag)
+arma::mat construct_diag_matrix(int n, double off_diag, double diag)
 {
     /*
     Function for creating a tridiagonal matrix. With inputs for
@@ -58,7 +58,7 @@ arma::mat jac::construct_diag_matrix(int n, double off_diag, double diag)
     return A;
 }
 
-arma::mat jac::construct_diag_matrix(int n, double off_diag, arma::vec diag)
+arma::mat construct_diag_matrix(int n, double off_diag, arma::vec diag)
 {
     /*
     Function for creating a tridiagonal matrix. With inputs for
@@ -87,7 +87,7 @@ arma::mat jac::construct_diag_matrix(int n, double off_diag, arma::vec diag)
 }
 
 
-double jac::find_max(int n, arma::mat& A, int& idx_row, int& idx_col)
+double find_max(int n, arma::mat& A, int& idx_row, int& idx_col)
 {   
     /*
     Finds the max value of the off-diagonal elements of the matrix. Saves
@@ -144,7 +144,7 @@ double jac::find_max(int n, arma::mat& A, int& idx_row, int& idx_col)
 }
 
 
-void jac::transform(int n, arma::mat& A, arma::mat& R, int idx_row, int idx_col)
+void transform(int n, arma::mat& A, arma::mat& R, int idx_row, int idx_col)
 {
     /*
     This function rotatetes the (symmetric) matrix A by an angle theta in the 
@@ -215,7 +215,7 @@ void jac::transform(int n, arma::mat& A, arma::mat& R, int idx_row, int idx_col)
 }
 
 
-void jac::find_eig(int n, arma::mat& A, double tol_off_diag)
+void find_eig(int n, arma::mat& A, double tol_off_diag)
 {
     /*
     Finds the eigenvalues of matrix A. Uses find_max to locate the largest value
@@ -249,4 +249,10 @@ void jac::find_eig(int n, arma::mat& A, double tol_off_diag)
         transform(n, A, R, idx_col, idx_row);
         max_val = find_max(n, A, idx_col, idx_row);
     }
+}
+
+
+void test_function_for_checking_header_implementation()
+{
+    std::cout << "it works" << std::endl;
 }

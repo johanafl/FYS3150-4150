@@ -2,8 +2,6 @@
 #include "catch.hpp"
 #include "jacobi.h"
 
-using namespace jac;
-
 
 TEST_CASE("test_find_max")
 {
@@ -71,7 +69,6 @@ TEST_CASE("test_inner_product_conserved")
     
 
     transform(n, A, R, idx_row, idx_col);
-    A.print();
 
     for (int i = 0; i < n; i++)
     {   // loops over all column vectors
