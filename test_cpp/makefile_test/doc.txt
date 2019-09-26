@@ -1,0 +1,10 @@
+GNU toturial om makefile: https://www.tutorialspoint.com/makefile/makefile_tutorial.pdf
+Hva er macros: http://docs.embarcadero.com/products/rad_studio/delphiAndcpp2009/HelpUpdate2/EN/html/devwin32/makemacros_xml.html
+
+
+Hvordan fungerer namespaces: https://docs.microsoft.com/en-us/cpp/cpp/namespaces-cpp?view=vs-2019
+Hva er en identifier: https://www.thoughtco.com/definition-of-identifier-958092
+
+Windows om header files: https://docs.microsoft.com/en-us/cpp/cpp/header-files-cpp?view=vs-2019
+Om header guard: https://www.learncpp.com/cpp-tutorial/header-guards/
+Kort om kompilator for c++: https://www3.ntu.edu.sg/home/ehchua/programming/cpp/gcc_make.html#zz-2.
