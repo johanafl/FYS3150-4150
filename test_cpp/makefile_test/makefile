@@ -1,20 +1,14 @@
-# Really basic makefile syntax:
-# The_name_of_the_file_that_is_produced(target/destination): the_file(s)_that_is_used_to_create_the_final_form(dependencies)
-# 	The_shell_command_that_is_run_to_make_the_files(system command(s), needs to be one tab in)
+# Define all the macros here
 
-my_output.exe: test_prog3.o
-	g++ test_prog3.o -o my_output.exe
+CC = g++
+OBJ = jacobi.cpp
+CFLAGS = -larmadillo
 
-test_prog3.o: test_prog1.o test_prog2.o
-	g++ -c test_prog3.cpp test_prog1.o test_prog2.o
+test.out : $(OBJ) jacobi.h test.cpp
+	$(CC) $(OBJ) test.cpp $(CFLAGS) -o $@
 
-test_prog1.o: test_prog1.cpp
-	g++ -c test_prog1.cpp
+run.out : $(OBJ) jacobi.h main.cpp
+	$(CC) $(OBJ) main.cpp $(CFLAGS) -o $@
 
-test_prog2.o: test_prog1.cpp
-	g++ -c test_prog1.cpp
-
-# The target can also be an action that should be done, f.ex. 'clean':
-# To run the clean, type in terminal$ make clean
-clean:
-	rm *.o
+clean : 
+	rm *.out
