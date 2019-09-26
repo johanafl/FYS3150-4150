@@ -118,9 +118,3 @@ TEST_CASE("test_find_eig")
         REQUIRE(fabs(eigenvalues(i) - sorted_diag(i)) < tol_eig);
     }
 }
-
-// int main()
-// {
-//     test_find_eig();
-//     return 0;
-// }
