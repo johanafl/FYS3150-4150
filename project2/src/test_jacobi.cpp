@@ -84,6 +84,41 @@ TEST_CASE("test_inner_product_conserved")
     }
 }
 
+TEST_CASE("test_orthogonality")
+{
+    /*
+    Checks that the find_eig function keeps eigenvectors orthogonal up to a 
+    fixed tolerance.
+    */
+    
+    int n = 5;                                  // dimension of matrix
+    double step     = 1.0/n;
+    double diag     = 2/(step*step);            // diagonal elements
+    double off_diag = -1/(step*step);           // off-diagonal elements
+    double tol_off_diag = std::pow(10, -15);    // tolerance of off-diagonal elements
+    double tol_eig  = std::pow(10, -4);         // tolerance of eigenvalues
+    
+    arma::mat A = construct_diag_matrix(n, off_diag, diag);
+
+    arma::mat R = find_eig(n, A, tol_off_diag); // numerical eigenvectors
+
+    for (int i = 0; i < n; i++)
+    {   
+        arma::vec r_i = R.col(i);
+        for (int j = 0; i < n; i++)
+        {   // checking that the eigenvectors stay orthogonal
+            if (i==j)
+            {
+                REQUIRE(fabs(arma::dot(r_i, r_i) - 1) < tol_eig);
+            }
+            else
+            {
+                arma::vec r_j = R.col(i);
+                REQUIRE(arma::dot(r_i, r_j) < tol_eig);
+            }
+        }
+    }
+}
 
 TEST_CASE("test_find_eig")
 {
@@ -91,7 +126,6 @@ TEST_CASE("test_find_eig")
     Checks that the find_eig function finds eigenvalues up to a fixed tolerance.
     */
     
-    double pi = 3.14159265358979323846;
     int n = 5;                                  // dimension of matrix
     double step     = 1.0/n;
     double diag     = 2/(step*step);            // diagonal elements
