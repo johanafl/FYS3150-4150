@@ -6,6 +6,10 @@ quantum.out: jacobi.h quantum_dots.cpp jacobi.cpp
 
 	g++ -o quantum.out quantum_dots.cpp jacobi.cpp -std=c++17 -larmadillo -llapack -lblas
 
+quantum2.out: jacobi.h quantum_dots.cpp jacobi.cpp
+
+	g++ -o quantum.out quantum_dots.cpp jacobi.cpp -std=c++17 -larmadillo -llapack -lblas
+
 clean:
 
 	rm test.out
