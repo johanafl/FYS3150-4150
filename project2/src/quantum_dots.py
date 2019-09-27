@@ -15,14 +15,21 @@ class VisualizeData:
         the number of different grid point values, repectively.
         """
 
-        num_eig, num_rho, num_n = np.loadtxt("eigenvalues.txt", max_rows=1)
+        filename = "eigenvalues_tmp.txt"
+
+        num_eig, num_rho, num_n = np.loadtxt(filename, max_rows=1)
 
         self.num_eig = int(num_eig)      # number of eigenvalues
         self.num_rho = int(num_rho)      # number of rho_max values
         self.num_n   = int(num_n)        # number of grid point values
 
         self.calc, self.exact, self.error, self.rho_max, self.n = \
-            np.loadtxt("eigenvalues.txt", skiprows=2, unpack=True)
+            np.loadtxt(filename, skiprows=2, unpack=True)
+
+        print("num_eig", self.num_eig)
+        print("num_rho", self.num_rho)
+        print("num_n", self.num_n)
+
 
     def contour_plot(self):
         """
@@ -36,11 +43,10 @@ class VisualizeData:
 
         for j in range(self.num_n):
             # reading each batch of values per grid size
-            
             for i in range(self.num_rho):
                 # reading each batch of eigenval errors per rho_max
-                start = (408*j) + i*self.num_eig
-                stop  = (408*j) + (i + 1)*self.num_eig
+                start = self.num_eig*(self.num_rho + 1)*j + i*self.num_eig
+                stop  = self.num_eig*(self.num_rho + 1)*j + (i + 1)*self.num_eig
                 
                 idx = np.argmax(self.error[start:stop])
 
