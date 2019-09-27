@@ -1,16 +1,28 @@
-test.out: jacobi.h jacobi.cpp test_jacobi.cpp
+all : test.out quantum.out
+	
+	echo All done
 
-	g++ -o test.out jacobi.cpp test_jacobi.cpp -std=c++17 -larmadillo
+jacobi.o : jacobi.h jacobi.cpp
 
-quantum.out: jacobi.h quantum_dots.cpp jacobi.cpp
+	g++ -c jacobi.cpp -std=c++17 -larmadillo
 
-	g++ -o quantum.out quantum_dots.cpp jacobi.cpp -std=c++17 -larmadillo -llapack -lblas
+test_jacobi.o : jacobi.h test_jacobi.cpp
 
-quantum2.out: jacobi.h quantum_dots.cpp jacobi.cpp
+	g++ -c test_jacobi.cpp -std=c++17 -larmadillo
 
-	g++ -o quantum.out quantum_dots.cpp jacobi.cpp -std=c++17 -larmadillo -llapack -lblas
+test.out : jacobi.h jacobi.o test_jacobi.o
 
-clean:
+	g++ -o test.out jacobi.o test_jacobi.o -std=c++17 -larmadillo
 
-	rm test.out
-	rm quantum.out
+quantum_dots.o : jacobi.h quantum_dots.cpp
+
+	g++ -c quantum_dots.cpp -std=c++17 -larmadillo
+
+quantum.out : jacobi.h quantum_dots.cpp jacobi.o
+
+	g++ -o quantum.out quantum_dots.cpp jacobi.o -std=c++17 -larmadillo 
+
+clean :
+
+	rm test.out quantum.out 
+	rm test_jacobi.o quantum.o jacobi.o
