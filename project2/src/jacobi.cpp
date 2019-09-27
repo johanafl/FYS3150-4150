@@ -204,8 +204,8 @@ void transform(int n, arma::mat& A, arma::mat& R, int idx_row, int idx_col)
         r_ik = R(i, idx_row);
         r_il = R(i, idx_col);
 
-        R(i, idx_row) = c*r_ik - s*r_il;
-        R(i, idx_row) = c*r_il + s*r_ik;
+        R(i, idx_row) = c*r_ik + s*r_il;
+        R(i, idx_col) = c*r_il - s*r_ik;
     }
 
     A(idx_col, idx_row) = A(idx_row, idx_col) = 0; // by virtue of the algorithm (this is how we found theta!).
@@ -215,7 +215,7 @@ void transform(int n, arma::mat& A, arma::mat& R, int idx_row, int idx_col)
 }
 
 
-void find_eig(int n, arma::mat& A, double tol_off_diag)
+arma::mat find_eig(int n, arma::mat& A, double tol_off_diag)
 {
     /*
     Finds the eigenvalues of matrix A. Uses find_max to locate the largest value
@@ -249,6 +249,8 @@ void find_eig(int n, arma::mat& A, double tol_off_diag)
         transform(n, A, R, idx_col, idx_row);
         max_val = find_max(n, A, idx_col, idx_row);
     }
+
+    return R;
 }
 
 

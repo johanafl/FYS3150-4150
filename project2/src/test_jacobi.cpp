@@ -108,7 +108,7 @@ TEST_CASE("test_find_eig")
         eigenvalues(i - 1) = diag + 2*off_diag*std::cos(i*pi/(n + 1));
     }
     
-    find_eig(n, A, tol_off_diag); // numerical eigenvalues
+    arma::mat R = find_eig(n, A, tol_off_diag); // numerical eigenvalues
 
     arma::vec sorted_diag = arma::sort(A.diag(0));
     
