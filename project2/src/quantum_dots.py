@@ -5,7 +5,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 class VisualizeData:
 
-    def __init__(self):
+    def __init__(self, filename="eigenvalues_tmp.txt"):
         """
         Loads data from text file generated from the accompanying C++ program,
         quantum_dots.cpp.
@@ -15,8 +15,6 @@ class VisualizeData:
         the number of different grid point values, repectively.
         """
 
-        filename = "eigenvalues_tmp.txt"
-
         num_eig, num_rho, num_n = np.loadtxt(filename, max_rows=1)
 
         self.num_eig = int(num_eig)      # number of eigenvalues
@@ -25,10 +23,6 @@ class VisualizeData:
 
         self.calc, self.exact, self.error, self.rho_max, self.n = \
             np.loadtxt(filename, skiprows=2, unpack=True)
-
-        print("num_eig", self.num_eig)
-        print("num_rho", self.num_rho)
-        print("num_n", self.num_n)
 
 
     def contour_plot(self):
@@ -43,6 +37,7 @@ class VisualizeData:
 
         for j in range(self.num_n):
             # reading each batch of values per grid size
+            
             for i in range(self.num_rho):
                 # reading each batch of eigenval errors per rho_max
                 start = self.num_eig*(self.num_rho + 1)*j + i*self.num_eig
@@ -63,7 +58,7 @@ class VisualizeData:
         plt.show()
 
 
-    def comparison_plot(self):
+    def comparison_plot(self, ax=None):
         """
         Generates a standard plot of the different graphs for comparison. Picks
         the maximum error value per rho_max per grid point value.
@@ -72,24 +67,49 @@ class VisualizeData:
         max_rhos  = np.zeros(self.num_rho)
         max_error = np.zeros(self.num_rho)
 
-        fig, ax = plt.subplots()
+        if ax is None:
+            _, ax = plt.subplots()
         
-        col = plt.cm.winter(np.linspace(0, 1, self.num_n)) # 9 = max lenght of j
+        col = plt.cm.winter(np.linspace(0, 1, self.num_n))
         for j in range(self.num_n):
             # reading each batch of values per grid size
 
             for i in range(self.num_rho):
                 # reading each batch of eigenval errors per rho_max
-                start = (408*j) + i*self.num_eig
-                stop  = (408*j) + (i + 1)*self.num_eig
+                start = self.num_eig*(self.num_rho + 1)*j + i*self.num_eig
+                stop  = self.num_eig*(self.num_rho + 1)*j + (i + 1)*self.num_eig
                 
                 idx = np.argmax(self.error[start:stop])
 
                 max_error[i] = self.error[start:stop][idx]
                 max_rhos[i]  = self.rho_max[start:stop][idx]
             
+            if ax is None:
+                ax.plot(max_rhos, max_error, label=100+(j + 1)*10, alpha=0.8, color=col[j])
+
+            else:
+                ax.plot(max_rhos, max_error)
+
+        if ax is None:
+            ax.set_xlabel("exact")
+            ax.set_ylabel("error")
+            plt.legend()
+            plt.tight_layout(pad=2)
+            plt.grid()
+            plt.show()
+
+    def visualize_frequencies(self):
+
+        fig, ax = plt.subplots()
         
-            ax.plot(max_rhos, max_error, label=100+(j + 1)*10, alpha=0.8, color=col[j])
+        filenames = ["eigenvalues_w_0.010000.txt", "eigenvalues_w_0.500000.txt", 
+                    "eigenvalues_w_1.000000.txt", "eigenvalues_w_5.000000.txt"]
+
+        for filename in filenames:
+            
+            with open(filename, "r"):
+                self.__init__(filename)
+                self.comparison_plot(ax)
         
         ax.set_xlabel("exact")
         ax.set_ylabel("error")
@@ -101,7 +121,15 @@ class VisualizeData:
 
 
 if __name__ == "__main__":
-    q = VisualizeData()
-    q.contour_plot()
-    #q.comparison_plot()
+
+    filenames = ["eigenvalues_w_0.010000.txt", "eigenvalues_w_0.500000.txt", 
+                "eigenvalues_w_1.000000.txt", "eigenvalues_w_5.000000.txt"]
+    
+    # filenames = ["eigenvalues_tmp.txt"]
+
+    for filename in filenames:
+        q = VisualizeData(filename)
+        q.contour_plot()
+    # q = VisualizeData()
+    # q.visualize_frequencies()
     pass
