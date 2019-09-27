@@ -1,5 +1,4 @@
 #include "jacobi.h"
-#include <fstream>
 #include <iomanip>
 #include <string>
 
@@ -19,14 +18,26 @@ arma::vec generate_diagonals(int grid, double step, double rho_min, double freq,
 
     rho_min : double
         Minimum rho value.
+
+    freq : double
+        A freqency in front of the harmonic oscillator potential. 
+        For the case of two electrons this normalizes the constants in the 
+        coulomb potential and makes it unitless.
+    
+    coulomb : int, either 1 or 0
+        A variable to indicate if we want to use an effictive potential with the
+        coulomb potential. 
+        Set to 1 to include.
+        Set to 0 to exclude.
     */
 
     arma::vec diag(grid);
 
     for (int i = 0; i < grid; i++)
     {   // creating the diagonal elements
-        // diag(i) = 2/(step*step) + (rho_min + i*step)*(rho_min + i*step);
-        diag(i) = 2/(step*step) + freq*freq*(rho_min + i*step)*(rho_min + i*step) + coulomb/(rho_min + i*step);
+        diag(i) =   2/(step*step) 
+                  + freq*freq*(rho_min + i*step)*(rho_min + i*step) // Harmonic oscillator potential (with frequency)
+                  + coulomb/(rho_min + i*step);                     // Coulomb potential
     }
 
     return diag;
@@ -37,52 +48,61 @@ class QuantumData
 {
 
 private:
-    bool progress;      // boolean for toggling progress info on/off
-    bool looping_grid;
-    bool looping_freq;
-    double eig;         // analytical eigenvalue
+    bool progress     = true;  // boolean for toggling progress info on/off
+    bool looping_grid = false; // boolean for toggling progress of grid info on/off
+    bool looping_freq = false; // boolean for toggling progress of frequency info on/off
+    double eig;                // analytical eigenvalue
     double step;
     double off_diag;
-    int grid;              // grid size
-    double rho_min;
-    double rho_max;     // approximating infinity
-    double tol_off_diag;// tolerance for Jacobi
+    int grid       = 100;      // grid size
+    double rho_min = std::pow(10, -7);
+    double rho_max = 5;        // approximating infinity
+    double tol_off_diag = std::pow(10, -5); // tolerance for Jacobi
 
     // loop-specific values
-    double rho_tmp;         // for reverting rho_max to original max value
-    double rho_end;     // end rho_max value for the loop
-    int grid_tmp;          // for reverting n to original max value
-    int grid_end;          // end grid value
-    double d_rho;       // rho step size for incrementing in the loop
-    int d_grid;             // grid step size
-    int num_eig;        // number of eigenvalues to write to file per rho
-    double num_rho;     // number of rho_max values tested
-    int num_grid;          // number of grid values tested
-    // std::ofstream data_file;
+    double rho_tmp = rho_max; // for reverting rho_max to original max value
+    double rho_end = 5.6;     // end rho_max value for the loop
+    int grid_tmp   = grid;    // for reverting n to original max value
+    int grid_end   = 130;     // end grid value
+    double d_rho   = 0.1;     // rho step size for incrementing in the loop
+    int d_grid     = 10;      // grid step size
+    int num_eig    = 8;       // number of eigenvalues to write to file per rho
+    double num_rho = (rho_end - rho_max)/d_rho; // number of rho_max values tested
+    int num_grid   = (grid_end - grid)/d_grid;  // number of grid points tested
 
 public:
     QuantumData()
     {
-        progress = true;    // boolean for toggling progress info on/off
-        looping_grid = false;
-        looping_freq = false;
-        grid = 100;            // grid size
-        rho_min = std::pow(10, -7);
-        rho_max = 5;        // approximating infinity
-        tol_off_diag = std::pow(10, -5); // tolerance for Jacobi
-        
+        /* Empty right now. Might include accesibility for useres later.*/
+    }
 
-        // loop-specific values
-        rho_tmp = rho_max;   // for reverting rho_max to original max value
-        grid_tmp = grid;     // for reverting rho_max to original max value
-        d_rho   = 0.1;       // rho step size for incrementing in the loop
-        d_grid = 10;         // grid step size
-        rho_end = 5.6;       // end rho_max value for the loop
-        grid_end = 130;      // end grid value
-        num_eig = 8;         // number of eigenvalues to write to file
-        num_rho = (rho_end - rho_max)/d_rho; // number of rho_max values tested
+    void set_grid_values(int n, int end, double stepsize)
+    {
+        /* REMEMBER TO COMMENT*/
+        grid = n;
+        grid_end = end;
+        d_grid = stepsize;
+        grid_tmp = grid;
         num_grid = (grid_end - grid)/d_grid;
+    }
 
+    void set_rho_values(double my_man_rho, double the_rho_has_landed, double see_you_later_rho_i_gator, double sthep_that_steip)
+    {
+        /* REMEMBER TO COMMENT*/
+        rho_min = my_man_rho;
+        rho_max = the_rho_has_landed;
+        rho_tmp = rho_max;
+        rho_end = see_you_later_rho_i_gator;
+        d_rho   = sthep_that_steip;
+        num_rho = (rho_end - rho_max)/d_rho;
+    }
+
+    void set_progress_values(bool do_you_really_want_to_see_this, bool of_course_i_do, bool or_mayby_not)
+    {
+        /* REMEMBER TO COMMENT*/
+        progress     = do_you_really_want_to_see_this;
+        looping_grid = of_course_i_do;
+        looping_freq = or_mayby_not;
     }
 
     void write_title_to_file(std::ofstream &data_file)
@@ -131,7 +151,6 @@ public:
                 std::cout << grid_end << std::endl;
             }
 
-
             for (int i = 0; i < num_eig; i++)
             {   // writing data to file
                 data_file << std::setw(20) << std::setprecision(10) << sorted_diag(i);
@@ -166,7 +185,6 @@ public:
             rho_max = rho_tmp;
             grid   += d_grid;
         }
-
     }
 
     void loop_grid()
@@ -190,12 +208,10 @@ public:
         looping_freq   = true;
         double freq[4] = {0.01, 0.5, 1, 5};
 
-
         if (progress)
         {   // progress information
             std::cout << "looping over frequency, grid and rho max" << std::endl;
         }
-
  
         for (int i = 0; i < 4; i++)
         {   
@@ -211,19 +227,12 @@ public:
 
     }
 
-    ~QuantumData()
-    {
-    }
-
 };
-
-
 
 int main()
 {   
-
     QuantumData q;
     q.loop_frequency();
-    //quantum_data();
+
     return 0;
 }
