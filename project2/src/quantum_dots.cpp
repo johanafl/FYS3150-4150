@@ -26,16 +26,20 @@ void quantum_data()
     int num_eig    = 8;           // number of eigenvalues to write to file
     double rho_end = 10;        // end rho_max value for the loop
     double num_rho = (rho_end - rho_max)/d_rho; // number of rho_max values tested
-    int num_n = (n_end - n)/dn;
-    int n_end = 200;    // end grid value
+    int n_end = 410;    // end grid value
     int dn    = 10;     // grid step size
+    int num_n = (n_end - n)/dn;
 
 
     // generating data file
     std::ofstream data_file;
     data_file.open("eigenvalues.txt", std::ios_base::app);
-    data_file << num_eig << " " << num_rho << " " << num_n "\n";
-    data_file << "calculated     exact     error     rho_max     n\n";
+    data_file << num_eig << " " << num_rho << " " << num_n << "\n";
+    data_file << std::setw(20) << "calculated";
+    data_file << std::setw(20) << "exact";
+    data_file << std::setw(20) << "error";
+    data_file << std::setw(20) << "rho_max";
+    data_file << std::setw(20) << "n\n";
 
     if (progress)
     {   // for printing progress data
@@ -80,11 +84,11 @@ void quantum_data()
             for (int i = 0; i < num_eig; i++)
             {   // writing data to file
                 
-                data_file << std::setw(15) << sorted_diag(i);
-                data_file << std::setw(15) << eig;
-                data_file << std::setw(15) << fabs(eig - sorted_diag(i));
-                data_file << std::setw(15) << rho_max;
-                data_file << std::setw(15) << n;
+                data_file << std::setw(20) << std::setprecision(10) << sorted_diag(i);
+                data_file << std::setw(20) << std::setprecision(10) << eig;
+                data_file << std::setw(20) << std::setprecision(10) << fabs(eig - sorted_diag(i));
+                data_file << std::setw(20) << rho_max;
+                data_file << std::setw(20) << n;
                 data_file << "\n";
                 eig = eig + 4;
 
