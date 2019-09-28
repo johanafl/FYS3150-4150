@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-
+import glob, os
 
 class VisualizeData:
 
@@ -15,15 +15,17 @@ class VisualizeData:
         the number of different grid point values, repectively.
         """
 
-        num_eig, num_rho, num_n = np.loadtxt(filename, max_rows=1)
+        try:
+            num_eig, num_rho, num_n = np.loadtxt(filename, max_rows=1)
+            self.calc, self.exact, self.error, self.rho_max, self.n = \
+                np.loadtxt(filename, skiprows=2, unpack=True)
+
+        except:
+            raise TypeError("Could not read file with filename {}.\nPerhaps this is not a file with eigenvalues/errors for a quantum mechanical system?".format(filename))
 
         self.num_eig = int(num_eig)      # number of eigenvalues
         self.num_rho = int(num_rho)      # number of rho_max values
         self.num_n   = int(num_n)        # number of grid point values
-
-        self.calc, self.exact, self.error, self.rho_max, self.n = \
-            np.loadtxt(filename, skiprows=2, unpack=True)
-
 
     def contour_plot(self):
         """
@@ -122,14 +124,25 @@ class VisualizeData:
 
 if __name__ == "__main__":
 
-    filenames = ["eigenvalues_w_0.010000.txt", "eigenvalues_w_0.500000.txt", 
-                "eigenvalues_w_1.000000.txt", "eigenvalues_w_5.000000.txt"]
+    # filenames = ["eigenvalues_w_0.010000.txt", "eigenvalues_w_0.500000.txt", 
+    #             "eigenvalues_w_1.000000.txt", "eigenvalues_w_5.000000.txt"]
     
-    # filenames = ["eigenvalues_tmp.txt"]
+    # # filenames = ["eigenvalues_tmp.txt"]
+
+    # for filename in filenames:
+    #     q = VisualizeData(filename)
+    #     q.contour_plot()
+    # # q = VisualizeData()
+    # # q.visualize_frequencies()
+
+
+    # Loop over files with .txt ending. Found on https://stackoverflow.com/questions/3964681/find-all-files-in-a-directory-with-extension-txt-in-python
+    # os.chdir("/mydir")
+    filenames = []
+    for file in glob.glob("*.txt"):
+        filenames.append(file)
+    print(filenames)
 
     for filename in filenames:
         q = VisualizeData(filename)
-        q.contour_plot()
-    # q = VisualizeData()
-    # q.visualize_frequencies()
     pass
