@@ -43,10 +43,35 @@ arma::vec generate_diagonals(int grid, double step, double rho_min, double freq,
     return diag;
 }
 
+// void exact()
+// {
+//     /* 
+//     Exact radial wavefunction for two electrons. (NB! this is u(r), so not 
+//     actually the wavefunction.)
+    
+//     Need r_vector (same as rho). Must be n long.
+//     We calculate for l = 0, so set l = 0.
+//     Need an n to loop over/set resolution.
+//     */
+//     double u[n];
+//     // omega_r = 4 (corresponds to n = 2 in article by M. Taut.) -> eigenvalue (proportional to energy) lambda = 0.6250
+//     for (i=0; i<n; i++)
+//     {
+//         r = r_vector[i]
+//         u[i] = pow(r,l+1) * exp(-r*r/(8*(l + 1))) * (1 + r/(2*(l + 1)));
+//     }
+
+//     // omega_r = 20 (corresponds to n = 3 in article by M. Taut.) -> eigenvalue (proportional to energy) lambda = 0.1750
+//     for (i=0; i<n; i++)
+//     {
+//         r = r_vector[i]
+//         u[i] = pow(r,l+1) * exp(-r*r/(8*(4*l + 5))) * (1 + r/(2*(l + 1)) + r*r/(4*(l + 1)*(4*l + 5)));
+//     }
+// }
 
 class QuantumData
 {
-
+    /* NEED TO COMMENT!*/
 private:
     bool progress     = true;  // boolean for toggling progress info on/off
     bool looping_grid = false; // boolean for toggling progress of grid info on/off
@@ -140,7 +165,7 @@ public:
             arma::mat A = construct_diag_matrix(grid, off_diag, diag);
             
             // using Jacobis method to extract the eigenvalues of the tri-diagonal matrix
-            find_eig(grid, A, tol_off_diag);
+            arma::mat R = find_eig(grid, A, tol_off_diag);
             arma::vec sorted_diag = arma::sort(A.diag(0));
 
             if (progress)
@@ -160,7 +185,6 @@ public:
                 data_file << std::setw(20) << grid;
                 data_file << "\n";
                 eig = eig + 4;
-
             }
             rho_max = rho_max + d_rho;
         }
@@ -175,8 +199,6 @@ public:
         {   // progress information
             std::cout << "looping over grid and rho max" << std::endl;
         }
-
-        looping_grid = true;
 
         while (grid < grid_end)
         {
@@ -205,7 +227,6 @@ public:
     
         std::string filename;
         std::ofstream data_file;
-        looping_freq   = true;
         double freq[4] = {0.01, 0.5, 1, 5};
 
         if (progress)
