@@ -18,9 +18,9 @@ quantum_dots.o : jacobi.h quantum_dots.cpp
 
 	g++ -c quantum_dots.cpp -std=c++17 -larmadillo
 
-quantum.out : jacobi.h quantum_dots.cpp jacobi.o
+quantum.out : jacobi.h quantum_dots.o jacobi.o
 
-	g++ -o quantum.out quantum_dots.cpp jacobi.o -std=c++17 -larmadillo 
+	g++ -o quantum.out quantum_dots.o jacobi.o -std=c++17 -larmadillo 
 
 clean :
 
