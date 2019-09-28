@@ -13,6 +13,16 @@ class VisualizeData:
         The file starts with three values which are the number
         of eigenvalues per rho_max, the number of different rho_max values, and
         the number of different grid point values, repectively.
+
+        Parameters
+        ----------
+        filename : str
+            Filename of file to be read. Defaults to 'eigenvalues_tmp.txt'.
+
+        Raises
+        ------
+        ValueError
+            Raised if input file is of incorrect formatting or not existing.
         """
 
         try:
@@ -24,7 +34,7 @@ class VisualizeData:
             msg = (f"Could not read file with filename {filename}.\n"
                 "Perhaps this is not a file with eigenvalues/errors for a "
                 "quantum mechanical system?")
-            raise TypeError(msg)
+            raise ValueError(msg)
 
         self.num_eig  = int(num_eig)    # number of eigenvalues
         self.num_rho  = int(num_rho)    # number of rho_max values
