@@ -1,7 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import glob, os
 
 class VisualizeData:
 
@@ -39,6 +37,7 @@ class VisualizeData:
         self.num_eig  = int(num_eig)    # number of eigenvalues
         self.num_rho  = int(num_rho)    # number of rho_max values
         self.num_grid = int(num_grid)   # number of grid point values
+
 
     def contour_plot(self, selection="max"):
         """
