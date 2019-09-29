@@ -2,6 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class VisualizeData:
+    """
+    For visualizing data from task 2d.
+    """
 
     def __init__(self, filename="eigenvalues_tmp.txt"):
         """
@@ -96,6 +99,7 @@ class VisualizeData:
                 rho_max[i]  = self.rho_max[start:stop][idx]
                 grid[j]     = self.grid[start:stop][idx]
 
+
         rho_max, grid = np.meshgrid(rho_max, grid)
         
         fig, ax = plt.subplots(figsize=(10, 8))
@@ -138,7 +142,8 @@ class VisualizeData:
                 stop  = self.num_eig*(self.num_rho + 1)*j + (i + 1)*self.num_eig
                 
                 # finding the index of the max error per rho_max
-                idx = np.argmax(self.error[start:stop])
+                # idx = np.argmax(self.error[start:stop])
+                idx = 0
 
                 # extracts the max error and corresponding rho_max
                 max_error[i] = self.error[start:stop][idx]
@@ -160,8 +165,39 @@ class VisualizeData:
 
 
 
+def visualize_eigenvalue_data_two_electrons():
+
+    filename = "eigenvalue_omega_0.250000.txt"
+    rho, eigenvalue = np.loadtxt(filename, skiprows=1, unpack=True)
+
+    print(rho)
+
+
+def visualize_eigenvector_data_two_electrons():
+
+    filename = "eigenvector_omega_0.250000.txt"
+
+    eigenvectors = np.loadtxt(filename, skiprows=1)
+    num_rho, num_eig_elements = np.shape(eigenvectors)[0], np.shape(eigenvectors)[1] - 1
+
+    rho, eigenvectors = eigenvectors[:, 0], eigenvectors[:, 1:]
+
+
+    
+
+    for i in range(num_rho):
+        rho_interval = np.linspace(0, rho[i], num_eig_elements)
+
+        plt.plot(rho_interval, eigenvectors[i])
+        plt.xlabel(r"$\rho$")
+        plt.ylabel(r"eigenvector")
+        plt.show()
+
+
 if __name__ == "__main__":
-    q = VisualizeData("eigenvalues.txt")
-    # q.contour_plot(selection="min")
-    q.comparison_plot()
+    # q = VisualizeData("eigenvalues.txt")
+    # q.contour_plot(selection="max")
+    # q.comparison_plot()
+
+    visualize_eigenvector_data_two_electrons()
     pass
