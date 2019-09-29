@@ -165,33 +165,68 @@ class VisualizeData:
 
 
 
+
+
+# Exact radial wavefunction for two electrons. (NB! this is u(r), so not 
+# actually the wavefunction.)
+# Need r_vector (same as rho). Must be n long.
+# We calculate for l = 0, so set l = 0.
+# Need an n to loop over/set resolution.
+
+def exact_omega_0_05(r,l=0):
+    """
+    omega_r = 0.25 (corresponds to n = 2 in article by M. Taut.) -> eigenvalue (proportional to energy) lambda = 0.6250
+    """
+    return r**(l+1) * np.exp(-r**2/(8*(4*l+5))) * (1 + r/(2*(l+1)) + r**2/(4*(l+1)*(4*l+5))) # NB!!!!! Not normalized!
+#     # u[i] = pow(r,l+1) * exp(-r*r/(8*(4*l + 5))) * (1 + r/(2*(l + 1)) + r*r/(4*(l + 1)*(4*l + 5)));
+
+def exact_omega_0_25(r,l=0):
+    """
+    omega_r = 0.05 (corresponds to n = 3 in article by M. Taut.) -> eigenvalue (proportional to energy) lambda = 0.1750
+    """
+    return r**(l+1) * np.exp(-r**2/(8*(l+1))) * (1 + r/(2*(l+1))) # NB!!!!! Not normalized!
+    # u[i] = pow(r,l+1) * exp(-r*r/(8*(l + 1))) * (1 + r/(2*(l + 1)));
+
+
 def visualize_eigenvalue_data_two_electrons():
-
     filename = "eigenvalue_omega_0.250000.txt"
+    exact_eigenvalue = 2*0.6250
     rho, eigenvalue = np.loadtxt(filename, skiprows=1, unpack=True)
-
+    min_error = np.min(np.abs(eigenvalue-exact_eigenvalue))
+    min_error_idx = np.argmin(np.abs(eigenvalue-exact_eigenvalue))
+    # print(min_error_idx)
+    # print(eigenvalue)
+    print(eigenvalue[min_error_idx])
+    print(min_error)
     print(rho)
+    print(len(rho))
+    return min_error_idx
 
-
-def visualize_eigenvector_data_two_electrons():
-
+def visualize_eigenvector_data_two_electrons(idx):
     filename = "eigenvector_omega_0.250000.txt"
-
     eigenvectors = np.loadtxt(filename, skiprows=1)
-    num_rho, num_eig_elements = np.shape(eigenvectors)[0], np.shape(eigenvectors)[1] - 1
+    num_rho_max = np.shape(eigenvectors)[0]
+    num_eig_elements = np.shape(eigenvectors)[1] - 1
 
-    rho, eigenvectors = eigenvectors[:, 0], eigenvectors[:, 1:]
+    rhos, eigenvectors = eigenvectors[:, 0], eigenvectors[:, 1:]
 
+    rho = np.linspace(0, rhos[idx], num_eig_elements)
+    plt.plot(rho, exact_omega_0_05(rho))
+    # u_of_rho = exact_omega_0_25(rho)
+    # plt.plot(rho, u_of_rho/np.trapz(u_of_rho),label="exact")
+    # plt.plot(rho, eigenvectors[idx],label="computed")
+    plt.xlabel(r"$\rho$")
+    plt.ylabel(r"eigenvector")
+    plt.legend()
+    plt.show()
 
-    
+    # for i in range(num_rho_max):
+    #     rho_interval = np.linspace(0, rho[i], num_eig_elements)
 
-    for i in range(num_rho):
-        rho_interval = np.linspace(0, rho[i], num_eig_elements)
-
-        plt.plot(rho_interval, eigenvectors[i])
-        plt.xlabel(r"$\rho$")
-        plt.ylabel(r"eigenvector")
-        plt.show()
+    #     plt.plot(rho_interval, eigenvectors[i])
+    #     plt.xlabel(r"$\rho$")
+    #     plt.ylabel(r"eigenvector")
+    #     plt.show()
 
 
 if __name__ == "__main__":
@@ -199,5 +234,6 @@ if __name__ == "__main__":
     # q.contour_plot(selection="max")
     # q.comparison_plot()
 
-    visualize_eigenvector_data_two_electrons()
+    idx = visualize_eigenvalue_data_two_electrons()
+    visualize_eigenvector_data_two_electrons(idx)
     pass

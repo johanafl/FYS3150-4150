@@ -37,95 +37,193 @@ arma::vec effective_potential(int grid, double step, double rho_min, double freq
 }
 
 
-int main()
+int compute_and_write_eigenstuuuuuuuf(double omega_r, std::string filename, 
+                                      bool progress, double rho_min, 
+                                      double rho_max, int grid, 
+                                      double tol_off_diag, double rho_end, 
+                                      double d_rho)
 {   
+    /* 
+    Computing eigenvalues and vectors for matrix approximating the Hamiltonian
+    opetrator for a potential well with two electrons interecting with Coulomb
+    force.
+    NB! Remember to change filename_eig! This program WILL write over existing 
+    files.
+
+    Parameters
+    ----------
+    omega_r : double
+        Oscillator frequency for the harmonic oscillator.
+
+    filename : std::string
+        An input for what the filename should be. The final filename will be:
+        "eigenvalue_" + filename + ".txt", for the file containing eigenvalues,
+        "eigenvector_" + filename + ".txt", for the file containing eigenvectors.
+
+    progress : bool
+        If you want to see the progress in the terminal, set this to "true".
+        It writes:
+        rho_max: xxx rho_end: xxx  n: xxx
+        rho_max: xxx rho_end: xxx  n: xxx
+        ...
+        rho_max: xxx rho_end: xxx  n: xxx
+
+    rho_min : double
+        This is where the potential startes. Must be >= 0.
+
+    rho_max : double
+        This is where the potential ends for the first iteration.
+
+    grid : int
+        This is the number of gridpoints.
+
+    tol_off_diag : double
+        The tolleranse for jacobi method.
+
+    rho_end : double
+        This is where the iteration stops for infty.
+
+    d_rho : double
+        increment for rho_max
+    */ 
+    std::cout << "Looping over different rho_max values" << std::endl;
+
+    double rho_tmp = rho_max; // for reverting rho_max to original max value
+    // Looping over frequencies.
+    // Setting up the file.
+    std::string filename_eig;
+    std::string filename_vec;
+    std::ofstream data_file_eig;
+    std::ofstream data_file_vec;
+
+    filename_eig = "eigenvalue_" + filename + ".txt";
+    filename_vec = "eigenvector_" + filename + ".txt";
+    data_file_eig.open(filename_eig, std::ios_base::app);
+    data_file_vec.open(filename_vec, std::ios_base::app);
+
+    data_file_eig << std::setw(6) << "rho" << std::setw(20) << "eigenvalue" << std::endl;
+    data_file_vec << std::setw(20) << "rho | eigenvector ->" << std::endl;
+
+    while (rho_max <= rho_end)
+    {
+        /* 
+        Looping over interesting maximum values for rho (approximation of infinity).
+        */
+        double step = (rho_max - rho_min)/grid; // Step size
+        double off_diag = -1/(step*step);       // Off-diagonal elements in the matrix we want the eigenvalues of.
+
+        // constructing vector for the diagonal elements            
+        arma::vec diag_elements = effective_potential(grid, step, rho_min, omega_r);
+
+        // constructing tri-diagonal matrix
+        arma::mat diag_matrix = construct_diag_matrix(grid, off_diag, diag_elements);
+        
+        // using Jacobis method to extract the eigenvalues of the tri-diagonal matrix
+        arma::mat eigenvectors = find_eig(grid, diag_matrix, tol_off_diag);
+
+        // The eigenvalues are not necessarily sorted, and we want the ground state.
+        arma::uvec sort_indices = arma::sort_index(diag_matrix.diag(0));
+        arma::vec sorted_diag = arma::sort(diag_matrix.diag(0));
+        arma::vec ground_state = eigenvectors.col(sort_indices(0));
+
+        if (progress)
+        {   // for printing progress data
+            std::cout << "rho_max: " << rho_max << " rho_end: ";
+            std::cout << rho_end << "  ";
+            std::cout << "n: " << grid << std::endl;
+        }
+        
+        // Writing ground state eigenvector and value to file.
+        data_file_eig << std::setw(6) << rho_max << std::setw(20) << std::setprecision(10) << sorted_diag(0) << std::endl;
+        data_file_vec << std::setw(20) << rho_max;
+        for (int j=0; j<grid; j++)
+        {
+            data_file_vec << std::setw(20) << std::setprecision(10) << ground_state(j);
+        }
+        rho_max = rho_max + d_rho;
+        data_file_vec << std::endl;
+    }
+    rho_max = rho_tmp;
+    data_file_eig.close();
+    data_file_vec.close();
+}
+
+int main()
+{    
     /* 
     Calculation variables. 
     NB! Must be specified correctly before program running the program! 
     NB! Remember to change filename_eig! This program WILL write over existing 
     files.
     */ 
-    bool progress       = true;  // boolean for toggling progress info on/off
-    double rho_min      = std::pow(10, -7);
-    double rho_max      = 5;     // approximating infinity
-    int grid        = 100;   // end grid value
-    double tol_off_diag = std::pow(10, -5); // tolerance for Jacobi
 
-    // loop-specific values
-    double rho_tmp = rho_max; // for reverting rho_max to original max value
-    double rho_end = 5.2;     // end rho_max value for the loop
-    double d_rho   = 0.1;     // rho step size for incrementing in the loop
-
-
-    // Doing the calculations
-    std::string filename_eig;
-    std::string filename_vec;
-    std::ofstream data_file_eig;
-    std::ofstream data_file_vec;
     // These are the harmonic oscillator frequencies we will look at. For 
     // omega = 0.25 and omega = 0.05, we have analytical solutions for 
     // eigenvector and value of the ground state.
-    double freq[6] = {0.01, 0.05, 0.25, 0.5, 1, 5}; 
+    // double freq[6] = {0.01, 0.05, 0.25, 0.5, 1, 5}; 
 
-    // progress information
-    std::cout << "looping over frequency and rho max" << std::endl;
 
-    for (int i = 0; i < 6; i++)
-    {   
-        // Looping over frequencies.
-        // Setting up the file.
-        filename_eig = "eigenvalue_omega_" + std::to_string(freq[i]) + ".txt";
-        filename_vec = "eigenvector_omega_" + std::to_string(freq[i]) + ".txt";
-        data_file_eig.open(filename_eig, std::ios_base::app);
-        data_file_vec.open(filename_vec, std::ios_base::app);
-
-        data_file_eig << std::setw(6) << "rho" << std::setw(20) << "eigenvalue" << std::endl;
-        data_file_vec << std::setw(20) << "rho | eigenvector ->" << std::endl;
-
-        while (rho_max <= rho_end)
-        {
-            /* 
-            Looping over interesting maximum values for rho (approximation of infinity).
-            */
-            double step = (rho_max - rho_min)/grid; // Step size
-            double off_diag = -1/(step*step);           // Off-diagonal elements in the matrix we want the eigenvalues of.
-
-            // constructing vector for the diagonal elements            
-            arma::vec diag_elements = effective_potential(grid, step, rho_min, freq[i]);
-
-            // constructing tri-diagonal matrix
-            arma::mat diag_matrix = construct_diag_matrix(grid, off_diag, diag_elements);
-            
-            // using Jacobis method to extract the eigenvalues of the tri-diagonal matrix
-            arma::mat eigenvectors = find_eig(grid, diag_matrix, tol_off_diag);
-
-            // The eigenvalues are not necessarily sorted, and we want the ground state.
-            arma::uvec sort_indices = arma::sort_index(diag_matrix.diag(0));
-            arma::vec sorted_diag = arma::sort(diag_matrix.diag(0));
-            arma::vec ground_state = eigenvectors.col(sort_indices(0));
-
-            if (progress)
-            {   // for printing progress data
-                std::cout << "rho_max: " << rho_max << " rho_end: ";
-                std::cout << rho_end << "  ";
-                std::cout << "n: " << grid;
-                std::cout << ", omega: " << freq[i] << std::endl;
-            }
-            
-            // Writing ground state eigenvector and value to file.
-            data_file_eig << std::setw(6) << rho_max << std::setw(20) << std::setprecision(10) << sorted_diag(0) << std::endl;
-            data_file_vec << std::setw(20) << rho_max;
-            for (int j=0; j<grid; j++)
-            {
-                data_file_vec << std::setw(20) << std::setprecision(10) << ground_state(j);
-            }
-            rho_max = rho_max + d_rho;
-            data_file_vec << std::endl;
-        }
-        rho_max = rho_tmp;
-        data_file_eig.close();
-        data_file_vec.close();
-    }
+    bool progress       = true;  // boolean for toggling progress info on/off
+    double rho_min      = std::pow(10, -7);
+    int grid            = 200;   // end grid value
+    double tol_off_diag = std::pow(10, -10); // tolerance for Jacobi
     
+    
+
+    // loop-specific values
+    double rho_max = 20;     // approximating infinity
+    double rho_end = 30;     // end rho_max value for the loop
+    double d_rho   = 0.2;    // rho step size for incrementing in the loop
+    double freq    = 0.01; 
+    std::string filename = "omega_" + std::to_string(freq);
+    compute_and_write_eigenstuuuuuuuf(freq, filename, progress, rho_min, 
+                                      rho_max, grid, tol_off_diag, rho_end, 
+                                      d_rho);
+    
+    // rho_max  = 10;     // approximating infinity
+    // rho_end  = 25;     // end rho_max value for the loop
+    // d_rho    = 0.1;    // rho step size for incrementing in the loop
+    // freq     = 0.05; 
+    // filename = "omega_" + std::to_string(freq);
+    // compute_and_write_eigenstuuuuuuuf(freq, filename, progress, rho_min, 
+    //                                   rho_max, grid, tol_off_diag, rho_end, 
+    //                                   d_rho);
+    
+    // rho_max  = 6;      // approximating infinity
+    // rho_end  = 10;     // end rho_max value for the loop
+    // d_rho    = 0.1;    // rho step size for incrementing in the loop
+    // freq     = 0.25; 
+    // filename = "omega_" + std::to_string(freq);
+    // compute_and_write_eigenstuuuuuuuf(freq, filename, progress, rho_min, 
+    //                                   rho_max, grid, tol_off_diag, rho_end, 
+    //                                   d_rho);
+    
+    // rho_max  = 2;    // approximating infinity
+    // rho_end  = 8;     // end rho_max value for the loop
+    // d_rho    = 0.1;    // rho step size for incrementing in the loop
+    // freq     = 0.5; 
+    // filename = "omega_" + std::to_string(freq);
+    // compute_and_write_eigenstuuuuuuuf(freq, filename, progress, rho_min, 
+    //                                   rho_max, grid, tol_off_diag, rho_end, 
+    //                                   d_rho);
+    
+    // rho_max  = 0.1;    // approximating infinity
+    // rho_end  = 7;     // end rho_max value for the loop
+    // d_rho    = 0.1;    // rho step size for incrementing in the loop
+    // freq     = 1; 
+    // filename = "omega_" + std::to_string(freq);
+    // compute_and_write_eigenstuuuuuuuf(freq, filename, progress, rho_min, 
+    //                                   rho_max, grid, tol_off_diag, rho_end, 
+    //                                   d_rho);
+    
+    // rho_max  = 0.1;    // approximating infinity
+    // rho_end  = 6;     // end rho_max value for the loop
+    // d_rho    = 0.1;    // rho step size for incrementing in the loop
+    // freq     = 5; 
+    // filename = "omega_" + std::to_string(freq);
+    // compute_and_write_eigenstuuuuuuuf(freq, filename, progress, rho_min, 
+    //                                   rho_max, grid, tol_off_diag, rho_end, 
+    //                                   d_rho);
+
     return 0;
 }
