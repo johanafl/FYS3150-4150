@@ -173,60 +173,109 @@ class VisualizeData:
 # We calculate for l = 0, so set l = 0.
 # Need an n to loop over/set resolution.
 
-def exact_omega_0_05(r,l=0):
+def exact_freq_0_05(rho):
     """
-    omega_r = 0.25 (corresponds to n = 2 in article by M. Taut.) -> eigenvalue (proportional to energy) lambda = 0.6250
+    Analytical solution for the eigenvector corresponding to freq = 0.05
+    corresponds to n = 3 in article by M. Taut. Eigenvalue (proportional to
+    energy) lambda = 0.1750.
+
+    The result is not normalized.
+
+    Parameters
+    ----------
+    rho : float, numpy.ndarray
+        Single value or values of the scaled dimensionless distance, rho.
     """
-    return r**(l+1) * np.exp(-r**2/(8*(4*l+5))) * (1 + r/(2*(l+1)) + r**2/(4*(l+1)*(4*l+5))) # NB!!!!! Not normalized!
-#     # u[i] = pow(r,l+1) * exp(-r*r/(8*(4*l + 5))) * (1 + r/(2*(l + 1)) + r*r/(4*(l + 1)*(4*l + 5)));
 
-def exact_omega_0_25(r,l=0):
+    l = 0
+
+    return rho**(l + 1)*np.exp(-rho**2/(8*(4*l + 5))) * (1 + rho/(2*(l + 1)) + \
+        rho**2/(4*(l + 1)*(4*l + 5)))
+
+
+def exact_freq_0_25(r):
     """
-    omega_r = 0.05 (corresponds to n = 3 in article by M. Taut.) -> eigenvalue (proportional to energy) lambda = 0.1750
+    Analytical solution for the eigenvector corresponding to freq = 0.25
+    corresponds to n = 2 in article by M. Taut. Eigenvalue (proportional to
+    energy) lambda = 0.6250.
+
+    The result is not normalized.
+
+    Parameters
+    ----------
+    rho : float, numpy.ndarray
+        Single value or values of the scaled dimensionless distance, rho.
     """
-    return r**(l+1) * np.exp(-r**2/(8*(l+1))) * (1 + r/(2*(l+1))) # NB!!!!! Not normalized!
-    # u[i] = pow(r,l+1) * exp(-r*r/(8*(l + 1))) * (1 + r/(2*(l + 1)));
+
+    l = 0
+
+    return r**(l + 1) * np.exp(-r**2/(8*(l + 1))) * (1 + r/(2*(l + 1)))
 
 
-def visualize_eigenvalue_data_two_electrons():
-    filename = "eigenvalue_omega_0.250000.txt"
-    exact_eigenvalue = 2*0.6250
-    rho, eigenvalue = np.loadtxt(filename, skiprows=1, unpack=True)
-    min_error = np.min(np.abs(eigenvalue-exact_eigenvalue))
-    min_error_idx = np.argmin(np.abs(eigenvalue-exact_eigenvalue))
-    # print(min_error_idx)
-    # print(eigenvalue)
-    print(eigenvalue[min_error_idx])
-    print(min_error)
-    print(rho)
-    print(len(rho))
-    return min_error_idx
 
-def visualize_eigenvector_data_two_electrons(idx):
-    filename = "eigenvector_omega_0.250000.txt"
-    eigenvectors = np.loadtxt(filename, skiprows=1)
-    num_rho_max = np.shape(eigenvectors)[0]
-    num_eig_elements = np.shape(eigenvectors)[1] - 1
 
-    rhos, eigenvectors = eigenvectors[:, 0], eigenvectors[:, 1:]
+def visualize_eigendata_two_electrons():
+    """
+    Reads eigenvalue file which contains two columns. The first column consists
+    of rho max values, and the second column of the corresponding eigenvalues.
 
-    rho = np.linspace(0, rhos[idx], num_eig_elements)
-    plt.plot(rho, exact_omega_0_05(rho))
-    # u_of_rho = exact_omega_0_25(rho)
-    # plt.plot(rho, u_of_rho/np.trapz(u_of_rho),label="exact")
-    # plt.plot(rho, eigenvectors[idx],label="computed")
-    plt.xlabel(r"$\rho$")
-    plt.ylabel(r"eigenvector")
-    plt.legend()
-    plt.show()
+    Reads eigenvector file which contains one column with rho max values and
+    then k more columns which contains the k'th element of each eigenvector.
 
-    # for i in range(num_rho_max):
-    #     rho_interval = np.linspace(0, rho[i], num_eig_elements)
+    Plots the two frequencies with analytical results and compares the numerical
+    and analytical results. freq = [0.05, 0.25].
+    """
 
-    #     plt.plot(rho_interval, eigenvectors[i])
-    #     plt.xlabel(r"$\rho$")
-    #     plt.ylabel(r"eigenvector")
-    #     plt.show()
+    filenames_1 = ["eigenvalue_omega_0.050000.txt", "eigenvalue_omega_0.250000.txt"]
+    filenames_2 = ["eigenvector_omega_0.050000.txt", "eigenvector_omega_0.250000.txt"]
+    functions = [exact_freq_0_05, exact_freq_0_25]
+    exact_eigenvalues = [2*0.1750, 2*0.6250]
+
+    for i in range(2):
+
+        # eigenvalue calculations
+
+        rho, eigenvalue = np.loadtxt(filenames_1[i], skiprows=1, unpack=True)
+        
+        error = np.abs(eigenvalue - exact_eigenvalues[i])
+        min_error_idx = np.argmin(error)
+        min_error = error[min_error_idx]
+        
+        # recheck == True if best rho max is at the start or end of interval
+        recheck = (min_error_idx == (len(rho) - 1)) or (min_error_idx == 0)
+        
+        print("eigenvalue data")
+        print("===============")
+        print("filename: ", filenames_1[i])
+        print("best eigenvalue: ", eigenvalue[min_error_idx])
+        print("best error: ", min_error)
+        print("best rho max: ", rho[min_error_idx])
+        print("index of rho max: ", min_error_idx)
+        print("numbero rho maxo: ", len(rho))
+        print("recheck: ", recheck, "\n")
+
+
+        # eigenvector calculations
+
+        eigenvectors     = np.loadtxt(filenames_2[i], skiprows=1)
+        num_rho_max      = np.shape(eigenvectors)[0]        # number of rho max values
+        num_eig_elements = np.shape(eigenvectors)[1] - 1    # number of elements in eigenvector
+
+        rhos, eigenvectors = eigenvectors[:, 0], eigenvectors[:, 1:]
+        eigenvectors[min_error_idx] /= np.sum(eigenvectors[min_error_idx]) # normalizing
+
+        rho = np.linspace(0, rhos[min_error_idx], num_eig_elements)
+        exact_eigenvector  = functions[i](rho)
+        exact_eigenvector /= np.sum(exact_eigenvector)
+        
+        
+        plt.plot(rho, exact_eigenvector, label="exact")
+        plt.plot(rho, eigenvectors[min_error_idx], label="computed")
+        plt.xlabel(r"$\rho$")
+        plt.ylabel(r"eigenvector")
+        plt.legend()
+        plt.show()
+
 
 
 if __name__ == "__main__":
@@ -234,6 +283,5 @@ if __name__ == "__main__":
     # q.contour_plot(selection="max")
     # q.comparison_plot()
 
-    idx = visualize_eigenvalue_data_two_electrons()
-    visualize_eigenvector_data_two_electrons(idx)
+    visualize_eigendata_two_electrons()
     pass
