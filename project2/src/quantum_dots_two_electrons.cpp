@@ -45,10 +45,8 @@ int compute_and_write_eigendata(double freq, std::string filename,
 {   
     /* 
     Computing eigenvalues and vectors for matrix approximating the Hamiltonian
-    opetrator for a potential well with two electrons interecting with Coulomb
+    opetrator for a potential well with two electrons interacting with Coulomb
     force.
-    NB! Remember to change filename_eig! This program WILL write over existing 
-    files.
 
     Parameters
     ----------
@@ -56,41 +54,37 @@ int compute_and_write_eigendata(double freq, std::string filename,
         Oscillator frequency for the harmonic oscillator.
 
     filename : std::string
-        An input for what the filename should be. The final filename will be:
+        Filename input. The final filename will be:
         "eigenvalue_" + filename + ".txt", for the file containing eigenvalues,
         "eigenvector_" + filename + ".txt", for the file containing eigenvectors.
 
     progress : bool
-        If you want to see the progress in the terminal, set this to "true".
-        It writes:
-        rho_max: xxx rho_end: xxx  n: xxx
-        rho_max: xxx rho_end: xxx  n: xxx
-        ...
-        rho_max: xxx rho_end: xxx  n: xxx
+        For toggling progress information on/off.
 
     rho_min : double
-        This is where the potential startes. Must be >= 0.
+        Where the potential starts. Must be > 0.
 
     rho_max : double
-        This is where the potential ends for the first iteration.
+        Where the potential ends for the first iteration.
 
     grid : int
         This is the number of gridpoints.
 
     tol_off_diag : double
-        The tolleranse for jacobi method.
+        The tolerance for jacobi method.
 
     rho_end : double
-        This is where the iteration stops for infty.
+        Iteration stop value.
 
     d_rho : double
-        increment for rho_max
+        Increment for rho_max.
     */ 
+
     std::cout << "Looping over different rho_max values" << std::endl;
 
     double rho_tmp = rho_max; // for reverting rho_max to original max value
-    // Looping over frequencies.
-    // Setting up the file.
+    
+    // setting up the files
     std::string filename_eig;
     std::string filename_vec;
     std::ofstream data_file_eig;
@@ -109,6 +103,7 @@ int compute_and_write_eigendata(double freq, std::string filename,
         /* 
         Looping over interesting maximum values for rho (approximation of infinity).
         */
+        
         double step = (rho_max - rho_min)/grid; // Step size
         double off_diag = -1/(step*step);       // Off-diagonal elements in the matrix we want the eigenvalues of.
 
@@ -165,7 +160,7 @@ private:
     bool progress = true;        // toggling progress info on/off
     int grid = 200;              // end grid value
     double rho_min = std::pow(10, -7);
-    double tol_off_diag = std::pow(10, -5); // tolerance for Jacobi
+    double tol_off_diag = std::pow(10, -10); // tolerance for Jacobi
     double rho_max;
     double rho_end;
     double d_rho;
@@ -186,9 +181,9 @@ public:
         Unknown good rho max.
         */
 
-        rho_max  = 6.8;     // approximating infinity
-        rho_end  = 8;     // end rho_max value for the loop
-        d_rho    = 0.2;    // rho step size for incrementing in the loop
+        rho_max  = 26;     // approximating infinity
+        rho_end  = 33;     // end rho_max value for the loop
+        d_rho    = 0.1;    // rho step size for incrementing in the loop
         freq     = 0.01; 
         filename = "omega_" + std::to_string(freq);
         compute_and_write_eigendata(freq, filename, progress, rho_min, rho_max,
@@ -237,9 +232,9 @@ public:
         Unknown good rho max.
         */
 
-        rho_max  = 2;     // approximating infinity
-        rho_end  = 8;     // end rho_max value for the loop
-        d_rho    = 0.2;    // rho step size for incrementing in the loop
+        rho_max  = 5.5;     // approximating infinity
+        rho_end  = 7.5;     // end rho_max value for the loop
+        d_rho    = 0.05;    // rho step size for incrementing in the loop
         freq     = 0.5; 
         filename = "omega_" + std::to_string(freq);
         compute_and_write_eigendata(freq, filename, progress, rho_min, rho_max,
@@ -254,9 +249,9 @@ public:
         Unknown good rho max.
         */
 
-        rho_max  = 0.1;     // approximating infinity
-        rho_end  = 7;     // end rho_max value for the loop
-        d_rho    = 0.2;    // rho step size for incrementing in the loop
+        rho_max  = 4.5;     // approximating infinity
+        rho_end  = 5;     // end rho_max value for the loop
+        d_rho    = 0.025;    // rho step size for incrementing in the loop
         freq     = 1; 
         filename = "omega_" + std::to_string(freq);
         compute_and_write_eigendata(freq, filename, progress, rho_min, rho_max,
@@ -272,7 +267,7 @@ public:
         */
 
         rho_max  = 0.1;     // approximating infinity
-        rho_end  = 6;     // end rho_max value for the loop
+        rho_end  = 4;     // end rho_max value for the loop
         d_rho    = 0.2;    // rho step size for incrementing in the loop
         freq     = 5; 
         filename = "omega_" + std::to_string(freq);
@@ -290,9 +285,12 @@ int main()
 {    
 
     Eigendata q;
-    q.eigendata_freq_025();
-    
-    // {0.01, 0.05, 0.25, 0.5, 1, 5}
+    q.eigendata_freq_001();
+    // q.eigendata_freq_005();
+    // q.eigendata_freq_025();
+    // q.eigendata_freq_05();
+    // q.eigendata_freq_1();
+    // q.eigendata_freq_5();
 
     return 0;
 }
