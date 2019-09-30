@@ -165,14 +165,6 @@ class VisualizeData:
 
 
 
-
-
-# Exact radial wavefunction for two electrons. (NB! this is u(r), so not 
-# actually the wavefunction.)
-# Need r_vector (same as rho). Must be n long.
-# We calculate for l = 0, so set l = 0.
-# Need an n to loop over/set resolution.
-
 def exact_freq_0_05(rho):
     """
     Analytical solution for the eigenvector corresponding to freq = 0.05
@@ -212,9 +204,60 @@ def exact_freq_0_25(r):
     return r**(l + 1) * np.exp(-r**2/(8*(l + 1))) * (1 + r/(2*(l + 1)))
 
 
+def approximate_eigenvalues(freq):
+    """
+    Approximating eigenvalues for the two electron interaction problem.
+
+    See M. Taut. https://journals.aps.org/pra/pdf/10.1103/PhysRevA.48.3561.
+
+    Parameters
+    ----------
+    freq : float, numpy.ndarray
+        Harmonic oscillator frequency.
+
+    Returns
+    -------
+    : float, numpy.ndarray
+        Approximated eigenvalue.
+
+    CURRENTLY NOT IN USE.
+    """
+    V0     = 3/2*(freq/2)**(2/3)
+    freq_e = np.sqrt(3)*freq
+    m = 0
+
+    return V0 + freq_e*(m + 1/2)
 
 
-def visualize_eigendata_two_electrons():
+def approximate_eigenvectors(freq, rho):
+    """
+    Approximating eigenvectors for the two electron interaction problem.
+
+    See M. Taut. https://journals.aps.org/pra/pdf/10.1103/PhysRevA.48.3561.
+
+    Parameters
+    ----------
+    freq : float
+        Harmonic oscillator frequency.
+
+    rho : numpy.ndarray
+        Array with values in the interval [rho_min, rho_max].
+
+    Returns
+    -------
+    : float, numpy.ndarray
+        Approximated eigenvalue.
+
+    CURRENTLY NOT IN USE.
+    """
+
+    rho_0  = (2*freq**2)**(-1/3)
+    freq_e = np.sqrt(3)*freq
+
+    return (freq_e/np.pi)**(1/4)*np.exp(-(1/2)*freq_e*(rho - rho_0))
+
+
+def visualize_eigendata_two_electrons_numerical_and_analytical():
     """
     Reads eigenvalue file which contains two columns. The first column consists
     of rho max values, and the second column of the corresponding eigenvalues.
@@ -230,11 +273,13 @@ def visualize_eigendata_two_electrons():
     filenames_2 = ["eigenvector_omega_0.050000.txt", "eigenvector_omega_0.250000.txt"]
     functions = [exact_freq_0_05, exact_freq_0_25]
     exact_eigenvalues = [2*0.1750, 2*0.6250]
+    frequencies = [0.05, 0.25]
 
     for i in range(2):
 
-        # eigenvalue calculations
+        _, ax = plt.subplots()
 
+        # eigenvalue calculations
         rho, eigenvalue = np.loadtxt(filenames_1[i], skiprows=1, unpack=True)
         
         error = np.abs(eigenvalue - exact_eigenvalues[i])
@@ -247,6 +292,7 @@ def visualize_eigendata_two_electrons():
         print("eigenvalue data")
         print("===============")
         print("filename: ", filenames_1[i])
+        print("exact eigenvalue: ", exact_eigenvalues[i])
         print("best eigenvalue: ", eigenvalue[min_error_idx])
         print("best error: ", min_error)
         print("best rho max: ", rho[min_error_idx])
@@ -268,20 +314,88 @@ def visualize_eigendata_two_electrons():
         exact_eigenvector  = functions[i](rho)
         exact_eigenvector /= np.sum(exact_eigenvector)
         
+        ax.plot(rho, exact_eigenvector, label="exact")
+        ax.plot(rho, eigenvectors[min_error_idx], label="computed")
+        ax.set_xlabel(r"$\rho$", fontsize=40)
+        ax.set_ylabel(r"$u(\rho)$", fontsize=40)
+        ax.set_title(r"$\omega_r = $" + f"{frequencies[i]}", fontsize=40)
         
-        plt.plot(rho, exact_eigenvector, label="exact")
-        plt.plot(rho, eigenvectors[min_error_idx], label="computed")
-        plt.xlabel(r"$\rho$")
-        plt.ylabel(r"eigenvector")
-        plt.legend()
+        ax.tick_params(labelsize=30)
+        ax.grid()
+        plt.legend(fontsize=30)
         plt.show()
+
+
+def visualize_eigendata_two_electrons_numerical():
+    """
+    Reads eigenvalue file which contains two columns. The first column consists
+    of rho max values, and the second column of the corresponding eigenvalues.
+
+    Reads eigenvector file which contains one column with rho max values and
+    then k more columns which contains the k'th element of each eigenvector.
+
+    Presents the radial part of the wave function for all the different
+    frequencies.
+    """
+
+    filenames_1 = ["eigenvalue_omega_0.010000.txt", "eigenvalue_omega_0.050000.txt", 
+        "eigenvalue_omega_0.250000.txt", "eigenvalue_omega_0.500000.txt",
+        "eigenvalue_omega_1.000000.txt", "eigenvalue_omega_5.000000.txt"]
+    filenames_2 = ["eigenvector_omega_0.010000.txt", "eigenvector_omega_0.050000.txt",
+        "eigenvector_omega_0.250000.txt", "eigenvector_omega_0.500000.txt",
+        "eigenvector_omega_1.000000.txt", "eigenvector_omega_5.000000.txt"]
+
+    frequencies = [0.01, 0.05, 0.25, 0.5, 1, 5]
+
+
+    _, ax = plt.subplots()
+
+    for i in range(6):
+
+        # eigenvalue calculations
+        rho, eigenvalue = np.loadtxt(filenames_1[i], skiprows=1, unpack=True)
+        
+        best_rho_idx = np.argmin(np.abs(eigenvalue[:-1] - eigenvalue[1:]))
+
+        best_rho = rho[best_rho_idx]
+
+        print("eigenvalue data")
+        print("===============")
+        print("filename: ", filenames_1[i])
+        print("best rho: ", best_rho)
+        print("best rho idx: ", best_rho_idx)
+        print("number of rhos: ", len(rho))
+        
+
+
+        # eigenvector calculations
+
+        eigenvectors     = np.loadtxt(filenames_2[i], skiprows=1)
+        num_rho_max      = np.shape(eigenvectors)[0]        # number of rho max values
+        num_eig_elements = np.shape(eigenvectors)[1] - 1    # number of elements in eigenvector
+
+        rhos, eigenvectors = eigenvectors[:, 0], eigenvectors[:, 1:]
+        eigenvectors[best_rho_idx] /= np.sum(eigenvectors[best_rho_idx]) # normalizing
+
+        rho = np.linspace(0, rhos[best_rho_idx], num_eig_elements)
+
+    
+        ax.plot(rho, eigenvectors[best_rho_idx], label=f"$\omega_r: ${frequencies[i]}")
+        ax.set_xlabel(r"$\rho$", fontsize=40)
+        ax.set_ylabel(r"$u(\rho)$", fontsize=40)
+    
+    ax.grid()
+    ax.tick_params(labelsize=30)
+    plt.legend(fontsize=30)
+    plt.show()
 
 
 
 if __name__ == "__main__":
-    # q = VisualizeData("eigenvalues.txt")
-    # q.contour_plot(selection="max")
-    # q.comparison_plot()
+    q = VisualizeData("eigenvalues.txt")
+    q.contour_plot(selection="max")
+    q.comparison_plot()
 
-    visualize_eigendata_two_electrons()
+    visualize_eigendata_two_electrons_numerical_and_analytical()
+    visualize_eigendata_two_electrons_numerical()
     pass
