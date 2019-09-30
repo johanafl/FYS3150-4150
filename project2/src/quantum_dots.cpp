@@ -30,31 +30,6 @@ arma::vec effective_potential(int grid, double step, double rho_min)
     return diag;
 }
 
-// void exact()
-// {
-//     /* 
-//     Exact radial wavefunction for two electrons. (NB! this is u(r), so not 
-//     actually the wavefunction.)
-    
-//     Need r_vector (same as rho). Must be n long.
-//     We calculate for l = 0, so set l = 0.
-//     Need an n to loop over/set resolution.
-//     */
-//     double u[n];
-//     // omega_r = 0.25 (corresponds to n = 2 in article by M. Taut.) -> eigenvalue (proportional to energy) lambda = 0.6250
-//     for (i=0; i<n; i++)
-//     {
-//         r = r_vector[i]
-//         u[i] = pow(r,l+1) * exp(-r*r/(8*(l + 1))) * (1 + r/(2*(l + 1)));
-//     }
-
-//     // omega_r = 0.05 (corresponds to n = 3 in article by M. Taut.) -> eigenvalue (proportional to energy) lambda = 0.1750
-//     for (i=0; i<n; i++)
-//     {
-//         r = r_vector[i]
-//         u[i] = pow(r,l+1) * exp(-r*r/(8*(4*l + 5))) * (1 + r/(2*(l + 1)) + r*r/(4*(l + 1)*(4*l + 5)));
-//     }
-// }
 
 class QuantumData
 {
