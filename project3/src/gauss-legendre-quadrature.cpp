@@ -23,7 +23,7 @@ void gauss_legendre_points(double x1, double x2, double x[], double w[], int n)
 
     for(i = 1; i <= m; i++)
     {      // loops over desired roots
-      z = std::cos(pi * (i - 0.25)/(n + 0.5));
+        z = std::cos(pi * (i - 0.25)/(n + 0.5));
 
         /*
         Starting with the above approximation to the ith root
@@ -48,12 +48,12 @@ void gauss_legendre_points(double x1, double x2, double x[], double w[], int n)
 	        }
 
 	        /*
-	        ** p1 is now the desired Legrendre polynomial. Next compute
-            ** ppp its derivative by standard relation involving also p2,
-            ** polynomial of one lower order.
+	        p1 is now the desired Legrendre polynomial. Next compute
+            ppp its derivative by standard relation involving also p2,
+            polynomial of one lower order.
             */
  
-	        pp = n * (z * p1 - p2)/(z * z - 1.0);
+	        pp = n*(z*p1 - p2)/(z*z - 1.0);
 	        z1 = z;
 	        z  = z1 - p1/pp;                   // Newton's method
         }
