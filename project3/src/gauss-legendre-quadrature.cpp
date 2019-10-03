@@ -1,12 +1,13 @@
 #include <cmath>
 #include <iostream>
+#define pi 3.14159265359
 
 
 void gauss_legendre_points(double x1, double x2, double x[], double w[], int n)
 {
     int m, j, i;
     double z1, z, xm, xl, pp, p3, p2, p1;
-    double const pi = 3.14159265359; 
+    //double const pi = 3.14159265359; 
     double *x_low, *x_high, *w_low, *w_high;
 
     double const ZERO = std::pow(10, -10);
@@ -63,12 +64,14 @@ void gauss_legendre_points(double x1, double x2, double x[], double w[], int n)
         ** counterpart. Compute the weight and its symmetric counterpart
         */
 
-      *(x_low++)  = xm - xl * z;
-      *(x_high--) = xm + xl * z;
-      *w_low      = 2.0 * xl/((1.0 - z * z) * pp * pp);
+      *(x_low++)  = xm - xl*z;
+      *(x_high--) = xm + xl*z;
+      *w_low      = 2.0*xl/((1.0 - z*z)*pp*pp);
       *(w_high--) = *(w_low++);
     }
 }
+
+
 
 double integrand(double x0, double x1, double x2, double x3, double x4, double x5)
 {   /*
@@ -79,24 +82,36 @@ double integrand(double x0, double x1, double x2, double x3, double x4, double x
     many parameters, will write this when things seem to work
     */
 
-   
-    double res = std::exp(5);
-    // std::cout << N << std::endl;
+    // dist is the distance between r1 and r2 vectors
+    double dist = (x0 - x3)*(x0 - x3) + (x1 - x4)*(x1 - x4) + (x2 - x5)*(x2 - x5);
     
-    return res;
+    if (dist == 0)
+    {   // sets integrand to 0 if x0 = x3, x1 = x4, and x2 = x5
+        return 0;
+    }
+    
+    else
+    {
+        double res = std::sqrt(x0*x0 + x1*x1 + x2*x2) + std::sqrt(x3*x3 + x4*x4 + x5*x5);
+        res = std::exp(-2*2*(res));
+        res /= std::sqrt(dist);
+        
+        return res;
+    }
+
 }
 
 
 
 void gauss_legendre_quadrature()
 {   
-    int N = 10;                 // grid points
+    int N = 35;                 // grid points
     double *x = new double [N]; // array of x values
     double *w = new double [N]; // array of weights
 
     // integral limits, approx. infinity
-    int a = -10;
-    int b = 10;
+    float a = -2;
+    float b = -a;
     
     gauss_legendre_points(a, b, x, w, N);
 
@@ -104,7 +119,9 @@ void gauss_legendre_quadrature()
     double gauss_sum = 0;
 
     for (int i0 = 0; i0 < N; i0++)
-    {
+    {   
+        std::cout << "outer loop: " << i0 << " of " << N-1 << std::endl;
+        
         for (int i1 = 0; i1 < N; i1++)
         {
             for (int i2 = 0; i2 < N; i2++)
@@ -115,8 +132,8 @@ void gauss_legendre_quadrature()
                     {
                         for (int i5 = 0; i5 < N; i5++)
                         {
-                            gauss_sum += w[i0]*w[i1]*w[i2]*w[i3]*w[i4]*w[i5]*
-                                integrand(x[i0], x[i1], x[i2], x[i3], x[i4], x[i5]);
+                            gauss_sum += w[i0]*w[i1]*w[i2]*w[i3]*w[i4]*w[i5]
+                                *integrand(x[i0], x[i1], x[i2], x[i3], x[i4], x[i5]);
                         }
                     }
                 }
@@ -124,7 +141,9 @@ void gauss_legendre_quadrature()
         }
     }
 
-
+    std::cout << "calculated: " << gauss_sum << std::endl;
+    std::cout << "correct answer: " << 5*pi*pi/(16*16) << std::endl;
+    std::cout << "error: " << std::fabs(gauss_sum - 5*pi*pi/(16*16)) << std::endl;
     delete[] x;
     delete[] w;
 }
@@ -134,8 +153,8 @@ void gauss_legendre_quadrature()
 
 int main()
 {   
-
     gauss_legendre_quadrature();
+    
 
 
 
