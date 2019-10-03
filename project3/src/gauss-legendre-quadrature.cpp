@@ -72,21 +72,44 @@ void gauss_legendre_points(double x1, double x2, double x[], double w[], int n)
 }
 
 
-
 double integrand(double x0, double x1, double x2, double x3, double x4, double x5)
-{   /*
-    The integrand to be integrated.
+{   
+    /*
+    Here we calculate the integrand that we want to integrate.
 
     Parameters
     ----------
-    many parameters, will write this when things seem to work
+    x0 : double
+        The x-value for the first part of the integrand/for the first electron.
+
+    x1 : double
+        The y-value for the first part of the integrand/for the first electron.
+
+    x2 : double
+        The z-value for the first part of the integrand/for the first electron.
+
+    x3 : double
+        The x-value for the second part of the integrand/for the second electron.
+
+    x4 : double
+        The y-value for the second part of the integrand/for the second electron.
+
+    x5 : double
+        The z-value for the second part of the integrand/for the second electron.
+
+
+    Returns
+    -------
+    : double
+        The value of the integrand in the spesified point. (exp(-2*2*(r1 + r2))/|r1 - r2|)
     */
 
     // dist is the distance between r1 and r2 vectors
     double dist = (x0 - x3)*(x0 - x3) + (x1 - x4)*(x1 - x4) + (x2 - x5)*(x2 - x5);
     
     if (dist == 0)
-    {   // sets integrand to 0 if x0 = x3, x1 = x4, and x2 = x5
+    {   
+        // sets integrand to 0 if x0 = x3, x1 = x4, and x2 = x5
         return 0;
     }
     
@@ -102,7 +125,6 @@ double integrand(double x0, double x1, double x2, double x3, double x4, double x
 }
 
 
-
 void gauss_legendre_quadrature()
 {   
     int N = 35;                 // grid points
@@ -113,11 +135,12 @@ void gauss_legendre_quadrature()
     float a = -2;
     float b = -a;
     
+    // Finding the weights and points for integration.
     gauss_legendre_points(a, b, x, w, N);
-
 
     double gauss_sum = 0;
 
+    // The actual integral is approximated with a sum
     for (int i0 = 0; i0 < N; i0++)
     {   
         std::cout << "outer loop: " << i0 << " of " << N-1 << std::endl;
@@ -132,6 +155,7 @@ void gauss_legendre_quadrature()
                     {
                         for (int i5 = 0; i5 < N; i5++)
                         {
+                            // Multiplying the weights with the integrand.
                             gauss_sum += w[i0]*w[i1]*w[i2]*w[i3]*w[i4]*w[i5]
                                 *integrand(x[i0], x[i1], x[i2], x[i3], x[i4], x[i5]);
                         }
@@ -144,19 +168,14 @@ void gauss_legendre_quadrature()
     std::cout << "calculated: " << gauss_sum << std::endl;
     std::cout << "correct answer: " << 5*pi*pi/(16*16) << std::endl;
     std::cout << "error: " << std::fabs(gauss_sum - 5*pi*pi/(16*16)) << std::endl;
+
     delete[] x;
     delete[] w;
 }
 
 
-
-
 int main()
 {   
     gauss_legendre_quadrature();
-    
-
-
-
     return 0;
 }
