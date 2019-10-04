@@ -32,7 +32,7 @@ double integrand(double r1, double r2, double theta1, double theta2, double phi1
     Returns
     -------
     : double
-        The value of the integrand in the spesified point.
+        The value of the integrand in the specified point.
     */
 
     double tol = 1e-10;
@@ -40,13 +40,12 @@ double integrand(double r1, double r2, double theta1, double theta2, double phi1
     double r12 = r1*r1 + r2*r2 - 2*r1*r2*cos_beta;
     
     if (r12 < tol)
-    {
+    {   // avoids division by zero
         return 0;
     }    
     else
     {
-        r12 = std::sqrt(r12);
-        return 1/r12;
+        return 1/std::sqrt(r12);
     }
     
 }
@@ -63,33 +62,27 @@ int mc_integration()
         The seed is the system time in seconds from UNIX epoch.
     */
 
-    int N = 20; // grid points
-    
-    // integral limits
-    float a = 2;      // approx. infinity
-    float lambda = 1; // NB!! For the exp. distribution function.
+    int N = 10;       // number of iterations = N**6
+    float lambda = 1; // For the exp. distribution function.
 
-    // Generate engine
-    // time_t seed;
-    // time(&seed);
-    int seed = 1337;
+    // generate engine with pseudo-random seed taken from system time
+    time_t seed;
+    time(&seed);
     std::mt19937 engine(seed);
 
-    // Generate distributions
+    // generating distributions
     std::uniform_real_distribution<double> uniform_theta(0, pi);
     std::uniform_real_distribution<double> uniform_phi(0, 2*pi);
     std::exponential_distribution<double> exp_dist(lambda);
 
 
-    double gauss_sum = 0;
+    double integral_sum = 0;
+    double N5 = std::pow(N, 5); // pre-calculated for the inner sum
 
-    double N5 = std::pow(N, 5);
-
-    // The actual integral is approximated with a sum
     for (int i0 = 0; i0 < N; i0++)
-    {   // the outer loop is only for print of progress information
-    
-        std::cout << "outer loop: " << i0 << " of " << N-1 << std::endl;
+    {   // first loop is for displaying progress info without an if statement
+        
+        std::cout << "outer loop: " << i0 << " of " << N << std::endl;
 
         for (int i1 = 0; i1 < N5; i1++)
         {
@@ -101,21 +94,22 @@ int mc_integration()
             double phi1 = uniform_phi(engine);
             double phi2 = uniform_phi(engine);
 
-            // Multiplying the weights with the integrand.
-            gauss_sum += integrand(r1, r2, theta1, theta2, phi1, phi2)
+            // adding to the integrand sum
+            integral_sum += integrand(r1, r2, theta1, theta2, phi1, phi2)
                 *r1*r1*r2*r2*std::sin(theta1)*std::sin(theta2);
         
         }
     }
 
 
-    gauss_sum /= 4*std::pow(pi, 4);
-    gauss_sum /= std::pow((2*2), 5);
-    gauss_sum /= std::pow(N, 6);
+    integral_sum *= 4*std::pow(pi, 4);     // theta, phi interval
+    integral_sum /= std::pow((2*2), 5);    // (2*alpha)**5
+    integral_sum /= std::pow(N, 6);        // number of samples
 
-    std::cout << "\ncalculated: " << gauss_sum << std::endl;
+    std::cout << "\ncalculated: " << integral_sum << std::endl;
     std::cout << "correct answer: " << 5*pi*pi/(16*16) << std::endl;
-    std::cout << "error: " << std::fabs(gauss_sum - 5*pi*pi/(16*16)) << std::endl;
+    std::cout << "error: " << std::fabs(integral_sum - 5*pi*pi/(16*16)) << std::endl;
+    std::cout << "iterations: " << std::pow(N, 6) << std::endl;
 
     return seed;
 }
@@ -126,73 +120,3 @@ int main()
     mc_integration();
     return 1;
 }
-
-
-// void mc_integration_improve()
-// {
-//     /*
-//     Monte Carlo integration of the function exp(-2*2*(r1 + r2))/|r1 - r2|.
-//     */
-//     int N = 15; // grid points
-//     // integral limits, approx. infinity
-//     float a = 2;
-//     double lambda = 2; // NB! This must be spesified correctly.
-
-//     // Generate engine
-//     int seed = 1424;
-//     std::mt19937 engine(seed);
-
-//     // Generate distributions
-//     std::uniform_real_distribution<double> uniform(0, a);
-//     std::exponential_distribution<double> exp_dist(lambda);
-
-
-//     double gauss_sum = 0;
-
-//     // The actual integral is approximated with a sum
-//     for (int i0 = 0; i0 < N; i0++)
-//     {   
-//         std::cout << "outer loop: " << i0 << " of " << N-1 << std::endl;
-        
-//         for (int i1 = 0; i1 < N; i1++)
-//         {
-//             for (int i2 = 0; i2 < N; i2++)
-//             {
-//                 for (int i3 = 0; i3 < N; i3++)
-//                 {
-//                     for (int i4 = 0; i4 < N; i4++)
-//                     {
-//                         for (int i5 = 0; i5 < N; i5++)
-//                         {
-//                             double r0 = uniform(engine);
-//                             double r1 = uniform(engine);
-//                             double theta0 = uniform(engine);
-//                             double theta1 = uniform(engine);
-//                             double phi0 = uniform(engine);
-//                             double phi1 = uniform(engine);
-
-//                             // Multiplying the weights with the integrand.
-//                             gauss_sum += integrand(r0, r1, theta0, theta1, phi0, phi1);
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-//     }
-    
-//     gauss_sum /= pow(N, 6);
-//     gauss_sum /= pow(1/a, 2);
-//     gauss_sum /= pow(1/(2*pi), 2);
-//     gauss_sum /= pow(1/pi, 2);
-
-//     std::cout << "calculated: " << gauss_sum << std::endl;
-//     std::cout << "correct answer: " << 5*pi*pi/(16*16) << std::endl;
-//     std::cout << "error: " << std::fabs(gauss_sum - 5*pi*pi/(16*16)) << std::endl;
-// }
-
-
-// int main()
-// {
-//     mc_integration_improve();
-//     return 1;
-// }
