@@ -1,15 +1,14 @@
 #include <cmath>
 #include <iostream>
-#define pi 3.14159265359
+
+double const pi = 3.14159265359; 
 
 
 void gauss_legendre_points(double x1, double x2, double x[], double w[], int n)
 {
     int m, j, i;
     double z1, z, xm, xl, pp, p3, p2, p1;
-    //double const pi = 3.14159265359; 
     double *x_low, *x_high, *w_low, *w_high;
-
     double const ZERO = std::pow(10, -10);
 
     m  = (n + 1)/2;          // roots are symmetric in the interval
