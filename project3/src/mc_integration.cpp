@@ -1,14 +1,8 @@
 #include <iostream>
 #include <random>
+#include <time.h>
 double const pi = 3.14159265359; 
 
-// // Generate engine
-// int seed = 1424;
-// mt19937 engine(seed);
-
-// // Generate distributions
-// uniform_real_distribution<float> rand_float(0, 2);
-// normal_distribution<float> rand_normal(0, 3);
 
 
 double integrand(double x0, double x1, double x2, double x3, double x4, double x5)
@@ -47,8 +41,7 @@ double integrand(double x0, double x1, double x2, double x3, double x4, double x
     double dist = (x0 - x3)*(x0 - x3) + (x1 - x4)*(x1 - x4) + (x2 - x5)*(x2 - x5);
     
     if (dist == 0)
-    {   
-        // sets integrand to 0 if x0 = x3, x1 = x4, and x2 = x5
+    {   // sets integrand to 0 if x0 = x3, x1 = x4, and x2 = x5
         return 0;
     }
     
@@ -64,18 +57,26 @@ double integrand(double x0, double x1, double x2, double x3, double x4, double x
 }
 
 
-void mc_integration()
+int mc_integration()
 {
     /*
     Monte Carlo integration of the function exp(-2*2*(r1 + r2))/|r1 - r2|.
+
+    Returns
+    -------
+    seed : int
+        The seed is the system time in seconds from UNIX epoch.
     */
+
     int N = 15; // grid points
+    
     // integral limits, approx. infinity
     float a = -2;
     float b = -a;
 
     // Generate engine
-    int seed = 1424;
+    time_t seed;
+    time(&seed);
     std::mt19937 engine(seed);
 
     // Generate distributions
@@ -84,43 +85,39 @@ void mc_integration()
 
     double gauss_sum = 0;
 
+    double N5 = std::pow(N, 5);
+
     // The actual integral is approximated with a sum
     for (int i0 = 0; i0 < N; i0++)
-    {   
+    {   // the outer loop is only for print of progress information
+    
         std::cout << "outer loop: " << i0 << " of " << N-1 << std::endl;
-        
-        for (int i1 = 0; i1 < N; i1++)
-        {
-            for (int i2 = 0; i2 < N; i2++)
-            {
-                for (int i3 = 0; i3 < N; i3++)
-                {
-                    for (int i4 = 0; i4 < N; i4++)
-                    {
-                        for (int i5 = 0; i5 < N; i5++)
-                        {
-                            double x0 = uniform(engine);
-                            double x1 = uniform(engine);
-                            double x2 = uniform(engine);
-                            double x3 = uniform(engine);
-                            double x4 = uniform(engine);
-                            double x5 = uniform(engine);
 
-                            // Multiplying the weights with the integrand.
-                            gauss_sum += integrand(x0, x1, x2, x3, x4, x5);
-                        }
-                    }
-                }
-            }
+        for (int i1 = 0; i1 < N5; i1++)
+        {
+            // drawing random numbers from the uniform distribution
+            double x0 = uniform(engine);
+            double x1 = uniform(engine);
+            double x2 = uniform(engine);
+            double x3 = uniform(engine);
+            double x4 = uniform(engine);
+            double x5 = uniform(engine);
+
+            // Multiplying the weights with the integrand.
+            gauss_sum += integrand(x0, x1, x2, x3, x4, x5);   
+        
         }
     }
-    
-    gauss_sum /= pow(N, 6);
+
+
+    gauss_sum /= std::pow(N, 6);;
     gauss_sum /= pow(1/(b - a), 6);
 
     std::cout << "calculated: " << gauss_sum << std::endl;
     std::cout << "correct answer: " << 5*pi*pi/(16*16) << std::endl;
     std::cout << "error: " << std::fabs(gauss_sum - 5*pi*pi/(16*16)) << std::endl;
+
+    return seed;
 }
 
 
