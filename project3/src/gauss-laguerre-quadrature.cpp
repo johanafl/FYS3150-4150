@@ -106,7 +106,7 @@ double integrand(double r1, double r2, double theta1, double theta2, double phi1
 
     double tol = 1e-10;
     double cos_beta = std::cos(theta1)*std::cos(theta2) + std::sin(theta1)*std::sin(theta2)*std::cos(phi1 - phi2);
-    double r12  = r1*r1 + r2*r2 - 2*r1*r2*cos_beta;
+    double r12 = r1*r1 + r2*r2 - 2*r1*r2*cos_beta;
     
     if (r12 < tol)
     {
@@ -115,7 +115,7 @@ double integrand(double r1, double r2, double theta1, double theta2, double phi1
     else
     {
         r12 = std::sqrt(r12);
-        return std::exp(-(r1 + r2) )/r12;
+        return 1/r12;
     }
     
 }
@@ -129,7 +129,7 @@ void gauss_laguerre_quadrature()
     and legendre polynomials for the theta- and phi-dependence.
     */
     
-    int N = 26;         // # of integration points for a single integral.
+    int N = 20;         // # of integration points for a single integral.
     double alpha = 2;   // laguerre assumes a function of the form x^{alpha} exp(-x), and we must specify alpha.
 
     double *r     = new double[N+1];  // Arrays for the r, theta and phi points.
@@ -166,7 +166,7 @@ void gauss_laguerre_quadrature()
                             // Multiplying the weights with the integrand.
                             gauss_sum += w_r[i0]*w_r[i1]*w_theta[i2]*w_theta[i3]*w_phi[i4]*w_phi[i5]
                                 *integrand(r[i0], r[i1], theta[i2], theta[i3], phi[i4], phi[i5])
-                                *r[i0]*r[i0]*r[i1]*r[i1]*std::sin(theta[i2])*std::sin(theta[i3]);
+                                *std::sin(theta[i2])*std::sin(theta[i3]);
                         }
                     }
                 }
@@ -180,6 +180,7 @@ void gauss_laguerre_quadrature()
     std::cout << "calculated: " << gauss_sum << std::endl;
     std::cout << "correct answer: " << 5*pi*pi/(16*16) << std::endl;
     std::cout << "error: " << std::fabs(gauss_sum - 5*pi*pi/(16*16)) << std::endl;
+    std::cout << "factor: " << (5*pi*pi/(16*16))/gauss_sum << std::endl;
 
     delete[] r;
     delete[] theta;
