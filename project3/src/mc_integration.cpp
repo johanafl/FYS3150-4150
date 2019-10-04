@@ -41,14 +41,15 @@ double integrand(double x0, double x1, double x2, double x3, double x4, double x
     double dist = (x0 - x3)*(x0 - x3) + (x1 - x4)*(x1 - x4) + (x2 - x5)*(x2 - x5);
     
     if (dist == 0)
-    {   // sets integrand to 0 if x0 = x3, x1 = x4, and x2 = x5
+    {   // avoids division by zero
         return 0;
-    }
+    } 
     
     else
     {
-        double res = std::sqrt(x0*x0 + x1*x1 + x2*x2) + std::sqrt(x3*x3 + x4*x4 + x5*x5);
-        res = std::exp(-2*2*(res));
+        double res; 
+        res  = std::sqrt(x0*x0 + x1*x1 + x2*x2) + std::sqrt(x3*x3 + x4*x4 + x5*x5);
+        res  = std::exp(-2*2*(res));
         res /= std::sqrt(dist);
         
         return res;
@@ -68,28 +69,26 @@ int mc_integration()
         The seed is the system time in seconds from UNIX epoch.
     */
 
-    int N = 15; // grid points
+    int N = 15;     // number of iterations = N**6
     
     // integral limits, approx. infinity
     float a = -2;
     float b = -a;
 
-    // Generate engine
+    // generate engine with pseudo-random seed taken from system time
     time_t seed;
     time(&seed);
     std::mt19937 engine(seed);
 
-    // Generate distributions
+    // generating distribution
     std::uniform_real_distribution<double> uniform(a, b);
 
 
-    double gauss_sum = 0;
-
+    double integral_sum = 0;
     double N5 = std::pow(N, 5);
 
-    // The actual integral is approximated with a sum
     for (int i0 = 0; i0 < N; i0++)
-    {   // the outer loop is only for print of progress information
+    {   // first loop is for displaying progress info without an if statement
     
         std::cout << "outer loop: " << i0 << " of " << N-1 << std::endl;
 
@@ -103,19 +102,19 @@ int mc_integration()
             double x4 = uniform(engine);
             double x5 = uniform(engine);
 
-            // Multiplying the weights with the integrand.
-            gauss_sum += integrand(x0, x1, x2, x3, x4, x5);   
+            // adding to the integrand sum
+            integral_sum += integrand(x0, x1, x2, x3, x4, x5);   
         
         }
     }
 
 
-    gauss_sum /= std::pow(N, 6);;
-    gauss_sum /= pow(1/(b - a), 6);
+    integral_sum /= std::pow(N, 6);     // number of samples
+    integral_sum *= pow((b - a), 6);    // integral interval
 
-    std::cout << "calculated: " << gauss_sum << std::endl;
+    std::cout << "calculated: " << integral_sum << std::endl;
     std::cout << "correct answer: " << 5*pi*pi/(16*16) << std::endl;
-    std::cout << "error: " << std::fabs(gauss_sum - 5*pi*pi/(16*16)) << std::endl;
+    std::cout << "error: " << std::fabs(integral_sum - 5*pi*pi/(16*16)) << std::endl;
 
     return seed;
 }
@@ -124,5 +123,5 @@ int mc_integration()
 int main()
 {
     mc_integration();
-    return 1;
+    return 0;
 }
