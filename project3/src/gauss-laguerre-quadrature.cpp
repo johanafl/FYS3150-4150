@@ -8,7 +8,6 @@ void gauss_legendre_points(double x1, double x2, double x[], double w[], int n)
 {
     int m, j, i;
     double z1, z, xm, xl, pp, p3, p2, p1;
-    //double const pi = 3.14159265359; 
     double *x_low, *x_high, *w_low, *w_high;
 
     double const ZERO = std::pow(10, -10);
@@ -104,19 +103,19 @@ double integrand(double r1, double r2, double theta1, double theta2, double phi1
     : double
         The value of the integrand in the spesified point. (exp(-2*2*(r1 + r2))/|r1 - r2|)
     */
-    double beta = std::cos(theta1)*std::cos(theta2) + std::sin(theta1)*std::sin(theta2)*std::cos(phi1 - phi2);
-    double r12  = r1*r1 + r2*r2 - 2*r1*r2*beta;
+
+    double tol = 1e-10;
+    double cos_beta = std::cos(theta1)*std::cos(theta2) + std::sin(theta1)*std::sin(theta2)*std::cos(phi1 - phi2);
+    double r12  = r1*r1 + r2*r2 - 2*r1*r2*cos_beta;
     
-    if (r12 == 0)
+    if (r12 < tol)
     {
         return 0;
     }    
     else
     {
         r12 = std::sqrt(r12);
-        
-        // return 1/r12;
-        return std::exp(-2*2*(r1 + r2))/r12;
+        return std::exp(-(r1 + r2) )/r12;
     }
     
 }
@@ -129,37 +128,32 @@ void gauss_laguerre_quadrature()
     using gaussian quadrature with laguerre polynomials for the r-dependence
     and legendre polynomials for the theta- and phi-dependence.
     */
-    int N = 10;         // # of integration points for a single integral.
+    
+    int N = 26;         // # of integration points for a single integral.
     double alpha = 2;   // laguerre assumes a function of the form x^{alpha} exp(-x), and we must specify alpha.
 
-    double *r     = new double[N];  // Arrays for the r, theta and phi points.
+    double *r     = new double[N+1];  // Arrays for the r, theta and phi points.
     double *theta = new double[N];
-    double *phi   = new double[N];    
+    double *phi   = new double[N];
 
-    double *w_r     = new double[N]; // Arrays for the r, theta and phi weights.
+    double *w_r     = new double[N+1]; // Arrays for the r, theta and phi weights.
     double *w_theta = new double[N];
     double *w_phi   = new double[N];
 
     // Finding the weights and points for integration.
-    gauss_laguerre(r, w_r, N, alpha);
+    gauss_laguerre(r, w_r, N+1, alpha);
     gauss_legendre_points(0, pi, theta, w_theta, N);
     gauss_legendre_points(0, 2*pi, phi, w_phi, N);
 
-    // // NB! Debug.
-    // std::cout << "r:       theta:     phi:" << std::endl;
-    // for (int i=0; i<N; i++)
-    // {
-    //     std::cout << r[i] << "    " << theta[i] << "    " << phi[i] << std::endl;
-    // }
 
     double gauss_sum = 0;
 
-    // The actual integral is approximated with a sum
-    for (int i0 = 0; i0 < N; i0++)
+    // The actual integral is approximated with a sum.
+    for (int i0 = 1; i0 < N+1; i0++)
     {   
-        std::cout << "outer loop: " << i0 << " of " << N-1 << std::endl;
+        std::cout << "outer loop: " << i0 << " of " << N << std::endl;
         
-        for (int i1 = 0; i1 < N; i1++)
+        for (int i1 = 1; i1 < N+1; i1++)
         {
             for (int i2 = 0; i2 < N; i2++)
             {
@@ -171,29 +165,17 @@ void gauss_laguerre_quadrature()
                         {
                             // Multiplying the weights with the integrand.
                             gauss_sum += w_r[i0]*w_r[i1]*w_theta[i2]*w_theta[i3]*w_phi[i4]*w_phi[i5]
-                                *integrand(r[i0], r[i1], theta[i2], theta[i3], phi[i4], phi[i5]);
-
-                            // NB! Debug.
-                            if (integrand(r[i0], r[i1], theta[i2], theta[i3], phi[i4], phi[i5]) > 1)
-                            {
-                               std::cout << integrand(r[i0], r[i1], theta[i2], theta[i3], phi[i4], phi[i5]) << std::endl;
-                               std::cout << i0 << " " << i1 << " " << i2 << " " << i3 << " " << i4 << " " << i5 << " " << std::endl;
-                               std::cout << std::endl;
-                            }
-                            // // NB! Debug.
-                            // std::cout << integrand(r[i0], r[i1], theta[i2], theta[i3], phi[i4], phi[i5]) << std::endl;
-                                // *integrand(x[i0], x[i1], x[i2], x[i3], x[i4], x[i5]);
+                                *integrand(r[i0], r[i1], theta[i2], theta[i3], phi[i4], phi[i5])
+                                *r[i0]*r[i0]*r[i1]*r[i1]*std::sin(theta[i2])*std::sin(theta[i3]);
                         }
                     }
                 }
-            // // NB! Debug.
-            // if (i2 == 0)
-            // {
-            //     std::cout << gauss_sum << std::endl;
-            // }
             }
         }
     }
+
+    // factor from change of variables
+    gauss_sum /= std::pow( (2*2), 5);
 
     std::cout << "calculated: " << gauss_sum << std::endl;
     std::cout << "correct answer: " << 5*pi*pi/(16*16) << std::endl;
