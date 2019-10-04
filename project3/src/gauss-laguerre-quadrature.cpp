@@ -101,7 +101,7 @@ double integrand(double r1, double r2, double theta1, double theta2, double phi1
     Returns
     -------
     : double
-        The value of the integrand in the spesified point. (exp(-2*2*(r1 + r2))/|r1 - r2|)
+        The value of the integrand in the spesified point.
     */
 
     double tol = 1e-10;
