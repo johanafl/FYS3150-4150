@@ -86,7 +86,7 @@ int mc_integration()
 
         for (int i1 = 0; i1 < N5; i1++)
         {
-            // drawing random numbers from the uniform distribution
+            // drawing random numbers from the distributions
             double r1 = exp_dist(engine);
             double r2 = exp_dist(engine);
             double theta1 = uniform_theta(engine);
