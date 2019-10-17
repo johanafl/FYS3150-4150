@@ -141,7 +141,7 @@ void gauss_laguerre_quadrature()
     double *w_phi   = new double[N];
 
     // Finding the weights and points for integration.
-    gauss_laguerre(r, w_r, N+1, alpha);
+    gauss_laguerre(r, w_r, N+1, alpha);     // possibly change to N
     gauss_legendre_points(0, pi, theta, w_theta, N);
     gauss_legendre_points(0, 2*pi, phi, w_phi, N);
 
