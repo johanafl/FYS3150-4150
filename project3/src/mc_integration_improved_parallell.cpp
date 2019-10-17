@@ -63,28 +63,22 @@ double mc_integration()
         The seed is the system time in seconds from UNIX epoch.
     */
 
-    int N = 10;       // number of iterations = N**6
+    int N = 100000;       // number of iterations = N
     float lambda = 1; // For the exp. distribution function.
-
-    double N5 = std::pow(N, 6); // pre-calculated for the inner sum
-
-
-
-
-    double integral_sum_core = 0;
 
     int world_rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
-    // generate engine with pseudo-random seed taken from system time
     time_t seed;
     time(&seed);
-    std::mt19937 engine(seed + world_rank);
+    std::mt19937 engine(seed+world_rank);
 
     // generating distributions
     std::uniform_real_distribution<double> uniform_theta(0, pi);
     std::uniform_real_distribution<double> uniform_phi(0, 2*pi);
     std::exponential_distribution<double> exp_dist(lambda);
+
+    double integral_sum = 0;
 
     for (int i0 = 0; i0 < N; i0++)
     {   // drawing random numbers from the distributions
@@ -96,29 +90,19 @@ double mc_integration()
         double phi2 = uniform_phi(engine);
 
         // adding to the integrand sum
-        integral_sum_core += integrand(r1, r2, theta1, theta2, phi1, phi2)
+        integral_sum += integrand(r1, r2, theta1, theta2, phi1, phi2)
             *r1*r1*r2*r2*std::sin(theta1)*std::sin(theta2);
     }
 
+    integral_sum *= 4*std::pow(pi, 4);     // theta, phi interval
+    integral_sum /= std::pow((2*2), 5);    // (2*alpha)**5
+    integral_sum /= N;                     // number of samples
+
     double integral_tot_sum = 0;
-    MPI_Reduce(&integral_sum_core, &integral_tot_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-    if (world_rank==0)
-    {
-        integral_tot_sum *= 4*std::pow(pi, 4);     // theta, phi interval
-        integral_tot_sum /= std::pow((2*2), 5);    // (2*alpha)**5
-        integral_tot_sum /= std::pow(N, 6);        // number of samples
-    }
+    MPI_Reduce(&integral_sum, &integral_tot_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
-    // std::cout << "\ncalculated: " << integral_sum_core << std::endl;
-    // std::cout << "correct answer: " << 5*pi*pi/(16*16) << std::endl;
-    // std::cout << "error: " << std::fabs(integral_sum_core - 5*pi*pi/(16*16)) << std::endl;
-    // std::cout << "iterations: " << std::pow(N, 6) << std::endl;
-
-
-    if (world_rank==0)
-    {
-        return integral_tot_sum;
-    }
+    integral_tot_sum /= 8;
+    return integral_tot_sum;
 }
 
 

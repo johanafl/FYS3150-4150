@@ -69,7 +69,7 @@ int mc_integration()
         The seed is the system time in seconds from UNIX epoch.
     */
 
-    int N = 15;     // number of iterations = N**6
+    int N = 10;     // number of iterations = N**6
     
     // integral limits, approx. infinity
     float a = -2;
@@ -85,6 +85,7 @@ int mc_integration()
 
 
     double integral_sum = 0;
+    double integral_sum_square = 0;
     double N5 = std::pow(N, 5);
 
     for (int i0 = 0; i0 < N; i0++)
@@ -95,21 +96,23 @@ int mc_integration()
         for (int i1 = 0; i1 < N5; i1++)
         {
             // drawing random numbers from the uniform distribution
-            double x0 = uniform(engine);
-            double x1 = uniform(engine);
-            double x2 = uniform(engine);
-            double x3 = uniform(engine);
-            double x4 = uniform(engine);
-            double x5 = uniform(engine);
+            double x0 = uniform(engine); double y0 = uniform(engine);
+            double x1 = uniform(engine); double y1 = uniform(engine);
+            double x2 = uniform(engine); double y2 = uniform(engine);
+            double x3 = uniform(engine); double y3 = uniform(engine);
+            double x4 = uniform(engine); double y4 = uniform(engine);
+            double x5 = uniform(engine); double y5 = uniform(engine);
 
             // adding to the integrand sum
             integral_sum += integrand(x0, x1, x2, x3, x4, x5);   
-        
+            integral_sum_square += integrand(y0, y1, y2, y3, y4, y5)*integrand(y0, y1, y2, y3, y4, y5);           
         }
     }
 
-
     integral_sum /= std::pow(N, 6);     // number of samples
+    integral_sum_square /= std::pow(N, 6);     // number of samples
+    std::cout << "\nvarians: " << integral_sum_square - integral_sum*integral_sum << std::endl;
+
     integral_sum *= pow((b - a), 6);    // integral interval
 
     std::cout << "calculated: " << integral_sum << std::endl;

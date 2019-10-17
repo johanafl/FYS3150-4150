@@ -77,39 +77,44 @@ int mc_integration()
 
 
     double integral_sum = 0;
+    double integral_sum_square = 0;
     double N5 = std::pow(N, 5); // pre-calculated for the inner sum
 
     for (int i0 = 0; i0 < N; i0++)
     {   // first loop is for displaying progress info without an if statement
         
-        std::cout << "outer loop: " << i0 << " of " << N << std::endl;
+        std::cout << "outer loop: " << i0 << " of " << N-1 << std::endl;
 
         for (int i1 = 0; i1 < N5; i1++)
         {
             // drawing random numbers from the distributions
-            double r1 = exp_dist(engine);
-            double r2 = exp_dist(engine);
-            double theta1 = uniform_theta(engine);
-            double theta2 = uniform_theta(engine);
-            double phi1 = uniform_phi(engine);
-            double phi2 = uniform_phi(engine);
+            double r1 = exp_dist(engine); double R1 = exp_dist(engine);
+            double r2 = exp_dist(engine); double R2 = exp_dist(engine);
+            double theta1 = uniform_theta(engine); double Theta1 = uniform_theta(engine);
+            double theta2 = uniform_theta(engine); double Theta2 = uniform_theta(engine);
+            double phi1 = uniform_phi(engine); double Phi1 = uniform_phi(engine);
+            double phi2 = uniform_phi(engine); double Phi2 = uniform_phi(engine);
 
             // adding to the integrand sum
             integral_sum += integrand(r1, r2, theta1, theta2, phi1, phi2)
                 *r1*r1*r2*r2*std::sin(theta1)*std::sin(theta2);
-        
+
+            integral_sum_square += integrand(R1,R2,Theta1,Theta2,Phi1,Phi2)*integrand(R1,R2,Theta1,Theta2,Phi1,Phi2)
+                *R1*R1*R2*R2*std::sin(Theta1)*std::sin(Theta2)*R1*R1*R2*R2*std::sin(Theta1)*std::sin(Theta2);        
         }
     }
 
-
+    integral_sum /= std::pow(N, 6);        // number of samples
+    integral_sum_square /= std::pow(N, 6);        // number of samples
+    std::cout << "\nvarians: " << integral_sum_square - integral_sum*integral_sum << std::endl;
+    
     integral_sum *= 4*std::pow(pi, 4);     // theta, phi interval
     integral_sum /= std::pow((2*2), 5);    // (2*alpha)**5
-    integral_sum /= std::pow(N, 6);        // number of samples
 
-    std::cout << "\ncalculated: " << integral_sum << std::endl;
+    std::cout << "calculated: " << integral_sum << std::endl;
     std::cout << "correct answer: " << 5*pi*pi/(16*16) << std::endl;
     std::cout << "error: " << std::fabs(integral_sum - 5*pi*pi/(16*16)) << std::endl;
-    std::cout << "iterations: " << std::pow(N, 6) << std::endl;
+    // std::cout << "iterations: " << std::pow(N, 6) << std::endl;
 
     return seed;
 }
