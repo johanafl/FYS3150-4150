@@ -126,100 +126,193 @@ double integrand(double x0, double x1, double x2, double x3, double x4, double x
 }
 
 
-void gauss_legendre_quadrature()
+double gauss_legendre_quadrature(int N, float lambda)
 {   /*
     Calculates an integral using Gauss-Legendre quadurature. Loops over a set of
     grid point values (N), and writes the calculated and analytical result to
     a file along with the error.
+
+    Parameters
+    ----------
+    N : int
+        Number of grid point values.
+
+    lambda : float
+        Integral limits are a = -lambda, b = lambda. Approximation of +- infty.
     */
 
+    
+    double *x = new double [N]; // array of x values
+    double *w = new double [N]; // array of weights
 
-    // generating data file
-    std::ofstream legendre_data_file;
-    legendre_data_file.open("legendre_data.txt", std::ios_base::app);
+    // integral limits, approx. infinity
+    float a = -lambda;
+    float b = lambda;
+    
+    // Finding the weights and points for integration.
+    gauss_legendre_points(a, b, x, w, N);
 
-    // writing title to file
-    legendre_data_file << std::setw(20) << "N" << std::setw(20) << "error";
-    legendre_data_file << std::setw(20) << "calculated";
-    legendre_data_file << std::setw(20) << "exact";
-    legendre_data_file << std::setw(20) << "comp time (s)" << std::endl;
+    double integral_sum = 0;
 
-    // int N = 10;                 // grid points
-
-    int N_end = 40;
-
-    for (int N = 1; N <= N_end; N = N + 2)
-    {   // loops over grid values
-
-        // starting timer
-        std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
+    // The actual integral is approximated with a sum
+    for (int i0 = 0; i0 < N; i0++)
+    {   
+        std::cout << "outer loop: " << i0 << " of " << N-1;
+        std::cout << ", lambda: " << lambda <<  std::endl;
         
-        double *x = new double [N]; // array of x values
-        double *w = new double [N]; // array of weights
-
-        // integral limits, approx. infinity
-        float a = -2;
-        float b = -a;
-        
-        // Finding the weights and points for integration.
-        gauss_legendre_points(a, b, x, w, N);
-
-        double integral_sum = 0;
-
-        // The actual integral is approximated with a sum
-        for (int i0 = 0; i0 < N; i0++)
-        {   
-            std::cout << "outer loop: " << i0 << " of " << N-1 << std::endl;
-            
-            for (int i1 = 0; i1 < N; i1++)
+        for (int i1 = 0; i1 < N; i1++)
+        {
+            for (int i2 = 0; i2 < N; i2++)
             {
-                for (int i2 = 0; i2 < N; i2++)
+                for (int i3 = 0; i3 < N; i3++)
                 {
-                    for (int i3 = 0; i3 < N; i3++)
+                    for (int i4 = 0; i4 < N; i4++)
                     {
-                        for (int i4 = 0; i4 < N; i4++)
+                        for (int i5 = 0; i5 < N; i5++)
                         {
-                            for (int i5 = 0; i5 < N; i5++)
-                            {
-                                // Multiplying the weights with the integrand.
-                                integral_sum += w[i0]*w[i1]*w[i2]*w[i3]*w[i4]*w[i5]
-                                    *integrand(x[i0], x[i1], x[i2], x[i3], x[i4], x[i5]);
-                            }
+                            // Multiplying the weights with the integrand.
+                            integral_sum += w[i0]*w[i1]*w[i2]*w[i3]*w[i4]*w[i5]
+                                *integrand(x[i0], x[i1], x[i2], x[i3], x[i4], x[i5]);
                         }
                     }
                 }
             }
         }
+    }
 
-        // ending timer
-        std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
-        std::chrono::duration<double> comp_time = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1);
+    delete[] x;
+    delete[] w;
 
-        double exact = 5*pi*pi/(16*16);
-        double error = std::fabs(integral_sum - exact);
+    return integral_sum;
+}
 
-        std::cout << "\ncalculated: " << integral_sum << std::endl;
-        std::cout << "correct answer: " << exact << std::endl;
-        std::cout << "error: " << error << std::endl;
-        std::cout << N << " of " << N_end << "\n" << std::endl;
 
-        legendre_data_file << std::setw(20) << N << std::setw(20) << error;
-        legendre_data_file << std::setw(20) << integral_sum;
-        legendre_data_file << std::setw(20) << exact;
-        legendre_data_file << std::setw(20) << comp_time.count() << std::endl;
-        
-        delete[] x;
-        delete[] w;
+class GaussLegendreQuadrature
+{
+private:
+    int N_start = 1;
+    int N_end   = 30;
+    int dN      = 2;
+
+    float lambda_start = 0.5;
+    float lambda_end   = 5;
+    float dlambda      = 0.2;
+
+    bool debug = true;
+    bool write_contour_data = true;
+    double exact = 5*pi*pi/(16*16);
+
+    std::ofstream legendre_data_file;
+    std::ofstream legendre_contour_data_file;
+
+
+public:
+    GaussLegendreQuadrature()
+    {
+    // generating data files
+    legendre_data_file.open("legendre_data_2.txt", std::ios_base::app);
+    legendre_contour_data_file.open("legendre_contour_data.txt", std::ios_base::app);
+    
+    }
+    
+    void lambda_loop()
+    {   /*
+        Loops over integral limits a = -lambda, b = lambda. Approximation of
+        +-infty.
+        */
+
+        legendre_contour_data_file << std::setw(15) << "N range";
+        legendre_contour_data_file << std::setw(15) << "lambda range" << std::endl;
+        legendre_contour_data_file << std::setw(10) << N_start << " " << N_end << " " << dN;
+        legendre_contour_data_file << std::setw(10) << lambda_start << " " << lambda_end << " " << dlambda << std::endl;
+
+        for (float lambda_current = lambda_start; lambda_current < lambda_end; lambda_current += dlambda)
+        {   // loops over integral limits / infty approximations
+            grid_loop(lambda_current);
+        }
+    }
+
+    void grid_loop(float lambda_current)
+    {   /*
+        Loops over grid point values.
+        */
+
+        // writing title to file
+        legendre_data_file << std::setw(20) << "N" << std::setw(20) << "error";
+        legendre_data_file << std::setw(20) << "calculated";
+        legendre_data_file << std::setw(20) << "exact";
+        legendre_data_file << std::setw(20) << "comp time (s)" << std::endl;
+
+
+        for (int N = N_start; N <= N_end; N += dN)
+        {   // loops over grid values
+
+            // starting timer
+            std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
+            
+            // integrating
+            double integral_sum = gauss_legendre_quadrature(N, lambda_current);
+            
+            // ending timer
+            std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
+            std::chrono::duration<double> comp_time = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1);
+            
+            
+            double error = std::fabs(integral_sum - exact);
+
+            if (debug)
+            {
+                // printing calculation data
+                std::cout << "\ncalculated: " << integral_sum << std::endl;
+                std::cout << "correct answer: " << exact << std::endl;
+                std::cout << "error: " << error << std::endl;
+                std::cout << "N: " <<  N << " of " << N_end << "\n";
+                std::cout << "lambda: " << lambda_current << "\n" << std::endl;
+            }
+
+
+            // writing calculation data to file
+            legendre_data_file << std::setw(20) << N << std::setw(20) << error;
+            legendre_data_file << std::setw(20) << integral_sum;
+            legendre_data_file << std::setw(20) << exact;
+            legendre_data_file << std::setw(20) << comp_time.count() << std::endl;
+
+            if (write_contour_data)
+            {
+                legendre_contour_data_file << error << " ";
+            }
+
+        }
+
+        if (write_contour_data)
+        {
+            legendre_contour_data_file << std::endl;
+        }
 
     }
 
-}
+};
 
 
 
 
 int main()
 {   
-    gauss_legendre_quadrature();
+    // gauss_legendre_quadrature(1);
+
+    // int N_start = 1;
+    // int N_end = 20;
+    // int dN = 2;
+    // float lambda = 2;
+    // bool write_single_lambda_data = true;
+    // bool debug = true;
+    
+    // // grid_loop(N_end, dN, lambda, write_single_lambda_data, debug);
+
+    // lambda_loop(N_start, N_end, dN, debug);
+
+    GaussLegendreQuadrature q;
+    q.lambda_loop();
+    
     return 0;
 }
