@@ -233,6 +233,15 @@ public:
         }
     }
 
+    void grid_loop(float lambda_current, int N)
+    {
+        N_start = N;
+        N_end = N;
+        write_contour_data = false;
+
+        grid_loop(lambda_current);
+    }
+
     void grid_loop(float lambda_current)
     {   /*
         Loops over grid point values.
@@ -299,21 +308,12 @@ public:
 
 int main()
 {   
-    // gauss_legendre_quadrature(1);
-
-    // int N_start = 1;
-    // int N_end = 20;
-    // int dN = 2;
-    // float lambda = 2;
-    // bool write_single_lambda_data = true;
-    // bool debug = true;
-    
-    // // grid_loop(N_end, dN, lambda, write_single_lambda_data, debug);
-
-    // lambda_loop(N_start, N_end, dN, debug);
+    float lambda = 2.28;
+    int N = 21;
 
     GaussLegendreQuadrature q;
-    q.lambda_loop();
+    // q.lambda_loop();
+    q.grid_loop(lambda, N);     // specifies lambda and N, runs one loop
     
     return 0;
 }
