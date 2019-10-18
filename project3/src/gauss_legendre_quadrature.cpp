@@ -2,6 +2,7 @@
 #include <iostream>
 #include <chrono>
 #include <fstream>
+#include <iomanip>
 
 double const pi = 3.14159265359; 
 
@@ -192,10 +193,10 @@ class GaussLegendreQuadrature
 private:
     int N_start = 1;
     int N_end   = 30;
-    int dN      = 2;
+    int dN      = 1;
 
-    float lambda_start = 0.5;
-    float lambda_end   = 5;
+    float lambda_start = 1;
+    float lambda_end   = 4;
     float dlambda      = 0.2;
 
     bool debug = true;
@@ -210,8 +211,8 @@ public:
     GaussLegendreQuadrature()
     {
     // generating data files
-    legendre_data_file.open("legendre_data_2.txt", std::ios_base::app);
-    legendre_contour_data_file.open("legendre_contour_data.txt", std::ios_base::app);
+    legendre_data_file.open("data_files/legendre_data.txt", std::ios_base::app);
+    legendre_contour_data_file.open("data_files/legendre_contour_data.txt", std::ios_base::app);
     
     }
     
