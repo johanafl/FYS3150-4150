@@ -52,7 +52,7 @@ double integrand(double r1, double r2, double theta1, double theta2, double phi1
 }
 
 
-double mc_integration()
+double mc_integration(int world_rank)
 {
     /*
     Monte Carlo integration of the function exp(-2*2*(r1 + r2))/|r1 - r2|.
@@ -63,11 +63,10 @@ double mc_integration()
         The seed is the system time in seconds from UNIX epoch.
     */
 
-    int N = 100000;       // number of iterations = N
+    int N = 1e6;       // number of iterations = N
     float lambda = 1; // For the exp. distribution function.
 
-    int world_rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+
 
     time_t seed;
     time(&seed);
@@ -98,22 +97,27 @@ double mc_integration()
     integral_sum /= std::pow((2*2), 5);    // (2*alpha)**5
     integral_sum /= N;                     // number of samples
 
-    double integral_tot_sum = 0;
-    MPI_Reduce(&integral_sum, &integral_tot_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
-    integral_tot_sum /= 8;
-    return integral_tot_sum;
+    return integral_sum;
 }
 
 
 int main()
 {
     MPI_Init(NULL, NULL);
-
-    double integral = mc_integration();
     int world_rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-    if (world_rank==0) std::cout << integral << std::endl;
+    int world_size;
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+
+    double integral_sum = mc_integration(world_rank);
+
+    double integral_tot_sum = 0;
+    MPI_Reduce(&integral_sum, &integral_tot_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+
+    integral_tot_sum /= world_size;
+
+    if (world_rank==0) std::cout << integral_tot_sum << std::endl;
     MPI_Finalize();
 
     return 0;
