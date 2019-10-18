@@ -1,3 +1,4 @@
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -8,12 +9,20 @@ def analyze_data():
     for visualization.
     """
 
-    # reads from file
-    N_0, error_0, calculated_0, exact_0, comp_time_0 = \
-        np.loadtxt("legendre_data.txt", skiprows=1, unpack=True)
+    path_0 = "data_files/legendre_data.txt"
+    path_1 = "data_files/laguerre_data.txt"
 
-    N_1, error_1, calculated_1, exact_1, comp_time_1 = \
-        np.loadtxt("laguerre_data.txt", skiprows=1, unpack=True)
+    try:
+        # reads from file
+        N_0, error_0, calculated_0, exact_0, comp_time_0 = \
+            np.loadtxt(path_0, skiprows=1, unpack=True)
+
+        N_1, error_1, calculated_1, exact_1, comp_time_1 = \
+            np.loadtxt(path_1, skiprows=1, unpack=True)
+
+    except:
+        print(f"Files {} and/or {} were not found. Exiting.")
+        sys.exit()
 
 
     # N vs error plot
@@ -51,8 +60,10 @@ def analyze_data():
 
 def analyze_contour_data():
 
-    ranges = np.loadtxt("legendre_contour_data.txt", skiprows=1, max_rows=1)
-    grid = np.loadtxt("legendre_contour_data.txt", skiprows=2)
+    filename = "legendre_contour_data_bak.txt"
+    
+    ranges = np.loadtxt(filename, skiprows=1, max_rows=1)
+    grid = np.loadtxt(filename, skiprows=2)
     grid = np.log10(grid)
 
     N_range = np.arange(*ranges[0:3])
@@ -109,6 +120,6 @@ def plot_function():
 
 if __name__ == "__main__":
     # analyze_data()
-    # analyze_contour_data()
-    plot_function()
+    analyze_contour_data()
+    # plot_function()
     pass
