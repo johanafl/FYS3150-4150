@@ -132,7 +132,7 @@ void gauss_laguerre_quadrature()
 
     // generating data file
     std::ofstream laguerre_data_file;
-    laguerre_data_file.open("laguerre_data.txt", std::ios_base::app);
+    laguerre_data_file.open("data_files/laguerre_data.txt", std::ios_base::app);
 
     // writing title to file
     laguerre_data_file << std::setw(20) << "N" << std::setw(20) << "error";
