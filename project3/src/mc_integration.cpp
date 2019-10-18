@@ -83,10 +83,10 @@ int mc_integration()
     // generating distribution
     std::uniform_real_distribution<double> uniform(a, b);
 
-
     double integral_sum = 0;
     double integral_sum_square = 0;
-    double N5 = std::pow(N, 5);
+    double integrand_tmp_1 = 0;     // placeholder for temporary integrand values
+    double N5 = std::pow(N, 5);     // iterations for the inner loop
 
     for (int i0 = 0; i0 < N; i0++)
     {   // first loop is for displaying progress info without an if statement
@@ -104,16 +104,23 @@ int mc_integration()
             double x5 = uniform(engine); double y5 = uniform(engine);
 
             // adding to the integrand sum
-            integral_sum += integrand(x0, x1, x2, x3, x4, x5);   
-            integral_sum_square += integrand(y0, y1, y2, y3, y4, y5)*integrand(y0, y1, y2, y3, y4, y5);           
+            integral_sum += integrand(x0, x1, x2, x3, x4, x5);
+            integrand_tmp_1 = integrand(y0, y1, y2, y3, y4, y5);
+            integral_sum_square += integrand_tmp_1*integrand_tmp_1;
         }
     }
 
-    integral_sum /= std::pow(N, 6);     // number of samples
-    integral_sum_square /= std::pow(N, 6);     // number of samples
-    std::cout << "\nvarians: " << integral_sum_square - integral_sum*integral_sum << std::endl;
+    integral_sum /= std::pow(N, 6);             // number of samples
+    // integral_sum *= pow( (b - a), 6);           // integral interval
+    integral_sum_square /= std::pow(N, 6);      // number of samples
 
-    integral_sum *= pow((b - a), 6);    // integral interval
+    double variance = (integral_sum_square - integral_sum*integral_sum)*pow( (b - a), 6);
+    std::cout << "\nvariance: " << variance << std::endl;
+    std::cout << "std: " << std::sqrt(variance) << std::endl;
+
+    
+
+    integral_sum *= pow( (b - a), 6);           // integral interval
 
     std::cout << "calculated: " << integral_sum << std::endl;
     std::cout << "correct answer: " << 5*pi*pi/(16*16) << std::endl;
