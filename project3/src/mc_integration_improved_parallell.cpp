@@ -141,7 +141,7 @@ int main()
 
     integral_tot_sum *= 4*std::pow(pi, 4);  // theta, phi interval
 
-    if (world_rank==0) 
+    if (world_rank == 0) 
     {
         std::cout << "\nvariance: " << variance << std::endl;
         std::cout << "std: " << std::sqrt(variance) << std::endl;
