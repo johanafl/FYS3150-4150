@@ -80,8 +80,7 @@ int mc_integration()
 
     double integral_sum = 0;
     double integral_sum_square = 0;
-    double N5 = std::pow(N, 5);         // pre-calculated for the inner sum
-    double integrand_tmp;               // temporary value for squaring the integrand so we don't have to call the function twice   
+    double integrand_tmp;               // temporary value for squaring the integrand so we don't have to call the function twice
     int counter = 0;
     
     
