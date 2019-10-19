@@ -1,6 +1,9 @@
 #include <mpi.h>
 #include <iostream>
 #include <random>
+#include <fstream>
+#include <iomanip>
+#include <chrono>
 double const pi = 3.14159265359; 
 
 
@@ -52,7 +55,7 @@ double integrand(double r1, double r2, double theta1, double theta2, double phi1
 }
 
 
-void mc_integration(int world_rank, double& expectation_value,
+void mc_integration(int world_rank, int N, double& expectation_value,
     double& expectation_value_square)
 {
     /*
@@ -64,10 +67,7 @@ void mc_integration(int world_rank, double& expectation_value,
         The seed is the system time in seconds from UNIX epoch.
     */
 
-    int N = 1e6;       // number of iterations = N
     float lambda = 1; // For the exp. distribution function.
-
-
 
     time_t seed;
     time(&seed);
@@ -82,16 +82,23 @@ void mc_integration(int world_rank, double& expectation_value,
     double integral_sum_square = 0;
     double integrand_tmp;               // temporary value for squaring the integrand so we don't have to call the function twice
 
+    double r1;     double R1;
+    double r2;     double R2;
+    double theta1; double Theta1;
+    double theta2; double Theta2;
+    double phi1;   double Phi1;
+    double phi2;   double Phi2;
+
     for (int i0 = 0; i0 < N; i0++)
     {
         // drawing random numbers from the distributions
         // drawing twice for each variable for calculating the variance
-        double r1 = exp_dist(engine); double R1 = exp_dist(engine);
-        double r2 = exp_dist(engine); double R2 = exp_dist(engine);
-        double theta1 = uniform_theta(engine); double Theta1 = uniform_theta(engine);
-        double theta2 = uniform_theta(engine); double Theta2 = uniform_theta(engine);
-        double phi1 = uniform_phi(engine); double Phi1 = uniform_phi(engine);
-        double phi2 = uniform_phi(engine); double Phi2 = uniform_phi(engine);
+        r1 = exp_dist(engine);          R1 = exp_dist(engine);
+        r2 = exp_dist(engine);          R2 = exp_dist(engine);
+        theta1 = uniform_theta(engine); Theta1 = uniform_theta(engine);
+        theta2 = uniform_theta(engine); Theta2 = uniform_theta(engine);
+        phi1 = uniform_phi(engine);     Phi1 = uniform_phi(engine);
+        phi2 = uniform_phi(engine);     Phi2 = uniform_phi(engine);
 
         // adding to the integrand sum
         integral_sum += integrand(r1, r2, theta1, theta2, phi1, phi2)
@@ -112,45 +119,100 @@ void mc_integration(int world_rank, double& expectation_value,
     expectation_value = integral_sum;
     expectation_value_square = integral_sum_square;
 
+
 }
 
 
 int main()
-{
+{   
+    
     MPI_Init(NULL, NULL);
+    int N_end   = 1e6;
+    int dN      = 1e5;
+    int N_start = dN;
+    double exact = 5*pi*pi/(16*16);
+    double error;
+    std::ofstream mc_improved_parallel_data_file;
+
     int world_rank;
     int world_size;
-    double integral_tot_sum = 0;
-    double expectation_value = 0;
-    double expectation_value_square = 0;
-    double integral_tot_sum_square = 0;
-
-    
+    double integral_tot_sum;
+    double expectation_value;
+    double expectation_value_square;
+    double integral_tot_sum_square;
+    double variance;
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
-    mc_integration(world_rank, expectation_value, expectation_value_square);
-
-    MPI_Reduce(&expectation_value, &integral_tot_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-    MPI_Reduce(&expectation_value_square, &integral_tot_sum_square, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-
-    integral_tot_sum /= world_size;
-    integral_tot_sum_square /= world_size;
-
-    double variance = (integral_tot_sum_square - integral_tot_sum*integral_tot_sum)*4*std::pow(pi, 4);
-
-    integral_tot_sum *= 4*std::pow(pi, 4);  // theta, phi interval
-
-    if (world_rank == 0) 
+    if (world_rank == 0)
     {
-        std::cout << "\nvariance: " << variance << std::endl;
-        std::cout << "std: " << std::sqrt(variance) << std::endl;
+        // generating data file
+        mc_improved_parallel_data_file.open("data_files/mc_improved_parallel_data.txt", std::ios_base::app);
 
-        
-        std::cout << "calculated: " << integral_tot_sum << std::endl;
-        std::cout << "correct answer: " << 5*pi*pi/(16*16) << std::endl;
-        std::cout << "error: " << std::fabs(integral_tot_sum - 5*pi*pi/(16*16)) << std::endl;
+        // writing title to file
+        mc_improved_parallel_data_file << std::setw(20) << "N" << std::setw(20) << "error";
+        mc_improved_parallel_data_file << std::setw(20) << "calculated";
+        mc_improved_parallel_data_file << std::setw(20) << "exact";
+        mc_improved_parallel_data_file << std::setw(20) << "comp time (s)";
+        mc_improved_parallel_data_file << std::setw(20) << "variance" << std::endl;
     }
+
+    for (int N = N_start; N <= N_end; N += dN)
+    {   // loops over MC integrations
+
+        integral_tot_sum = 0;
+        expectation_value = 0;
+        expectation_value_square = 0;
+        integral_tot_sum_square = 0;
+
+
+        // starting timer
+        std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();    
+        
+        mc_integration(world_rank, N, expectation_value, expectation_value_square);
+
+        // ending timer
+        std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
+        std::chrono::duration<double> comp_time  = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1);
+
+        MPI_Reduce(&expectation_value, &integral_tot_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(&expectation_value_square, &integral_tot_sum_square, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+
+        integral_tot_sum /= world_size;
+        integral_tot_sum_square /= world_size;
+
+        variance = (integral_tot_sum_square - integral_tot_sum*integral_tot_sum)*4*std::pow(pi, 4);
+
+        integral_tot_sum *= 4*std::pow(pi, 4);  // theta, phi interval
+
+        if (world_rank == 0) 
+        {
+            std::cout << "\nvariance: " << variance << std::endl;
+            std::cout << "std: " << std::sqrt(variance) << std::endl;
+            std::cout << "calculated: " << integral_tot_sum << std::endl;
+            std::cout << "correct answer: " << exact << std::endl;
+            std::cout << "error: " << std::fabs(integral_tot_sum - exact) << std::endl;
+
+            error = std::fabs(integral_tot_sum - exact);
+
+            // writing calculation data to file
+            mc_improved_parallel_data_file << std::setw(20) << N << std::setw(20) << error;
+            mc_improved_parallel_data_file << std::setw(20) << integral_tot_sum;
+            mc_improved_parallel_data_file << std::setw(20) << exact;
+            mc_improved_parallel_data_file << std::setw(20) << comp_time.count();
+            mc_improved_parallel_data_file << std::setw(20) << variance << std::endl;
+
+        }
+
+        MPI_Barrier(MPI_COMM_WORLD);
+
+    }
+
+    if (world_rank == 0)
+    {
+        mc_improved_parallel_data_file.close();
+    }
+
     MPI_Finalize();
 
     return 0;
