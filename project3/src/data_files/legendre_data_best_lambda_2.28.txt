@@ -1,0 +1,2 @@
+                   N               error          calculated               exact       comp time (s)
+                  21         5.22022e-06             0.19276            0.192766             3.46968
