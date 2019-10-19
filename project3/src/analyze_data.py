@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 
-def analyze_data():
+def analyze_leglag_data():
     """
     Loads data generated of the program gauss_legendre_quadrature.cpp and plots
     for visualization.
@@ -31,9 +31,83 @@ def analyze_data():
     ax.plot(N_0, error_0, label="legendre")
     ax.plot(N_1, error_1, label="laguerre")
     
-    ax.set_title("error", fontsize=20)
-    ax.set_xlabel("grid points", fontsize=20)
-    ax.set_ylabel("error", fontsize=20)
+    ax.set_title("error", fontsize=25)
+    ax.set_xlabel("grid points", fontsize=25)
+    ax.set_ylabel("error", fontsize=25)
+    
+    ax.legend(fontsize=20)
+    ax.grid()
+    ax.tick_params(labelsize=30)
+    
+    # plt.show()
+
+    # N vs computation time plot
+    _, ax = plt.subplots(figsize=(10, 8))
+
+    ax.plot(N_0, comp_time_0, label="legendre")
+    ax.plot(N_1, comp_time_1, label="laguerre")
+    
+    ax.set_title("computation time", fontsize=25)
+    ax.set_xlabel("grid points", fontsize=25)
+    ax.set_ylabel("computation time [s]", fontsize=25)
+    
+    ax.legend(fontsize=20)
+    ax.grid()
+    ax.tick_params(labelsize=30)
+    
+    # plt.show()
+    plt.clf()
+
+    # error vs time plot
+    _, ax = plt.subplots(figsize=(10, 8))
+
+    ax.semilogy(comp_time_0, error_0, label="legendre")
+    ax.semilogy(comp_time_1, error_1, label="laguerre")
+    
+    # ax.set_title("lol", fontsize=25)
+    ax.set_xlabel("computation time [s]", fontsize=30)
+    ax.set_ylabel("error", fontsize=30)
+    ax.set_xlim([None, 29])
+    # ax.set_ylim([None, 0.05])
+    
+    ax.legend(fontsize=20)
+    ax.grid()
+    ax.tick_params(labelsize=30)
+    
+    plt.show()
+
+
+def analyze_mc_data():
+    """
+    Loads data generated of the program gauss_legendre_quadrature.cpp and plots
+    for visualization.
+    """
+
+    path_0 = "data_files/mc_data_avg.txt"
+    path_1 = "data_files/mc_data_O3.txt"
+
+    try:
+        # reads from file
+        N_0, error_0, calculated_0, exact_0, comp_time_0 = \
+            np.loadtxt(path_0, skiprows=1, unpack=True)
+
+        N_1, error_1, calculated_1, exact_1, comp_time_1 = \
+            np.loadtxt(path_1, skiprows=1, unpack=True)
+
+    except:
+        print(f"Files {path_0} and/or {path_1} were not found. Exiting.")
+        sys.exit()
+
+
+    # N vs error plot
+    _, ax = plt.subplots(figsize=(10, 8))
+
+    ax.plot(N_0, error_0, label="mc avg")
+    ax.plot(N_1, error_1, label="mc O3")
+    
+    ax.set_title("error", fontsize=25)
+    ax.set_xlabel("iterations", fontsize=25)
+    ax.set_ylabel("error", fontsize=25)
     
     ax.legend(fontsize=20)
     ax.grid()
@@ -44,12 +118,12 @@ def analyze_data():
     # N vs computation time plot
     _, ax = plt.subplots(figsize=(10, 8))
 
-    ax.plot(N_0, comp_time_0, label="legendre")
-    ax.plot(N_1, comp_time_1, label="laguerre")
+    ax.plot(N_0, comp_time_0, label="mc avg")
+    ax.plot(N_1, comp_time_1, label="mc O3")
     
-    ax.set_title("computation time", fontsize=20)
-    ax.set_xlabel("grid points", fontsize=20)
-    ax.set_ylabel("computation time [s]", fontsize=20)
+    ax.set_title("computation time", fontsize=25)
+    ax.set_xlabel("iterations", fontsize=25)
+    ax.set_ylabel("computation time [s]", fontsize=25)
     
     ax.legend(fontsize=20)
     ax.grid()
@@ -57,6 +131,23 @@ def analyze_data():
     
     plt.show()
 
+    # error vs time plot
+    _, ax = plt.subplots(figsize=(10, 8))
+
+    ax.semilogy(comp_time_0, error_0, label="mc avg")
+    ax.semilogy(comp_time_1, error_1, label="mc O3")
+    
+    # ax.set_title("lol", fontsize=25)
+    ax.set_xlabel("computation time [s]", fontsize=30)
+    ax.set_ylabel("error", fontsize=30)
+    # ax.set_xlim([None, 29])
+    # ax.set_ylim([None, 0.05])
+    
+    ax.legend(fontsize=20)
+    ax.grid()
+    ax.tick_params(labelsize=30)
+    
+    plt.show()
 
 def analyze_contour_data():
     """
@@ -64,7 +155,8 @@ def analyze_contour_data():
     """
 
     
-    path = "data_files/legendre_contour_data_high_res.txt"
+    # path = "data_files/legendre_contour_data_high_res.txt"
+    path = "data_files/mc_contour_data.txt"
     
     print(f"Reading file {path}.")
 
@@ -79,13 +171,13 @@ def analyze_contour_data():
     
     # these ranges are defined from the data written to the file
     # N_range = np.arange(*ranges[0:3])
-    # lambda_range = np.arange(*ranges[3:])
+    lambda_range = np.arange(*ranges[3:])
     
     # these ranges are corrected since the c++ program sometimes loops one value
     # too little/much because of step size and endpoint. adding one step in both
     # lambda and N direction
     N_range = np.arange(ranges[0], ranges[1]+ranges[2], ranges[2])
-    lambda_range = np.arange(ranges[3], ranges[4]+ranges[5], ranges[5])
+    # lambda_range = np.arange(ranges[3], ranges[4]+ranges[5], ranges[5])
     X, Y = np.meshgrid(N_range, lambda_range)
 
     # extracting the indices of the lowest error
@@ -99,6 +191,7 @@ def analyze_contour_data():
 
     mappable = ax.contourf(X, Y, grid)
     # ax.plot(N_range[N_min], lambda_range[lambda_min], "ro")
+    ax.set_title(path)
     ax.set_xlabel("N", fontsize=30)
     ax.set_ylabel("lambda", fontsize=30)
     ax.tick_params(labelsize=30)
@@ -110,17 +203,14 @@ def analyze_contour_data():
     plt.show()
 
 
-
-
 def integrand(x1, x2):
 
-    tol = 1e-10
     y1 = y2 = z1 = z2 = 0
     
     r1 = np.sqrt(x1**2 + y1**2 + z1**2)
     r2 = np.sqrt(x2**2 + y2**2 + z2**2)
 
-    return np.exp(-2*2*(r1 + r2))/(np.abs(r1 - r2))
+    return np.exp(-2*2*(r1 + r2))/np.sqrt( (x1 - x2)**2 + (y1 - y2)**2 + (z1 - z2)**2 )
 
 
 def plot_integrand():
@@ -128,38 +218,51 @@ def plot_integrand():
     Plots the integrand. Two subplots of varying x1 and x2 respectively.
     """
 
-    endpoints = 1
-    lim = 0.1   # limit for the x axis
+    endpoints = 2
+    xlim = 2   # limit for the x axis
+    ylim = 1/5
     
-    x1 = np.linspace(-endpoints, endpoints, 1000)
-    x2 = np.linspace(-endpoints, endpoints, 1000)
+    x1 = np.linspace(-endpoints, endpoints, 10000)
 
-    _, axs = plt.subplots(nrows=2, ncols=1, figsize=(7, 5))
+    _, ax = plt.subplots(nrows=1, ncols=1, figsize=(7, 5))
     
-    axs[0].plot(x1, integrand(x1=x1, x2=0), label=r"varying $x_0$")
-    axs[1].plot(x1, integrand(x1=0, x2=x2), label=r"varying $x_1$")
+    ax.plot(x1, integrand(x1=x1, x2=0))
     
-    axs[0].set_ylabel("f(x)", fontsize=30)
-    axs[1].set_ylabel("f(x)", fontsize=30)
-    axs[1].set_xlabel("x", fontsize=30)
-    axs[0].set_xlim([-lim, lim])
-    axs[1].set_xlim([-lim, lim])
+    ax.set_ylabel("f(x)", fontsize=30)
+    ax.set_xlabel("x", fontsize=30)
+    ax.set_xlim([-xlim, xlim])
+    ax.set_ylim([-0.05, ylim])
     
-    axs[0].tick_params(labelsize=30, axis="x", which="both", bottom=False, labelbottom=False)
-    axs[0].tick_params(labelsize=30, axis="y")
-    axs[1].tick_params(labelsize=30)
+    ax.tick_params(labelsize=30)
+    ax.grid()
 
-    axs[1].xaxis.set_major_formatter(FormatStrFormatter("%.2f"))
+    ax.xaxis.set_major_formatter(FormatStrFormatter("%.0f"))
     
-    axs[0].legend(fontsize=20)
-    axs[1].legend(fontsize=20)
+    plt.tight_layout(pad=2)
+    plt.show()
+
+    _, ax = plt.subplots(nrows=1, ncols=1, figsize=(7, 5))
+    
+    ax.plot(x1, integrand(x1=x1, x2=0))
+    
+    ax.set_ylabel("f(x)", fontsize=30)
+    ax.set_xlabel("x", fontsize=30)
+    ax.set_xlim([-xlim, xlim])
+    
+    ax.tick_params(labelsize=30)
+    ax.grid()
+
+    ax.xaxis.set_major_formatter(FormatStrFormatter("%.0f"))
+
+    plt.tight_layout(pad=2)
     plt.show()
 
 
 
-
 if __name__ == "__main__":
-    # analyze_data()
+    # analyze_leglag_data()
+    # analyze_mc_data()
     analyze_contour_data()
     # plot_integrand()
+    # plot_test()
     pass
