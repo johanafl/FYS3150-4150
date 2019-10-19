@@ -58,10 +58,26 @@ double integrand(double x0, double x1, double x2, double x3, double x4, double x
 
 }
 
-double mc_integration(int N, float lambda)
+void mc_integration(int N, float lambda, double &average_sum, double &variance)
 {
     /*
     Monte Carlo integration of the function exp(-2*2*(r1 + r2))/|r1 - r2|.
+
+    Parameters
+    ----------
+    N : int
+        Number of iterations.
+
+    lambda : float
+        Infinity approximation (integral limits).
+
+    average_sum : double reference
+        Reference to a variable where the sum of M iterations of the same N
+        value will be stored. The average will be used.
+
+    variance : double reference
+        Reference to a variable where the variance will be stored. Only the
+        last of the M iterations per N will be stored.
     */
     
     // generate engine with pseudo-random seed taken from system time
@@ -81,28 +97,23 @@ double mc_integration(int N, float lambda)
     double integral_sum_square = 0;
     double integrand_tmp = 0;     // placeholder for temporary integrand values
     
-    // double x0; double y0;
-    // double x1; double y1;
-    // double x2; double y2;
-    // double x3; double y3;
-    // double x4; double y4;
-    // double x5; double y5;
+    double x0; double y0;
+    double x1; double y1;
+    double x2; double y2;
+    double x3; double y3;
+    double x4; double y4;
+    double x5; double y5;
 
 
     for (int i = 0; i < N+1; i++)
     {   
-        if ( i%(N/10) == 0 )
-        {
-        std::cout << "iteration: " << i << " of " << N << std::endl;
-        }
-        
         // drawing random numbers from the uniform distribution
-        double x0 = uniform(engine); double y0 = uniform(engine);
-        double x1 = uniform(engine); double y1 = uniform(engine);
-        double x2 = uniform(engine); double y2 = uniform(engine);
-        double x3 = uniform(engine); double y3 = uniform(engine);
-        double x4 = uniform(engine); double y4 = uniform(engine);
-        double x5 = uniform(engine); double y5 = uniform(engine);
+        x0 = uniform(engine); y0 = uniform(engine);
+        x1 = uniform(engine); y1 = uniform(engine);
+        x2 = uniform(engine); y2 = uniform(engine);
+        x3 = uniform(engine); y3 = uniform(engine);
+        x4 = uniform(engine); y4 = uniform(engine);
+        x5 = uniform(engine); y5 = uniform(engine);
 
         // adding to the integrand sum
         integral_sum += integrand(x0, x1, x2, x3, x4, x5);
@@ -112,35 +123,30 @@ double mc_integration(int N, float lambda)
     }
 
 
-    integral_sum /= N;             // number of samples
-    integral_sum_square /= N;      // number of samples
+    integral_sum /= N;                  // number of samples
+    integral_sum_square /= N;           // number of samples
+    variance = (integral_sum_square - integral_sum*integral_sum)*pow( (b - a), 6);
+    integral_sum *= pow( (b - a), 6);   // integral interval
+    average_sum += integral_sum;
 
-    double variance = (integral_sum_square - integral_sum*integral_sum)*pow( (b - a), 6);
-    std::cout << "\nvariance: " << variance << std::endl;
-    std::cout << "std: " << std::sqrt(variance) << std::endl;
 
-    integral_sum *= pow( (b - a), 6);           // integral interval
 
-    std::cout << "calculated: " << integral_sum << std::endl;
-    std::cout << "correct answer: " << 5*pi*pi/(16*16) << std::endl;
-    std::cout << "error: " << std::fabs(integral_sum - 5*pi*pi/(16*16)) << std::endl;
-
-    return integral_sum;
 }
 
 class MCIntegration
 {
 private:
-    int N_end   = 1e7;
+    int N_end   = 1e6;
     int dN      = 1e5;
     int N_start = dN;
 
-    float lambda_start = 1;
+    float lambda_start = 0.5;
     float lambda_end   = 4;
-    float dlambda      = 0.2;
+    float dlambda      = 0.1;
 
     bool debug = true;
     bool write_contour_data = true;
+    bool write_data = true;
     double exact = 5*pi*pi/(16*16);
 
     std::ofstream mc_data_file;
@@ -161,6 +167,9 @@ public:
         Loops over integral limits a = -lambda, b = lambda. Approximation of
         +-infty.
         */
+
+        write_data = false;
+        write_contour_data = true;
 
         mc_contour_data_file << std::setw(15) << "N range";
         mc_contour_data_file << std::setw(15) << "lambda range" << std::endl;
@@ -236,46 +245,70 @@ public:
 
 
         // writing title to file
-        mc_data_file << std::setw(20) << "N" << std::setw(20) << "error";
-        mc_data_file << std::setw(20) << "calculated";
-        mc_data_file << std::setw(20) << "exact";
-        mc_data_file << std::setw(20) << "comp time (s)" << std::endl;
+        if (write_data)
+        {
+            mc_data_file << std::setw(20) << "N" << std::setw(20) << "error";
+            mc_data_file << std::setw(20) << "calculated";
+            mc_data_file << std::setw(20) << "exact";
+            mc_data_file << std::setw(20) << "comp time (s)" << std::endl;
+        }
 
-        double integral_sum;
+        double variance = 0;
+        double average_sum;
+        double average_time;
+        int average_runs = 10;      // number of iterations for the average
 
 
         for (int N = N_start; N <= N_end; N += dN)
         {   // loops over grid values
 
-            // starting timer
-            std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
+            // resetting the averages
+            average_sum = 0;
+            average_time = 0;
+            variance = 0;
             
             // integrating
-            integral_sum = mc_integration(N, lambda);
+            for (int _ = 0; _ < average_runs; _++)
+            {   // averaging over 10 runs
+                
+                // starting timer
+                std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
+                
+                mc_integration(N, lambda, average_sum, variance);
+                
+                // ending timer
+                std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
+                std::chrono::duration<double> comp_time  = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1);
+                average_time += comp_time.count();
+            }
+
+            average_sum  /= average_runs;
+            average_time /= average_runs;
             
-            // ending timer
-            std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
-            std::chrono::duration<double> comp_time = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1);
             
-            
-            double error = std::fabs(integral_sum - exact);
+            double error = std::fabs(average_sum - exact);
 
             if (debug)
             {
                 // printing calculation data
-                std::cout << "\ncalculated: " << integral_sum << std::endl;
+                std::cout << "\ncalculated: " << average_sum << std::endl;
                 std::cout << "correct answer: " << exact << std::endl;
                 std::cout << "error: " << error << std::endl;
                 std::cout << "N: " <<  N << " of " << N_end << "\n";
                 std::cout << "lambda: " << lambda << "\n" << std::endl;
+                std::cout << "\nvariance: " << variance << std::endl;
+                std::cout << "std: " << std::sqrt(variance) << std::endl;
             }
 
+            if (write_data)
+            {
+                // writing calculation data to file
+                mc_data_file << std::setw(20) << N << std::setw(20) << error;
+                mc_data_file << std::setw(20) << average_sum;
+                mc_data_file << std::setw(20) << exact;
+                mc_data_file << std::setw(20) << average_time << std::endl;
+            }
 
-            // writing calculation data to file
-            mc_data_file << std::setw(20) << N << std::setw(20) << error;
-            mc_data_file << std::setw(20) << integral_sum;
-            mc_data_file << std::setw(20) << exact;
-            mc_data_file << std::setw(20) << comp_time.count() << std::endl;
 
             if (write_contour_data)
             {
@@ -302,7 +335,8 @@ int main()
     float lambda = 2;
 
     MCIntegration q;
-    q.grid_loop(lambda);
+    // q.grid_loop(lambda);
+    q.lambda_loop();
 
     // mc_integration(N, lambda);
     return 0;
