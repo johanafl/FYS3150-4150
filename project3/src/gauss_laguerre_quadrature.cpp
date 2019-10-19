@@ -122,12 +122,23 @@ double integrand(double r1, double r2, double theta1, double theta2, double phi1
 }
 
 
-void gauss_laguerre_quadrature()
+void gauss_laguerre_quadrature(int N_start, int N_end, int dN)
 {
     /*
     Calculate the integral of exp(-2*alpha*(r1 + r2))/|r1 - r2|, with alpha=1,
     using gaussian quadrature with laguerre polynomials for the r-dependence
     and legendre polynomials for the theta- and phi-dependence.
+
+    Parameters
+    ----------
+    N_start : int
+        Start grid point value.
+
+    N_end : int
+        End grid point value.
+
+    dN : int
+        Grid point step size.
     */
 
     // generating data file
@@ -140,10 +151,7 @@ void gauss_laguerre_quadrature()
     laguerre_data_file << std::setw(20) << "exact";
     laguerre_data_file << std::setw(20) << "comp time (s)" << std::endl;
 
-    // int N = 20;         // # of integration points for a single integral.
-    int N_end = 40;
-
-    for (int N = 1; N <= N_end; N = N + 2)
+    for (int N = N_start; N <= N_end; N += dN)
     {   // loops over grid values
 
         // starting timer
@@ -226,6 +234,11 @@ void gauss_laguerre_quadrature()
 
 int main()
 {   
-    gauss_laguerre_quadrature();
+    int N_start = 1;
+    int N_end = 30;
+    int dN = 1;
+    
+    gauss_laguerre_quadrature(N_start, N_end, dN);
+    
     return 1;
 }
