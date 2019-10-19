@@ -58,7 +58,7 @@ double integrand(double x0, double x1, double x2, double x3, double x4, double x
 
 }
 
-void mc_integration(int N, float lambda, double &average_sum, double &variance)
+void mc_integration(int N, float lambda, double& average_sum, double& variance)
 {
     /*
     Monte Carlo integration of the function exp(-2*2*(r1 + r2))/|r1 - r2|.
@@ -136,7 +136,7 @@ void mc_integration(int N, float lambda, double &average_sum, double &variance)
 class MCIntegration
 {
 private:
-    int N_end   = 1e6;
+    int N_end   = 1e7;
     int dN      = 1e5;
     int N_start = dN;
 
@@ -269,7 +269,7 @@ public:
             
             // integrating
             for (int _ = 0; _ < average_runs; _++)
-            {   // averaging over 10 runs
+            {   // averaging
                 
                 // starting timer
                 std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
