@@ -234,7 +234,19 @@ public:
     }
 
     void grid_loop(float lambda_current, int N)
-    {
+    {   /*
+        Takes a single lambda and N input and computes a single run with these
+        values.
+
+        Parameters
+        ----------
+        lambda_current : float
+            Infinity approximation value.
+
+        N : int
+            Grid point value.
+        */
+       
         N_start = N;
         N_end = N;
         write_contour_data = false;
@@ -242,9 +254,44 @@ public:
         grid_loop(lambda_current);
     }
 
-    void grid_loop(float lambda_current)
+    void grid_loop(float lambda, int N_start_input, int N_end_input, int dN_input)
+    {   /*
+        Takes a single lambda value, and loops it over a set of grid point
+        values defined by the input values.
+
+        Parameters
+        ----------
+        lambda : float
+            Infinity approximation value.
+
+        N_start_input : int
+            Start grid point value.
+
+        N_end_input : int
+            End grid point value.
+
+        dN_input : int
+            Grid point step size.
+        */
+
+        write_contour_data = false;
+
+        N_start = N_start_input;
+        N_end   = N_end_input;
+        dN      = dN_input;
+        
+        grid_loop(lambda);
+
+    }
+
+    void grid_loop(float lambda)
     {   /*
         Loops over grid point values.
+
+        Parameters
+        ----------
+        lambda : float
+            Infinity approximation value.
         */
 
         // writing title to file
@@ -261,7 +308,7 @@ public:
             std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
             
             // integrating
-            double integral_sum = gauss_legendre_quadrature(N, lambda_current);
+            double integral_sum = gauss_legendre_quadrature(N, lambda);
             
             // ending timer
             std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
@@ -277,7 +324,7 @@ public:
                 std::cout << "correct answer: " << exact << std::endl;
                 std::cout << "error: " << error << std::endl;
                 std::cout << "N: " <<  N << " of " << N_end << "\n";
-                std::cout << "lambda: " << lambda_current << "\n" << std::endl;
+                std::cout << "lambda: " << lambda << "\n" << std::endl;
             }
 
 
@@ -310,10 +357,15 @@ int main()
 {   
     float lambda = 2.28;
     int N = 21;
+    int N_start = 1;
+    int N_end = 30;
+    int dN = 1;
 
     GaussLegendreQuadrature q;
     // q.lambda_loop();
-    q.grid_loop(lambda, N);     // specifies lambda and N, runs one loop
+    //q.grid_loop(lambda, N);     // specifies lambda and N, runs one loop
+
+    q.grid_loop(lambda, N_start, N_end, dN);
     
     return 0;
 }
