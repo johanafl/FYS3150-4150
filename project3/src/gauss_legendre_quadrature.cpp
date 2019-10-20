@@ -191,10 +191,12 @@ double gauss_legendre_quadrature(int N, float lambda)
 class GaussLegendreQuadrature
 {
 private:
+    // grid point values
     int N_start = 1;
     int N_end   = 30;
     int dN      = 1;
 
+    // infinity approximation / integral limit values
     float lambda_start = 1;
     float lambda_end   = 4;
     float dlambda      = 0.2;
