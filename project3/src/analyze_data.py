@@ -5,8 +5,8 @@ from matplotlib.ticker import FormatStrFormatter
 
 def analyze_leglag_data():
     """
-    Loads data generated of the program gauss_legendre_quadrature.cpp and plots
-    for visualization.
+    Loads data generated from the program gauss_legendre_quadrature.cpp and
+    gauss_laguerre_quadrature.cpp and plots for visualization.
     """
 
     path_0 = "data_files/legendre_data.txt"
@@ -79,12 +79,15 @@ def analyze_leglag_data():
 
 def analyze_mc_data():
     """
-    Loads data generated of the program gauss_legendre_quadrature.cpp and plots
+    Loads data generated of the programs mc_integration.cpp,
+    mc_integration_improved.cpp, mc_integration_improved_parallel.cpp and plots
     for visualization.
     """
 
     path_0 = "data_files/mc_data_avg.txt"
     path_1 = "data_files/mc_data_O3.txt"
+    path_2 = "data_files/mc_improved_parallel_O3_data.txt"
+    path_3 = "data_files/mc_improved_parallel_data.txt"
 
     try:
         # reads from file
@@ -94,8 +97,15 @@ def analyze_mc_data():
         N_1, error_1, calculated_1, exact_1, comp_time_1 = \
             np.loadtxt(path_1, skiprows=1, unpack=True)
 
-    except:
-        print(f"Files {path_0} and/or {path_1} were not found. Exiting.")
+        N_2, error_2, calculated_2, exact_2, comp_time_2, variance_2 = \
+            np.loadtxt(path_2, skiprows=1, unpack=True)
+
+        N_3, error_3, calculated_3, exact_3, comp_time_3, variance_3 = \
+            np.loadtxt(path_3, skiprows=1, unpack=True)
+
+    except OSError:
+        print(f"Files {path_0} and/or {path_1} and/or {path_2} and/or {path_3}"
+        " were not found Exiting.")
         sys.exit()
 
 
@@ -104,6 +114,8 @@ def analyze_mc_data():
 
     ax.plot(N_0, error_0, label="mc avg")
     ax.plot(N_1, error_1, label="mc O3")
+    ax.plot(N_2, error_2, label="mc O3 parallel")
+    ax.plot(N_3, error_3, label="mc parallel")
     
     ax.set_title("error", fontsize=25)
     ax.set_xlabel("iterations", fontsize=25)
@@ -120,6 +132,8 @@ def analyze_mc_data():
 
     ax.plot(N_0, comp_time_0, label="mc avg")
     ax.plot(N_1, comp_time_1, label="mc O3")
+    ax.plot(N_2, comp_time_2, label="mc O3 parallel")
+    ax.plot(N_3, comp_time_3, label="mc parallel")
     
     ax.set_title("computation time", fontsize=25)
     ax.set_xlabel("iterations", fontsize=25)
@@ -131,23 +145,60 @@ def analyze_mc_data():
     
     plt.show()
 
-    # error vs time plot
+    # # error vs time plot
+    # _, ax = plt.subplots(figsize=(10, 8))
+
+    # ax.semilogy(comp_time_0, error_0, label="mc avg")
+    # ax.semilogy(comp_time_1, error_1, label="mc O3")
+    # ax.semilogy(comp_time_2, error_2, label="mc O3 parallel")
+    # ax.semilogy(comp_time_3, error_3, label="mc parallel")
+    
+    # # ax.set_title("lol", fontsize=25)
+    # ax.set_xlabel("computation time [s]", fontsize=30)
+    # ax.set_ylabel("error", fontsize=30)
+    # # ax.set_xlim([None, 29])
+    # # ax.set_ylim([None, 0.05])
+    
+    # ax.legend(fontsize=20)
+    # ax.grid()
+    # ax.tick_params(labelsize=30)
+    
+    # plt.show()
+
+
+def compare_speeds():
+    """
+    Speed comparison.
+    """
     _, ax = plt.subplots(figsize=(10, 8))
 
-    ax.semilogy(comp_time_0, error_0, label="mc avg")
-    ax.semilogy(comp_time_1, error_1, label="mc O3")
-    
-    # ax.set_title("lol", fontsize=25)
-    ax.set_xlabel("computation time [s]", fontsize=30)
-    ax.set_ylabel("error", fontsize=30)
-    # ax.set_xlim([None, 29])
-    # ax.set_ylim([None, 0.05])
-    
-    ax.legend(fontsize=20)
-    ax.grid()
-    ax.tick_params(labelsize=30)
-    
+
+    for i in range(2, 10+1, 2):
+        path_0 = "data_files/mc_improved_parallel_" + f"{i}" + "thread_data.txt"
+        path_1 = "data_files/mc_improved_parallel_" + f"{i}" + "thread_O3_data.txt"
+
+        N_0, error_0, calculated_0, exact_0, comp_time_0, variance_0 = \
+            np.loadtxt(path_0, skiprows=1, unpack=True)
+
+        N_1, error_1, calculated_1, exact_1, comp_time_1, variance_1 = \
+            np.loadtxt(path_1, skiprows=1, unpack=True)
+
+        ax.plot(N_0, comp_time_0, linestyle="dashed", label=f"{i} threads")
+        ax.plot(N_1, comp_time_1, label=f"{i} threads O3")
+
+        ax.set_title("computation time", fontsize=25)
+        ax.set_xlabel("iterations", fontsize=25)
+        ax.set_ylabel("computation time [s]", fontsize=25)
+
+        # ax.xaxis.set_major_formatter(FormatStrFormatter("%g"))
+        ax.set_xticklabels(["0", "0", "1e1", "1e2", "1e3", "1e4", "1e5"])
+        
+        ax.legend(fontsize=10)
+        ax.grid()
+        ax.tick_params(labelsize=30)
+
     plt.show()
+
 
 def analyze_contour_data():
     """
@@ -156,7 +207,7 @@ def analyze_contour_data():
 
     
     # path = "data_files/legendre_contour_data_high_res.txt"
-    path = "data_files/mc_contour_data.txt"
+    path = "data_files/mc_contour_data_high_res.txt"
     
     print(f"Reading file {path}.")
 
@@ -168,16 +219,12 @@ def analyze_contour_data():
         sys.exit()
     
     grid = np.log10(grid)
+
+    N_start, N_end, dN = ranges[0:3]
+    lambda_start, lambda_end, dlambda = ranges[3:]
     
-    # these ranges are defined from the data written to the file
-    # N_range = np.arange(*ranges[0:3])
-    lambda_range = np.arange(*ranges[3:])
-    
-    # these ranges are corrected since the c++ program sometimes loops one value
-    # too little/much because of step size and endpoint. adding one step in both
-    # lambda and N direction
-    N_range = np.arange(ranges[0], ranges[1]+ranges[2], ranges[2])
-    # lambda_range = np.arange(ranges[3], ranges[4]+ranges[5], ranges[5])
+    N_range      = np.arange(N_start, N_end+dN, dN)
+    lambda_range = np.arange(lambda_start, lambda_end+dlambda, dlambda)
     X, Y = np.meshgrid(N_range, lambda_range)
 
     # extracting the indices of the lowest error
@@ -257,12 +304,48 @@ def plot_integrand():
     plt.tight_layout(pad=2)
     plt.show()
 
+def illustrate_distributions(distribution="uniform"):
+    """
+    Illustrates how the uniform and exponential distributions overlap with the
+    integrand.
 
+    Parameters
+    ----------
+    distribution : str
+        String input of either "uniform" or "exponential".
+    """
+
+    x0 = np.linspace(-0.01, -1, 1000)
+    x1 = np.linspace(0.01, 1, 1000)
+
+    _, ax = plt.subplots()
+    
+    ax.plot(x0, np.abs(1/x0), color="black", label="f(x)")
+    ax.plot(x1, 1/x1, color="black")
+
+    if distribution == "uniform":
+        ax.plot([-1, 1], [10, 10], label="uniform distribution")
+        ax.plot([-1, -1], [0, 10.7], linestyle="dashed", alpha=0.8, color="black")
+        ax.plot([1, 1], [0, 10.7], linestyle="dashed", alpha=0.8, color="black")
+
+    elif distribution == "exponential":
+        lam = 15
+        ax.plot(x0, 5*lam*np.exp(-lam*x1), color="orange")
+        ax.plot(x1, 5*lam*np.exp(-lam*x1), label="exponential distribution", color="orange")
+    
+    ax.set_ylim([-0, 20])
+    ax.set_xlabel("x", fontsize=30)
+    ax.set_ylabel("f(x)", fontsize=30)
+    ax.grid()
+    ax.tick_params(labelsize=30)
+    ax.legend(fontsize=15)
+    plt.show()
 
 if __name__ == "__main__":
     # analyze_leglag_data()
     # analyze_mc_data()
-    analyze_contour_data()
+    # comparke_speeds()
+    # analyze_contour_data()
     # plot_integrand()
-    # plot_test()
+    illustrate_distributions(distribution="uniform")
     pass
