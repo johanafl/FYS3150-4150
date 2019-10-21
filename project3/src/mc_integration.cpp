@@ -136,8 +136,8 @@ void mc_integration(int N, float lambda, double& average_sum, double& variance)
 class MCIntegration
 {
 private:
-    int N_end   = 1e7;
-    int dN      = 1e5;
+    int N_end   = 3e7;
+    int dN      = 5e5;
     int N_start = dN;
 
     float lambda_start = 0.5;
@@ -157,7 +157,7 @@ public:
     MCIntegration()
     {
         // generating data files
-        mc_data_file.open("data_files/mc_data.txt", std::ios_base::app);
+        mc_data_file.open("data_files/mc_data_3e7.txt", std::ios_base::app);
         mc_contour_data_file.open("data_files/mc_contour_data.txt", std::ios_base::app);
     
     }
@@ -250,13 +250,14 @@ public:
             mc_data_file << std::setw(20) << "N" << std::setw(20) << "error";
             mc_data_file << std::setw(20) << "calculated";
             mc_data_file << std::setw(20) << "exact";
-            mc_data_file << std::setw(20) << "comp time (s)" << std::endl;
+            mc_data_file << std::setw(20) << "comp time (s)";
+            mc_data_file << std::setw(20) << "variance" << std::endl;
         }
 
         double variance = 0;
         double average_sum;
         double average_time;
-        int average_runs = 10;      // number of iterations for the average
+        int average_runs = 3;      // number of iterations for the average
 
 
         for (int N = N_start; N <= N_end; N += dN)
@@ -306,7 +307,8 @@ public:
                 mc_data_file << std::setw(20) << N << std::setw(20) << error;
                 mc_data_file << std::setw(20) << average_sum;
                 mc_data_file << std::setw(20) << exact;
-                mc_data_file << std::setw(20) << average_time << std::endl;
+                mc_data_file << std::setw(20) << average_time;
+                mc_data_file << std::setw(20) << variance << std::endl;
             }
 
 
@@ -331,12 +333,12 @@ public:
 
 int main()
 {   
-    int N = 1e6;
-    float lambda = 2;
+    int N = 3e7;
+    float lambda = 2.28;
 
     MCIntegration q;
-    // q.grid_loop(lambda);
-    q.lambda_loop();
+    q.grid_loop(lambda);
+    // q.lambda_loop();
 
     // mc_integration(N, lambda);
     return 0;
