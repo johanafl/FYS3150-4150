@@ -125,7 +125,7 @@ void mc_integration(int N, float lambda, double& average_sum, double& variance)
 
     integral_sum /= N;                  // number of samples
     integral_sum_square /= N;           // number of samples
-    variance = (integral_sum_square - integral_sum*integral_sum)*pow( (b - a), 6);
+    variance = (integral_sum_square - integral_sum*integral_sum)*pow( (b - a), 6)*pow( (b - a), 6);
     integral_sum *= pow( (b - a), 6);   // integral interval
     average_sum += integral_sum;
 
@@ -136,8 +136,8 @@ void mc_integration(int N, float lambda, double& average_sum, double& variance)
 class MCIntegration
 {
 private:
-    int N_end   = 3e7;
-    int dN      = 5e5;
+    int N_end   = 1e6;
+    int dN      = 1e5;
     int N_start = dN;
 
     float lambda_start = 0.5;
@@ -157,7 +157,7 @@ public:
     MCIntegration()
     {
         // generating data files
-        mc_data_file.open("data_files/mc_data_3e7.txt", std::ios_base::app);
+        mc_data_file.open("data_files/mc_variance_data.txt", std::ios_base::app);
         mc_contour_data_file.open("data_files/mc_contour_data.txt", std::ios_base::app);
     
     }
@@ -333,13 +333,11 @@ public:
 
 int main()
 {   
-    int N = 3e7;
     float lambda = 2.28;
 
     MCIntegration q;
-    q.grid_loop(lambda);
-    // q.lambda_loop();
+    q.grid_loop(lambda);    // runs a range of grid values for a single lambda
+    // q.lambda_loop();      // runs a range of lambda and grid values
 
-    // mc_integration(N, lambda);
     return 0;
 }
