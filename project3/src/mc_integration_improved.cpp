@@ -74,7 +74,7 @@ void mc_integration(int N_start, int N_end, int dN)
 
     // generating data file
     std::ofstream mc_improved_data_file;
-    mc_improved_data_file.open("data_files/mc_improved_data.txt", std::ios_base::app);
+    mc_improved_data_file.open("data_files/mc_improved_variance_data.txt", std::ios_base::app);
 
     // writing title to file
     mc_improved_data_file << std::setw(20) << "N" << std::setw(20) << "error";
@@ -102,7 +102,7 @@ void mc_integration(int N_start, int N_end, int dN)
     double average_time;
     double integral_sum_square = 0;
     double integrand_tmp;               // temporary value for squaring the integrand so we don't have to call the function twice
-    int average_runs = 10;      // number of iterations for the average
+    int average_runs = 3;      // number of iterations for the average
     double variance;
     double exact = 5*pi*pi/(16*16);
 
@@ -152,7 +152,7 @@ void mc_integration(int N_start, int N_end, int dN)
             integral_sum_square /= N;          // number of samples
             integral_sum_square /= std::pow( (2*2), 10 );   // (2*alpha)**10
             integral_sum /= std::pow( (2*2), 5);            // (2*alpha)**5
-            variance = (integral_sum_square - integral_sum*integral_sum)*4*std::pow(pi, 4);
+            variance = (integral_sum_square - integral_sum*integral_sum)*4*std::pow(pi, 4)*4*std::pow(pi, 4);
             integral_sum *= 4*std::pow(pi, 4);     // theta, phi interval
 
             average_sum += integral_sum;
@@ -191,7 +191,7 @@ int main()
 {
 
     int N_end   = 1e7;
-    int dN      = 1e5;
+    int dN      = 5e5;
     int N_start = dN;
     
     mc_integration(N_start, N_end, dN);
