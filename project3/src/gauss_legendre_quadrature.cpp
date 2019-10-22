@@ -364,8 +364,7 @@ int main()
     int dN = 1;
 
     GaussLegendreQuadrature q;
-    // q.lambda_loop();
-    //q.grid_loop(lambda, N);     // specifies lambda and N, runs one loop
+    // q.grid_loop(lambda, N);     // specifies lambda and N, runs one loop
 
     q.grid_loop(lambda, N_start, N_end, dN);
     
