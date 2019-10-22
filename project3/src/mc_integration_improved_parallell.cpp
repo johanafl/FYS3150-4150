@@ -61,10 +61,22 @@ void mc_integration(int world_rank, int N, double& expectation_value,
     /*
     Monte Carlo integration of the function exp(-2*2*(r1 + r2))/|r1 - r2|.
 
-    Returns
-    -------
-    seed : int
-        The seed is the system time in seconds from UNIX epoch.
+    Parameters
+    ----------
+    world_rank : int
+        The label of the thread (0, 1, 2, ...) used for generating a unique
+        seed for each thread.
+
+    N : int
+        Number of MC iterations.
+
+    expectation_value : double reference
+        Reference to a double value where the integral sum / expectation value
+        will be stored.
+
+    expectation_value_square : double reference
+        Reference to a double value where the integral sum square / expectation
+        value of the square will be stored.
     */
 
     float lambda = 1; // For the exp. distribution function.
@@ -78,9 +90,9 @@ void mc_integration(int world_rank, int N, double& expectation_value,
     std::uniform_real_distribution<double> uniform_phi(0, 2*pi);
     std::exponential_distribution<double> exp_dist(lambda);
 
-    double integral_sum = 0;
-    double integral_sum_square = 0;
-    double integrand_tmp;               // temporary value for squaring the integrand so we don't have to call the function twice
+    double integral_sum = 0;        // for the integral
+    double integral_sum_square = 0; // for the variance
+    double integrand_tmp;    // temporary value for squaring the integrand so we don't have to call the function twice
 
     double r1;     double R1;
     double r2;     double R2;
@@ -125,31 +137,30 @@ void mc_integration(int world_rank, int N, double& expectation_value,
 
 int main()
 {   
-    
     MPI_Init(NULL, NULL);
-    int N_end   = 1e6;
-    int dN      = 1e5;
-    int N_start = dN;
-    double exact = 5*pi*pi/(16*16);
-    double error;
-    std::ofstream mc_improved_parallel_data_file;
-
     int world_rank;
     int world_size;
+    double exact = 5*pi*pi/(16*16);
+    double error;
     double integral_tot_sum;
     double expectation_value;
     double expectation_value_square;
     double integral_tot_sum_square;
     double variance;
+    std::ofstream mc_improved_parallel_data_file;
+
+
     MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    int N_end    = 1e7/world_size;
+    int dN       = 1e5/world_size;
+    int N_start  = dN;
 
     if (world_rank == 0)
-    {
-        // generating data file
-        mc_improved_parallel_data_file.open("data_files/mc_improved_parallel_data.txt", std::ios_base::app);
+    {   // only thread 0 writes to file
 
-        // writing title to file
+        // generating data file and writing title to file
+        mc_improved_parallel_data_file.open("data_files/mc_improved_parallel_data.txt", std::ios_base::app);
         mc_improved_parallel_data_file << std::setw(20) << "N" << std::setw(20) << "error";
         mc_improved_parallel_data_file << std::setw(20) << "calculated";
         mc_improved_parallel_data_file << std::setw(20) << "exact";
@@ -160,11 +171,11 @@ int main()
     for (int N = N_start; N <= N_end; N += dN)
     {   // loops over MC integrations
 
+        // resetting values
         integral_tot_sum = 0;
         expectation_value = 0;
         expectation_value_square = 0;
         integral_tot_sum_square = 0;
-
 
         // starting timer
         std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();    
@@ -178,15 +189,16 @@ int main()
         MPI_Reduce(&expectation_value, &integral_tot_sum, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(&expectation_value_square, &integral_tot_sum_square, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
-        integral_tot_sum /= world_size;
+        // dividing by the number of threads
+        integral_tot_sum        /= world_size;
         integral_tot_sum_square /= world_size;
-
+        
         variance = (integral_tot_sum_square - integral_tot_sum*integral_tot_sum)*4*std::pow(pi, 4);
-
         integral_tot_sum *= 4*std::pow(pi, 4);  // theta, phi interval
 
         if (world_rank == 0) 
-        {
+        {   // only thread 0 writes to file
+            
             std::cout << "\nvariance: " << variance << std::endl;
             std::cout << "std: " << std::sqrt(variance) << std::endl;
             std::cout << "calculated: " << integral_tot_sum << std::endl;
@@ -196,7 +208,7 @@ int main()
             error = std::fabs(integral_tot_sum - exact);
 
             // writing calculation data to file
-            mc_improved_parallel_data_file << std::setw(20) << N << std::setw(20) << error;
+            mc_improved_parallel_data_file << std::setw(20) << N*world_size << std::setw(20) << error;
             mc_improved_parallel_data_file << std::setw(20) << integral_tot_sum;
             mc_improved_parallel_data_file << std::setw(20) << exact;
             mc_improved_parallel_data_file << std::setw(20) << comp_time.count();
@@ -204,12 +216,14 @@ int main()
 
         }
 
+        // barrier makes sure that no thread starts with the next iteration
+        // value before all threads are done with the current
         MPI_Barrier(MPI_COMM_WORLD);
 
     }
 
     if (world_rank == 0)
-    {
+    {   // only thread 0 writes to file
         mc_improved_parallel_data_file.close();
     }
 
