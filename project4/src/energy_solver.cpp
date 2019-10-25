@@ -112,7 +112,7 @@ void metropolis_flap(CircularMatrix& spin, double& total_energy,
 
 
 
-int main()
+int run_shit(int seed)
 {   
     // PARALLELL!!!!!!
     //
@@ -123,10 +123,10 @@ int main()
     // MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     // MPI_Finalize();
 
-    int n = 3;
+    int n = 100;
     double temperature = 1;
     
-    int seed = 1337;
+    // int seed = 1337;
     // time_t seed;
     // time(&seed);
     std::mt19937 engine(seed);
@@ -143,12 +143,14 @@ int main()
     double total_energy;
     total_energy_and_magnetization(init_spin, n, total_energy, total_magnetization);
 
-    init_spin.print();
+    // init_spin.print();
 
-    std::cout << std::endl;
-    std::cout << "tot M: " << total_magnetization << ", tot_E: " << total_energy << "\n" << std::endl;
+    // std::cout << std::endl;
+    // std::cout << "tot M: " << total_magnetization << ", tot_E: " << total_energy << "\n" << std::endl;
+
+
     
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 1e6; i++)
     {   
         int row = uniform_discrete(engine);
         int col = uniform_discrete(engine);
@@ -159,11 +161,22 @@ int main()
     }
 
 
-    std::cout << std::endl;
-    init_spin.print();
+    // init_spin.print();
     std::cout << "tot M: " << total_magnetization << ", tot_E: " << total_energy << std::endl;
+    std::cout << seed << std::endl;
+    std::cout << std::endl;
+    // best value, forgot seed!!
     
 
+
+    return 0;
+}
+
+
+int main()
+{   
+    int the_magic_seed = 1572032584;
+    run_shit(the_magic_seed);
 
     return 0;
 }
