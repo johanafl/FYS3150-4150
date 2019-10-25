@@ -1,6 +1,7 @@
 #include <random>
 #include <iostream>
 #include <iomanip>
+#include <stdlib.h>
 
 class Matrix
 {
@@ -68,6 +69,33 @@ public:
         std::cout << std::setw(3) << matrix[dim*dim-1] << "  ]" << std::endl;
     }
 
+    double& operator() (int row, int col)
+    {   /*
+        Translates the 2D indices to flat indices.
+        */
+
+        return matrix[dim*(row%dim) + (col%dim)];
+    }
+
+    double& operator() (int row, int col, bool safe)
+    {   /*
+        Boundary checks for matrix indexing. Allows index of padding, but
+        nothing more.
+        */
+
+        if ( (row < -1) or (row > dim) or (col < -1) or (col > dim) )
+        {   // throws error if index is out of padding range
+            
+            std::cout << "Indexing out of bounds. Terminating process." << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        
+        else
+        {
+            return matrix[dim*(row%dim) + (col%dim)];
+        }
+    }
+
     ~Matrix()
     {
         delete[] matrix;
@@ -78,7 +106,12 @@ public:
 
 int main()
 {   
-    Matrix q(3);
+    int seed = 1337;
+    int n = 3;
+    
+    Matrix q(n, seed);
     q.print_matrix();
+    
+    std::cout << q(0, 8, true) << std::endl;
     return 0;
 }
