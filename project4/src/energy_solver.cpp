@@ -41,9 +41,9 @@ double total_energy_and_magnetization(double** spin, int n, double& tot_magnet)
     {
         for (int j=0; j<n-1; j++)
         {
-            double spin_now = spin[i][j];
+            double spin_now   = spin[i][j];
+            double spin_down  = spin[i+1][j];
             double spin_right = spin[i][j+1];
-            double spin_down = spin[i+1][j];
 
             tot_energy -= spin_now*(spin_right + spin_down);
             tot_magnet += spin_now;
@@ -52,9 +52,9 @@ double total_energy_and_magnetization(double** spin, int n, double& tot_magnet)
     
     for (int j=0; j<n-1; j++)
     {
-        double spin_now = spin[n-1][j];
+        double spin_now   = spin[n-1][j];
+        double spin_down  = spin[0][j];
         double spin_right = spin[n-1][j+1];
-        double spin_down = spin[0][j];
 
         tot_energy -= spin_now*(spin_right + spin_down);
         tot_magnet += spin_now;
@@ -62,9 +62,9 @@ double total_energy_and_magnetization(double** spin, int n, double& tot_magnet)
 
     for (int i=0; i<n-1; i++)
     {
-        double spin_now = spin[i][n-1];
+        double spin_now   = spin[i][n-1];
+        double spin_down  = spin[i+1][n-1];
         double spin_right = spin[i][0];
-        double spin_down = spin[i+1][n-1];
 
         tot_energy -= spin_now*(spin_right + spin_down);
         tot_magnet += spin_now;
@@ -76,13 +76,13 @@ double total_energy_and_magnetization(double** spin, int n, double& tot_magnet)
     return tot_energy;
 }
 
-void print_maetrix(double** matrex, int n)
+void print_matrix(double** matrix, int n)
 {
     for (int i=0; i<n; i++)
     {
         for (int j=0; j<n; j++)
         {
-            std::cout << std::setw(4) << matrex[i][j];
+            std::cout << std::setw(4) << matrix[i][j];
         }
         std::cout << std::endl;
     }
@@ -146,13 +146,13 @@ int main()
     double** init_spin = initial_spin(n);
 
 
-    double matnetization;
-    double engery = total_energy_and_magnetization(init_spin, n, matnetization);
+    double magnetization;
+    double energy = total_energy_and_magnetization(init_spin, n, magnetization);
 
-    print_maetrix(init_spin, n);
+    print_matrix(init_spin, n);
 
     std::cout << std::endl;
-    std::cout << "tot M: " << matnetization << ", tot_E: " << engery << std::endl;
+    std::cout << "tot M: " << magnetization << ", tot_E: " << energy << std::endl;
 
     // HUSK DELETE!!!!!!!!!!
     for (int i=0; i<n; i++)
