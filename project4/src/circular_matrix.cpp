@@ -73,10 +73,8 @@ public:
     {   /*
         Translates the 2D indices to flat indices.
         */
-        int row_idx = ((row%dim) + dim)%dim;
-        int col_idx = ((col%dim) + dim)%dim;
-        return matrix[dim*row_idx + col_idx];
-        // return matrix[dim*(row%dim) + (col%dim)];
+
+        return matrix[dim*(((row%dim) + dim)%dim) + (((col%dim) + dim)%dim)];
     }
 
     double& operator() (int row, int col, bool safe)
