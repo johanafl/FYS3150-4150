@@ -148,7 +148,7 @@ int main()
     std::cout << std::endl;
     std::cout << "tot M: " << total_magnetization << ", tot_E: " << total_energy << "\n" << std::endl;
     
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 10; i++)
     {   
         int row = uniform_discrete(engine);
         int col = uniform_discrete(engine);
@@ -156,16 +156,11 @@ int main()
         
         metropolis_flap(init_spin, total_energy, total_magnetization, row, col, metropolis_random, temperature);
 
-        std::cout << "energy: " << total_energy << std::endl;
-        init_spin.print();
-        std::cout << std::endl;
-        std::cout << std::endl;
     }
 
 
-    // init_spin.print();
-
     std::cout << std::endl;
+    init_spin.print();
     std::cout << "tot M: " << total_magnetization << ", tot_E: " << total_energy << std::endl;
     
 
