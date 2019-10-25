@@ -3,7 +3,7 @@
 #include <iomanip>
 #include <stdlib.h>
 
-class Matrix
+class CircularMatrix
 {
 private:
     int dim;    // matrix is dim x dim
@@ -13,7 +13,7 @@ private:
 public:
     double *matrix;
     
-    Matrix(int n, double seed_input)
+    CircularMatrix(int n, double seed_input)
     {   
         dim  = n;
         seed = seed_input;
@@ -21,7 +21,7 @@ public:
         initial_spin();
     }
 
-    Matrix(int n)
+    CircularMatrix(int n)
     {   
         time_t time_seed;
         time(&time_seed);
@@ -47,7 +47,7 @@ public:
 
     }
 
-    void print_matrix()
+    void print()
     {   /*
         Prints a nice visualization of the matrix.
         */
@@ -73,8 +73,10 @@ public:
     {   /*
         Translates the 2D indices to flat indices.
         */
-
-        return matrix[dim*(row%dim) + (col%dim)];
+        int row_idx = ((row%dim) + dim)%dim;
+        int col_idx = ((col%dim) + dim)%dim;
+        return matrix[dim*row_idx + col_idx];
+        // return matrix[dim*(row%dim) + (col%dim)];
     }
 
     double& operator() (int row, int col, bool safe)
@@ -91,12 +93,14 @@ public:
         }
         
         else
-        {
-            return matrix[dim*(row%dim) + (col%dim)];
+        {   
+            int row_idx = ((row%dim) + dim)%dim;
+            int col_idx = ((col%dim) + dim)%dim;
+            return matrix[dim*row_idx + col_idx];
         }
     }
 
-    ~Matrix()
+    ~CircularMatrix()
     {
         delete[] matrix;
     }
@@ -104,14 +108,14 @@ public:
 
 
 
-int main()
-{   
-    int seed = 1337;
-    int n = 3;
+// int main()
+// {   
+//     int seed = 1337;
+//     int n = 3;
     
-    Matrix q(n, seed);
-    q.print_matrix();
+//     CircularMatrix q(n, seed);
+//     q.print();
     
-    std::cout << q(0, 8, true) << std::endl;
-    return 0;
-}
+//     std::cout << q(0, 8, true) << std::endl;
+//     return 0;
+// }

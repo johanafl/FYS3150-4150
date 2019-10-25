@@ -90,15 +90,6 @@ void metropolis_flap(CircularMatrix& spin, double& total_energy,
 
     double delta_energy = 2*spin_here*(spin(row-1, col, true) + spin(row+1, col, true)
                             + spin(row, col+1, true) + spin(row, col-1, true));
-    std::cout << "row: " << row << " col: " << col << std::endl;
-    std::cout << "spin(row, col): " << spin(row, col) << std::endl;
-    std::cout << "spin(row-1, col): " << spin(row-1, col) << std::endl;
-    std::cout << "spin(row+1, col): " << spin(row+1, col) << std::endl;
-    std::cout << "spin(row, col+1): " << spin(row, col+1) << std::endl;
-    std::cout << "spin(row, col-1): " << spin(row, col-1) << std::endl;
-    std::cout << "delta energy: " << delta_energy << std::endl;
-
-
 
     if (delta_energy <= 0)
     {   // accept new energy if difference is negative
@@ -176,6 +167,7 @@ int main()
 
     std::cout << std::endl;
     std::cout << "tot M: " << total_magnetization << ", tot_E: " << total_energy << std::endl;
+    
 
 
     return 0;
