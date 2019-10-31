@@ -102,36 +102,43 @@ def analayzan(ax, prop, test=True, mean_E=False, mean_M=False, spec_heat=False, 
             ax.set_ylabel(r"$\Chi$")
 
 
-if __name == "__main__":
-    bools   = np.array([True, False])
-    fig, ax = plt.subplots()
+# if __name == "__main__":
+#     bools   = np.array([True, False])
+#     fig, ax = plt.subplots()
 
-    test = bools[0]
+#     test = bools[0]
 
-    if test:
-        boolians   = np.array([False, False, False, True, False, False, False])
-        properties = np.array(["E", "M", "Cv", "X"])
+#     if test:
+#         boolians   = np.array([False, False, False, True, False, False, False])
+#         properties = np.array(["E", "M", "Cv", "X"])
 
-        for i, element in enumerate(properties):
-            file_ = np.loadtxt("{: s}.txt".format(element))
+#         for i, element in enumerate(properties):
+#             file_ = np.loadtxt("{: s}.txt".format(element))
 
-            arg  = 
-            MC   = file_[0]
-            prop = file_[1, 1:]
-            analayzan(ax, filename, mean_E=boolians[i+3], mean_M=boolians[i+2],
-                           spec_heat=boolians[i+1], susceptibility=boolians[i])
-            ax.show()
-            ax.clf()
+#             arg  = 
+#             MC   = file_[0]
+#             prop = file_[1, 1:]
+#             analayzan(ax, filename, mean_E=boolians[i+3], mean_M=boolians[i+2],
+#                            spec_heat=boolians[i+1], susceptibility=boolians[i])
+#             ax.show()
+#             ax.clf()
     
-    else:
-        properties = np.array(["E", "M", "Cv", "X"])
+#     else:
+#         properties = np.array(["E", "M", "Cv", "X"])
 
-        for element in properties:
-            filename = np.loadtxt("{: s}.txt".format(element))
+#         for element in properties:
+#             filename = np.loadtxt("{: s}.txt".format(element))
 
-            analayzan(ax, filename)
+#             analayzan(ax, filename)
 
-if __nme__ == "__main__":
-    filename_energy = "E_data.txt"
-    filename_magnet = "M_data.txt"
+if __name__ == "__main__":
+    filename_energy = "data_files/E_data.txt"
+    filename_magnet = "data_files/M_data.txt"
+
+    energy = np.loadtxt(filename_energy)
+    magnet = np.loadtxt(filename_magnet)
+    # filename_magnet = "M_data.txt"
+
+    analyse_energy_const_temp(energy)
+    analyse_magnet_const_temp(magnet)
     pass
