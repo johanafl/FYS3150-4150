@@ -98,6 +98,162 @@ void metropolis_flap(CircularMatrix& spin, double& total_energy,
 }
 
 
+class IsingModel
+{
+
+private:
+    int n;    // grid points
+    int MC_iterations = 5;   // number of times the spin flip loop is run
+    double* exp_delta_energy = new double[17];
+    double J = 1;
+
+    int row;
+    int col;
+    double metropolis_random;
+    double total_energy;
+    double total_magnetization;
+    
+    // setting temperature data
+    double initial_temp = 1;
+    double final_temp = 10;
+    double dtemp = 1;
+
+    std::ofstream E_data;
+    std::ofstream M_data;
+
+    std::mt19937 engine(seed);
+    std::uniform_int_distribution<int> uniform_discrete(0, n - 1);
+    std::uniform_real_distribution<double> uniform_continuous(0, 1);
+
+    CircularMatrix spin;
+
+public:
+    IsingModel(int n, int seed)
+    {
+        spin(n, seed);   // initializing matrix with spins
+        total_energy_and_magnetization(spin, n, total_energy, total_magnetization);
+
+        // initialising data files
+        E_data.open("data_files/E_data.txt", std::ios_base::app);
+        M_data.open("data_files/M_data.txt", std::ios_base::app);
+
+        E_data << std::setw(15) << " ";
+        M_data << std::setw(15) << " ";
+
+        for (int i = 1; i <= MC_iterations; i++)
+        {   // writing file header
+            E_data << std::setw(15) << i*n*n;
+            M_data << std::setw(15) << i*n*n;
+        }
+
+        E_data << "\n";
+        M_data << "\n";
+    }
+
+
+    void MC_iteration()
+    {   /*
+        Runs the spin flip a given amount of times. Generates data for finding
+        how many iterations is needed for convergence. Keeps the energy values
+        without averaging. Only runs for a single temperature value.
+        */
+
+        double single_temp = 1;    // runs the convergence check for a single temperature
+
+        exp_delta_energy[0]  = std::exp(-8*J/single_temp);
+        exp_delta_energy[4]  = std::exp(-4*J/single_temp);
+        exp_delta_energy[8]  = 1;
+        exp_delta_energy[12] = std::exp(4*J/single_temp);
+        exp_delta_energy[16] = std::exp(8*J/single_temp);
+
+        for (int j = 0; j < MC_iterations; j++)
+        {   // loops over n*n spin flips a given amount of times
+            // saves relevant data for each iteration
+
+            iterate_spin_flip(single_temp);
+            // writing calculated data to file  
+            E_data << std::setw(15) << total_energy;
+            M_data << std::setw(15) << total_magnetization;
+
+        }
+    }
+
+    void MC_iteration_average(double temp)
+    {   /*
+        Runs the spin flip a given amount of times. Does not keep every energy
+        value, but calculates the average.
+
+        Parameters
+        ----------
+        temp : double
+            Temperature value.
+        */
+
+        for (int j = 0; j < MC_iterations; j++)
+        {   // loops over n*n spin flips a given amount of times
+
+            // add array business to calculate average
+            iterate_spin_flip(temp);
+
+        }
+
+    }
+
+    void iterate_spin_flip(double temp)
+    {   /*
+        Picks a random row and a random column. Picks a random number for the
+        Metropolis condition. Flips the spin with the function metropolis_flap.
+        This is done n*n times.
+
+        Parameters
+        ----------
+        temp : double
+            Temperature value for which to calculate the data.
+        */
+        
+        for (int i = 0; i < n*n; i++)
+        {   // flips n*n randomly drawn spins in the spin matrix
+            
+            row = uniform_discrete(engine);
+            col = uniform_discrete(engine);
+            metropolis_random = uniform_continuous(engine);
+            
+            metropolis_flap(spin, total_energy, total_magnetization, row, col, metropolis_random, temp, exp_delta_energy);
+        }
+    }
+
+    void iterate_temperature()
+    {   /*
+        Iterates over a given set of temperature values.
+        */
+    
+        for (double temp = initial_temp; temp <= final_temp; temp += dtemp)
+        {   // looping over temperature values
+
+            // pre-calculated exponential values
+            exp_delta_energy[0]  = std::exp(-8*J/temp);
+            exp_delta_energy[4]  = std::exp(-4*J/temp);
+            exp_delta_energy[8]  = 1;
+            exp_delta_energy[12] = std::exp(4*J/temp);
+            exp_delta_energy[16] = std::exp(8*J/temp);
+            
+            // writing temperature values in the first column
+            E_data << std::setw(15) << temp;
+            M_data << std::setw(15) << temp;
+            
+            E_data << "\n";
+            M_data << "\n";
+        }
+    }
+
+    ~IsingModel()
+    {
+        delete[] exp_delta_energy;
+    }
+
+};
+
+
 int generate_data(int seed)
 {   /*
     Generates energy and magnetization data for a given set of temperature
@@ -119,96 +275,21 @@ int generate_data(int seed)
     // int seed = 1337;
     // time_t seed;
     // time(&seed);
-    int n = 20;    // grid points
-    double total_magnetization;
-    double total_energy;
-    int average_runs = 5;           // number of times the spin flip loop is run
-    double* exp_delta_energy = new double[17];
-    double J = 1;
-
-    int row;
-    int col;
-    double metropolis_random;
-    
-    // setting temperature data
-    double initial_temp = 1;
-    double final_temp = 10;
-    double dtemp = 1;
-
-    CircularMatrix spin(n, seed);   // initializing matrix with spins
-    std::ofstream E_data;
-    std::ofstream M_data;
 
     // std::string filename = "data_files/E_M_data_T=" + std::to_string(temp) + ".txt";
-    E_data.open("data_files/E_data.txt", std::ios_base::app);
-    M_data.open("data_files/M_data.txt", std::ios_base::app);
-    
-    std::mt19937 engine(seed);
-    std::uniform_int_distribution<int> uniform_discrete(0, n - 1);
-    std::uniform_real_distribution<double> uniform_continuous(0, 1);
-
-    total_energy_and_magnetization(spin, n, total_energy, total_magnetization);
-
-    E_data << std::setw(15) << " ";
-    M_data << std::setw(15) << " ";
-
-    for (int i = 1; i <= average_runs; i++)
-    {   // writing file header
-        E_data << std::setw(15) << i*n*n;
-        M_data << std::setw(15) << i*n*n;
-    }
-
-    E_data << "\n";
-    M_data << "\n";
-
-    for (double temp = initial_temp; temp <= final_temp; temp += dtemp)
-    {   // looping over temperature values
-
-        // pre-calculated exponential values
-        exp_delta_energy[0]  = std::exp(-8*J/temp);
-        exp_delta_energy[4]  = std::exp(-4*J/temp);
-        exp_delta_energy[8]  = 1;
-        exp_delta_energy[12] = std::exp(4*J/temp);
-        exp_delta_energy[16] = std::exp(8*J/temp);
-        
-        // writing temperature values in the first column
-        E_data << std::setw(15) << temp;
-        M_data << std::setw(15) << temp;
-        
-        for (int j = 0; j < average_runs; j++)
-        {   // loops over n*n spin flips a given amount of times
-            // saves relevant data for each iteration
-            
-            for (int i = 0; i < n*n; i++)
-            {   // flips n*n randomly drawn spins in the spin matrix
-                
-                row = uniform_discrete(engine);
-                col = uniform_discrete(engine);
-                metropolis_random = uniform_continuous(engine);
-                
-                metropolis_flap(spin, total_energy, total_magnetization, row, col, metropolis_random, temp, exp_delta_energy);
-            }
-
-            // writing calculated data to file  
-            E_data << std::setw(15) << total_energy;
-            M_data << std::setw(15) << total_magnetization;
-
-        }
-
-        E_data << "\n";
-        M_data << "\n";
-    }
 
 
 
 
 
-    // spin.print();
-    std::cout << "tot M: " << total_magnetization << ", tot_E: " << total_energy << std::endl;
-    std::cout << seed << std::endl;
-    std::cout << std::endl;
-    // best value, forgot seed!!
-    delete[] exp_delta_energy;
+
+
+
+    // // spin.print();
+    // std::cout << "tot M: " << total_magnetization << ", tot_E: " << total_energy << std::endl;
+    // std::cout << seed << std::endl;
+    // std::cout << std::endl;
+    // // best value, forgot seed!!
 
     return 0;
 }
@@ -216,7 +297,10 @@ int generate_data(int seed)
 int main()
 {   
     int the_magic_seed = 1572032584;
+    int n = 20;
     generate_data(the_magic_seed);
+
+    IsingModel q(n, the_magic_seed);
 
     return 0;
 }
