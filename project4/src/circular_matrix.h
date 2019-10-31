@@ -22,6 +22,7 @@ public:
 
     CircularMatrix(int n, double seed_input);
     CircularMatrix(int n);
+    CircularMatrix(int n, double* init_set);
     void initial_spin();
     void print();
     double& operator() (int row, int col);

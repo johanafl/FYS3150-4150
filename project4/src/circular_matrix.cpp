@@ -14,6 +14,7 @@ CircularMatrix::CircularMatrix(int n, double seed_input)
     dim  = n;
     seed = seed_input;
     
+    matrix = new double[dim*dim];
     initial_spin();
 }
 
@@ -25,12 +26,23 @@ CircularMatrix::CircularMatrix(int n)
     seed = time_seed;
     dim  = n;
 
+    matrix = new double[dim*dim];
     initial_spin();    
+}
+
+CircularMatrix::CircularMatrix(int n, double* init_set)
+{
+    dim  = n;
+    matrix = new double[dim*dim];
+
+    for (int i = 0; i < dim*dim; i++)
+    {   // populating the array with given array.
+        matrix[i] = init_set[i];
+    }
 }
 
 void CircularMatrix::initial_spin()
 {
-    matrix = new double[dim*dim];
     std::mt19937 engine(seed);
     std::uniform_int_distribution<int> uniform(0, 1);
     
@@ -39,6 +51,7 @@ void CircularMatrix::initial_spin()
         matrix[i] = 2*uniform(engine) - 1;
     }
 }
+
 
 void CircularMatrix::print()
 {   /*
@@ -62,7 +75,7 @@ double& CircularMatrix::operator() (int row, int col)
 {   /*
     Translates the 2D indices to flat indices.
     */
-    return matrix[dim*(((row%dim) + dim)%dim) + (((col%dim) + dim)%dim)];
+    return matrix[dim*((row + dim)%dim) + ((col + dim)%dim)];
 }
 
 double& CircularMatrix::operator() (int row, int col, bool safe)
@@ -86,16 +99,4 @@ double& CircularMatrix::operator() (int row, int col, bool safe)
 CircularMatrix::~CircularMatrix()
 {
     delete[] matrix;
-}
-
-int test()
-{   
-    int seed = 1337;
-    int n = 3;
-    
-    CircularMatrix q(n, seed);
-    q.print();
-    
-    std::cout << q(0, 8, true) << std::endl;
-    return 0;
 }
