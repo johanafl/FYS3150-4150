@@ -1,6 +1,49 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+def analyse_energy_const_temp(energy):
+    plt.plot(energy, label="Total energy, [?]")
+    plt.xlabel("MC iterations")
+    plt.ylabel("Energy, [?]")
+    plt.legend(loc="best")
+    plt.show()
+
+def analyse_magnet_const_temp(magnet):
+    plt.plot(magnet, label="Total magnetization, [?]")
+    plt.xlabel("MC iterations")
+    plt.ylabel("Magnetization, [?]")
+    plt.legend(loc="best")
+    plt.show()
+
+def analyse_energy(temp, avr_energy):
+    plt.plot(temp, avr_energy, label="Avrage energy, [?]")
+    plt.xlabel(r"Temperature, [$k_{b}T/J$]")
+    plt.ylabel("Energy, [?]")
+    plt.legend(loc="best")
+    plt.show()
+
+def analyse_magnet(temp, avr_magnet):
+    plt.plot(temp, avr_magnet, label="Avrage magnetization, [?]")
+    plt.xlabel(r"Temperature, [$k_{b}T/J$]")
+    plt.ylabel("Magnetization, [?]")
+    plt.legend(loc="best")
+    plt.show()
+
+def analyse_heat_capasity(temp, avr_energy, avr_energy_square):
+    plt.plot(temp, avr_energy_square - avr_energy**2, label="?")
+    plt.xlabel(r"Temperature, [$k_{b}T/J$]")
+    plt.ylabel("Heat capasity, [?]")
+    plt.legend(loc="best")
+    plt.show()
+
+def analyse_magnet(temp, avr_magnet, avr_magnet_square):
+    plt.plot(temp, avr_magnet_square - avr_magnet**2, label="?")
+    plt.xlabel(r"Temperature, [$k_{b}T/J$]")
+    plt.ylabel("Suceptibility, [?]")
+    plt.legend(loc="best")
+    plt.show()
+
+
 def analayzan(ax, prop, test=True, mean_E=False, mean_M=False, spec_heat=False, susceptibility=False):
     """
     Visualizes the mean energy, E, mean absolute magnetization, |M|,
@@ -87,3 +130,8 @@ if __name == "__main__":
             filename = np.loadtxt("{: s}.txt".format(element))
 
             analayzan(ax, filename)
+
+if __nme__ == "__main__":
+    filename_energy = "E_data.txt"
+    filename_magnet = "M_data.txt"
+    pass
