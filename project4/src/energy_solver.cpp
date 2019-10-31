@@ -8,7 +8,6 @@
 #include "circular_matrix.cpp"
 double const pi = 3.14159265359;
 
-
 void total_energy_and_magnetization(CircularMatrix& spin, int n,
     double& total_energy, double& total_magnetization)
 {   /*
@@ -28,11 +27,8 @@ void total_energy_and_magnetization(CircularMatrix& spin, int n,
     total_magnetization : double refernce
         Total magnetic moment.
     */
-
-    
     for (int i = 0; i < n; i++)
-    {   // looping over rows
-        
+    {   // looping over rows 
         for (int j = 0; j < n; j++)
         {   /*
             looping over columns
@@ -40,7 +36,6 @@ void total_energy_and_magnetization(CircularMatrix& spin, int n,
             spin(i+1, j):   spin below
             spin(i, j+1):   spin to the right
             */
-
             total_energy        -= spin(i, j, true)*(spin(i, j+1, true) + spin(i+1, j, true));
             total_magnetization += spin(i, j, true);
         }
@@ -49,7 +44,7 @@ void total_energy_and_magnetization(CircularMatrix& spin, int n,
 
 void metropolis_flap(CircularMatrix& spin, double& total_energy,
     double& total_magnetization, int row, int col, double metropolis_random,
-    double temperature)
+    double temperature, double* exp_delta_energy)
 {   /*
     
     Parameters
@@ -75,6 +70,9 @@ void metropolis_flap(CircularMatrix& spin, double& total_energy,
 
     temperature : double
         Temperature of the system.
+
+    exp_delta_energy : double pointer
+        Array containing the exponential of the possible energies.
     
     Note
     ----
@@ -84,33 +82,24 @@ void metropolis_flap(CircularMatrix& spin, double& total_energy,
     spin_right = spin[row][col+1]
     spin_below = spin[row+1][col]
     */
-
     double spin_here = (-1)*spin(row, col, true);
-
-
     double delta_energy = 2*spin_here*(spin(row-1, col, true) + spin(row+1, col, true)
                             + spin(row, col+1, true) + spin(row, col-1, true));
 
     if (delta_energy <= 0)
-    {   // accept new energy if difference is negative
-        
-        spin(row, col, true)      *= -1;
+    {   // accept new energy if difference is negative        
+        spin(row, col, true)*= -1;
         total_energy        += delta_energy;
         total_magnetization += spin_here;
     }
-    
-    else if ( (delta_energy > 0) and (metropolis_random < std::exp(delta_energy/temperature)) )
+    else if (metropolis_random < exp_delta_energy[(int) (delta_energy + 8)])
+    // else if ( (delta_energy > 0) and (metropolis_random < std::exp(delta_energy/temperature)) )
     {   // checks if energy difference is positive and the metropolis condition true
-        
-        spin(row, col, true)      *= -1;
+        spin(row, col, true)*= -1;
         total_energy        += delta_energy;
         total_magnetization += spin_here;
     }
-    
-
 }
-
-
 
 int run_shit(int seed)
 {   
@@ -133,22 +122,21 @@ int run_shit(int seed)
     std::uniform_int_distribution<int> uniform_discrete(0, n - 1);
     std::uniform_real_distribution<double> uniform_continuous(0, 1);
 
-
-
-
     CircularMatrix init_spin(n, seed);
-
 
     double total_magnetization;
     double total_energy;
     total_energy_and_magnetization(init_spin, n, total_energy, total_magnetization);
-
     // init_spin.print();
-
     // std::cout << std::endl;
     // std::cout << "tot M: " << total_magnetization << ", tot_E: " << total_energy << "\n" << std::endl;
-
-
+    double j = 1;
+    double* exp_delta_energy = new double[17];
+    exp_delta_energy[0]  = std::exp(-8*j/temperature);
+    exp_delta_energy[4]  = std::exp(-4*j/temperature);
+    exp_delta_energy[8]  = 1;
+    exp_delta_energy[12] = std::exp(4*j/temperature);
+    exp_delta_energy[16] = std::exp(8*j/temperature);
     
     for (int i = 0; i < 1e6; i++)
     {   
@@ -156,22 +144,18 @@ int run_shit(int seed)
         int col = uniform_discrete(engine);
         double metropolis_random = uniform_continuous(engine);
         
-        metropolis_flap(init_spin, total_energy, total_magnetization, row, col, metropolis_random, temperature);
-
+        metropolis_flap(init_spin, total_energy, total_magnetization, row, col, metropolis_random, temperature, exp_delta_energy);
     }
-
 
     // init_spin.print();
     std::cout << "tot M: " << total_magnetization << ", tot_E: " << total_energy << std::endl;
     std::cout << seed << std::endl;
     std::cout << std::endl;
     // best value, forgot seed!!
-    
-
+    delete[] exp_delta_energy;
 
     return 0;
 }
-
 
 int main()
 {   
