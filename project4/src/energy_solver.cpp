@@ -95,8 +95,8 @@ void metropolis_flap(CircularMatrix& spin, double& total_energy,
         total_energy        += delta_energy;
         total_magnetization += spin_here;
     }
+    
     else if (metropolis_random < exp_delta_energy[(int) (delta_energy + 8)])
-    // else if ( (delta_energy > 0) and (metropolis_random < std::exp(delta_energy/temperature)) )
     {   // checks if energy difference is positive and the metropolis condition true
         spin(row, col, true) *= -1;
         total_energy         += delta_energy;
@@ -104,8 +104,18 @@ void metropolis_flap(CircularMatrix& spin, double& total_energy,
     }
 }
 
-int run_shit(int seed)
-{   
+
+int generate_data(int seed)
+{   /*
+    Generates energy and magnetization data for a given set of temperature
+    values and a given set of average runs. Writes data to file.
+
+    Parameters
+    ----------
+    seed : int
+        Seed for the Mersenne Twister 19937 PRNG.
+    */
+
     // MPI_Init(NULL, NULL);
     // int world_rank;
     // int world_size;
@@ -117,15 +127,26 @@ int run_shit(int seed)
     // time_t seed;
     // time(&seed);
     int n = 20;    // grid points
-    double temperature = 1;
     double total_magnetization;
     double total_energy;
     int average_runs = 5;           // number of times the spin flip loop is run
+    double* exp_delta_energy = new double[17];
+    double J = 1;
+
+    int row;
+    int col;
+    double metropolis_random;
+    
+    // setting temperature data
+    double initial_temp = 1;
+    double final_temp = 10;
+    double dtemp = 1;
+
     CircularMatrix spin(n, seed);   // initializing matrix with spins
     std::ofstream E_data;
     std::ofstream M_data;
 
-    // std::string filename = "data_files/E_M_data_T=" + std::to_string(temperature) + ".txt";
+    // std::string filename = "data_files/E_M_data_T=" + std::to_string(temp) + ".txt";
     E_data.open("data_files/E_data.txt", std::ios_base::app);
     M_data.open("data_files/M_data.txt", std::ios_base::app);
     
@@ -135,46 +156,57 @@ int run_shit(int seed)
 
     total_energy_and_magnetization(spin, n, total_energy, total_magnetization);
 
-    double J = 1;
-    double* exp_delta_energy = new double[17];
+    E_data << std::setw(15) << " ";
+    M_data << std::setw(15) << " ";
 
-    // pre-calculated exponential values
-    exp_delta_energy[0]  = std::exp(-8*J/temperature);
-    exp_delta_energy[4]  = std::exp(-4*J/temperature);
-    exp_delta_energy[8]  = 1;
-    exp_delta_energy[12] = std::exp(4*J/temperature);
-    exp_delta_energy[16] = std::exp(8*J/temperature);
-
-    for (int i = 0; i < average_runs; i++)
+    for (int i = 1; i <= average_runs; i++)
     {   // writing file header
-        E_data << std::setw(15) << i;
-        M_data << std::setw(15) << i;
+        E_data << std::setw(15) << i*n*n;
+        M_data << std::setw(15) << i*n*n;
     }
 
     E_data << "\n";
     M_data << "\n";
 
-    for (int j = 0; j < average_runs; j++)
-    {   // loops over n*n spin flips a given amount of times
-        // saves relevant data for each iteration
+    for (double temp = initial_temp; temp <= final_temp; temp += dtemp)
+    {   // looping over temperature values
 
-        for (int i = 0; i < n*n; i++)
-        {   // flips n*n randomly drawn spins in the spin matrix
-            
-            int row = uniform_discrete(engine);
-            int col = uniform_discrete(engine);
-            double metropolis_random = uniform_continuous(engine);
-            
-            metropolis_flap(spin, total_energy, total_magnetization, row, col, metropolis_random, temperature, exp_delta_energy);
-        }
+        // pre-calculated exponential values
+        exp_delta_energy[0]  = std::exp(-8*J/temp);
+        exp_delta_energy[4]  = std::exp(-4*J/temp);
+        exp_delta_energy[8]  = 1;
+        exp_delta_energy[12] = std::exp(4*J/temp);
+        exp_delta_energy[16] = std::exp(8*J/temp);
         
-        E_data << std::setw(15) << temperature;
-        E_data << std::setw(15) << total_energy;
+        // writing temperature values in the first column
+        E_data << std::setw(15) << temp;
+        M_data << std::setw(15) << temp;
+        
+        for (int j = 0; j < average_runs; j++)
+        {   // loops over n*n spin flips a given amount of times
+            // saves relevant data for each iteration
+            
+            for (int i = 0; i < n*n; i++)
+            {   // flips n*n randomly drawn spins in the spin matrix
+                
+                row = uniform_discrete(engine);
+                col = uniform_discrete(engine);
+                metropolis_random = uniform_continuous(engine);
+                
+                metropolis_flap(spin, total_energy, total_magnetization, row, col, metropolis_random, temp, exp_delta_energy);
+            }
 
-        M_data << std::setw(15) << temperature;
-        M_data << std::setw(15) << total_magnetization;
+            // writing calculated data to file  
+            E_data << std::setw(15) << total_energy;
+            M_data << std::setw(15) << total_magnetization;
 
+        }
+
+        E_data << "\n";
+        M_data << "\n";
     }
+
+
 
 
 
@@ -191,7 +223,7 @@ int run_shit(int seed)
 int main()
 {   
     int the_magic_seed = 1572032584;
-    run_shit(the_magic_seed);
+    generate_data(the_magic_seed);
 
     return 0;
 }
