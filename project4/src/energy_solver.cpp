@@ -104,7 +104,7 @@ void metropolis_flap(CircularMatrix& spin, double& total_energy,
     }
 }
 
-int run_shit(int seed, int filenumber)
+int run_shit(int seed)
 {   
     // MPI_Init(NULL, NULL);
     // int world_rank;
@@ -120,12 +120,14 @@ int run_shit(int seed, int filenumber)
     double temperature = 1;
     double total_magnetization;
     double total_energy;
-    int average_runs = 1;           // number of times the spin flip loop is run
+    int average_runs = 5;           // number of times the spin flip loop is run
     CircularMatrix spin(n, seed);   // initializing matrix with spins
-    std::ofstream E_M_data;
+    std::ofstream E_data;
+    std::ofstream M_data;
 
-    std::string filename = "data_files/E_M_data_T=" + std::to_string(temperature) + ".txt";
-    E_M_data.open(, std::ios_base::app);
+    // std::string filename = "data_files/E_M_data_T=" + std::to_string(temperature) + ".txt";
+    E_data.open("data_files/E_data.txt", std::ios_base::app);
+    M_data.open("data_files/M_data.txt", std::ios_base::app);
     
     std::mt19937 engine(seed);
     std::uniform_int_distribution<int> uniform_discrete(0, n - 1);
@@ -142,7 +144,15 @@ int run_shit(int seed, int filenumber)
     exp_delta_energy[8]  = 1;
     exp_delta_energy[12] = std::exp(4*J/temperature);
     exp_delta_energy[16] = std::exp(8*J/temperature);
-    
+
+    for (int i = 0; i < average_runs; i++)
+    {   // writing file header
+        E_data << std::setw(15) << i;
+        M_data << std::setw(15) << i;
+    }
+
+    E_data << "\n";
+    M_data << "\n";
 
     for (int j = 0; j < average_runs; j++)
     {   // loops over n*n spin flips a given amount of times
@@ -157,8 +167,12 @@ int run_shit(int seed, int filenumber)
             
             metropolis_flap(spin, total_energy, total_magnetization, row, col, metropolis_random, temperature, exp_delta_energy);
         }
+        
+        E_data << std::setw(15) << temperature;
+        E_data << std::setw(15) << total_energy;
 
-        E_M_data << std::setw(15) << "E";
+        M_data << std::setw(15) << temperature;
+        M_data << std::setw(15) << total_magnetization;
 
     }
 
