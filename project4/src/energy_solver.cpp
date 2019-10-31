@@ -82,6 +82,12 @@ void metropolis_flap(CircularMatrix& spin, double& total_energy,
     double delta_energy = 2*spin_here*(spin(row-1, col, true) + spin(row+1, col, true)
                             + spin(row, col+1, true) + spin(row, col-1, true));
 
+    // std::cout << (int) (delta_energy + 8) << std::endl;
+    // std::cout << (delta_energy + 8) << "\n" << std::endl;
+
+    // std::cout << exp_delta_energy[(int) (delta_energy + 8)] << "\n" << std::endl;
+
+
     if (delta_energy <= 0)
     {   // accept new energy if difference is negative        
         spin(row, col, true)*= -1;
@@ -118,7 +124,9 @@ private:
     double final_temp = 10;
     double dtemp = 1;
 
-    int seed = 1337;
+    // int seed = 1337;
+
+
 
     std::ofstream E_data;
     std::ofstream M_data;
@@ -132,7 +140,7 @@ private:
     CircularMatrix spin;
 
 public:    
-    IsingModel(int n_input) : uniform_discrete(0, n_input - 1), engine(seed), uniform_continuous(0, 1), spin(n_input, seed)
+    IsingModel(int n_input, long seed) : uniform_discrete(0, n_input - 1), engine(seed), uniform_continuous(0, 1), spin(n_input, seed)
     {
         n = n_input;
         total_energy_and_magnetization(spin, n, total_energy, total_magnetization);
@@ -162,12 +170,14 @@ public:
         without averaging. Only runs for a single temperature value.
         */
 
+            // E_data << std::setw(15) << temp;
+            // M_data << std::setw(15) << temp;
 
-        exp_delta_energy[0]  = std::exp(-8*J/temp);
-        exp_delta_energy[4]  = std::exp(-4*J/temp);
+        exp_delta_energy[0]  = std::exp(8*J/temp);
+        exp_delta_energy[4]  = std::exp(4*J/temp);
         exp_delta_energy[8]  = 1;
-        exp_delta_energy[12] = std::exp(4*J/temp);
-        exp_delta_energy[16] = std::exp(8*J/temp);
+        exp_delta_energy[12] = std::exp(-4*J/temp);
+        exp_delta_energy[16] = std::exp(-8*J/temp);
 
         for (int j = 0; j < mc_iterations; j++)
         {   // loops over n*n spin flips a given amount of times
@@ -175,8 +185,6 @@ public:
 
             iterate_spin_flip(temp);
             // writing calculated data to file  
-            E_data << std::setw(15) << temp;
-            M_data << std::setw(15) << temp;
             
             E_data << std::setw(15) << total_energy;
             M_data << std::setw(15) << total_magnetization;
@@ -246,11 +254,11 @@ public:
         {   // looping over temperature values
 
             // pre-calculated exponential values
-            exp_delta_energy[0]  = std::exp(-8*J/temp);
-            exp_delta_energy[4]  = std::exp(-4*J/temp);
+            exp_delta_energy[0]  = std::exp(8*J/temp);
+            exp_delta_energy[4]  = std::exp(4*J/temp);
             exp_delta_energy[8]  = 1;
-            exp_delta_energy[12] = std::exp(4*J/temp);
-            exp_delta_energy[16] = std::exp(8*J/temp);
+            exp_delta_energy[12] = std::exp(-4*J/temp);
+            exp_delta_energy[16] = std::exp(-8*J/temp);
 
             if (average)
             {
@@ -297,9 +305,7 @@ int generate_data(int seed)
     // MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     // MPI_Finalize();
 
-    // int seed = 1337;
-    // time_t seed;
-    // time(&seed);
+
 
 
     return 0;
@@ -315,8 +321,11 @@ int main()
     double dtemp = 1;
 
     bool average = false;
+
+    time_t seed;
+    time(&seed);
     
-    IsingModel q(n);
+    IsingModel q(n, seed);
     // q.mc_iteration();
     q.iterate_temperature(initial_temp, final_temp, dtemp, average);
 
