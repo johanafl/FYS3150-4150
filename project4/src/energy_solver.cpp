@@ -46,6 +46,9 @@ void metropolis_flap(CircularMatrix& spin, double& total_energy,
     double& total_magnetization, int row, int col, double metropolis_random,
     double temperature, double* exp_delta_energy)
 {   /*
+    Flips a spin and calculates the energy difference. Accepts/rejects the flip
+    based on the Metropolis algorithm.
+
     
     Parameters
     ----------
@@ -95,16 +98,14 @@ void metropolis_flap(CircularMatrix& spin, double& total_energy,
     else if (metropolis_random < exp_delta_energy[(int) (delta_energy + 8)])
     // else if ( (delta_energy > 0) and (metropolis_random < std::exp(delta_energy/temperature)) )
     {   // checks if energy difference is positive and the metropolis condition true
-        spin(row, col, true)*= -1;
-        total_energy        += delta_energy;
-        total_magnetization += spin_here;
+        spin(row, col, true) *= -1;
+        total_energy         += delta_energy;
+        total_magnetization  += spin_here;
     }
 }
 
-int run_shit(int seed)
+int run_shit(int seed, int filenumber)
 {   
-    // PARALLELL!!!!!!
-    //
     // MPI_Init(NULL, NULL);
     // int world_rank;
     // int world_size;
@@ -112,42 +113,58 @@ int run_shit(int seed)
     // MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     // MPI_Finalize();
 
-    int n = 100;
-    double temperature = 1;
-    
     // int seed = 1337;
     // time_t seed;
     // time(&seed);
+    int n = 20;    // grid points
+    double temperature = 1;
+    double total_magnetization;
+    double total_energy;
+    int average_runs = 1;           // number of times the spin flip loop is run
+    CircularMatrix spin(n, seed);   // initializing matrix with spins
+    std::ofstream E_M_data;
+
+    std::string filename = "data_files/E_M_data_T=" + std::to_string(temperature) + ".txt";
+    E_M_data.open(, std::ios_base::app);
+    
     std::mt19937 engine(seed);
     std::uniform_int_distribution<int> uniform_discrete(0, n - 1);
     std::uniform_real_distribution<double> uniform_continuous(0, 1);
 
-    CircularMatrix init_spin(n, seed);
+    total_energy_and_magnetization(spin, n, total_energy, total_magnetization);
 
-    double total_magnetization;
-    double total_energy;
-    total_energy_and_magnetization(init_spin, n, total_energy, total_magnetization);
-    // init_spin.print();
-    // std::cout << std::endl;
-    // std::cout << "tot M: " << total_magnetization << ", tot_E: " << total_energy << "\n" << std::endl;
-    double j = 1;
+    double J = 1;
     double* exp_delta_energy = new double[17];
-    exp_delta_energy[0]  = std::exp(-8*j/temperature);
-    exp_delta_energy[4]  = std::exp(-4*j/temperature);
+
+    // pre-calculated exponential values
+    exp_delta_energy[0]  = std::exp(-8*J/temperature);
+    exp_delta_energy[4]  = std::exp(-4*J/temperature);
     exp_delta_energy[8]  = 1;
-    exp_delta_energy[12] = std::exp(4*j/temperature);
-    exp_delta_energy[16] = std::exp(8*j/temperature);
+    exp_delta_energy[12] = std::exp(4*J/temperature);
+    exp_delta_energy[16] = std::exp(8*J/temperature);
     
-    for (int i = 0; i < 1e6; i++)
-    {   
-        int row = uniform_discrete(engine);
-        int col = uniform_discrete(engine);
-        double metropolis_random = uniform_continuous(engine);
-        
-        metropolis_flap(init_spin, total_energy, total_magnetization, row, col, metropolis_random, temperature, exp_delta_energy);
+
+    for (int j = 0; j < average_runs; j++)
+    {   // loops over n*n spin flips a given amount of times
+        // saves relevant data for each iteration
+
+        for (int i = 0; i < n*n; i++)
+        {   // flips n*n randomly drawn spins in the spin matrix
+            
+            int row = uniform_discrete(engine);
+            int col = uniform_discrete(engine);
+            double metropolis_random = uniform_continuous(engine);
+            
+            metropolis_flap(spin, total_energy, total_magnetization, row, col, metropolis_random, temperature, exp_delta_energy);
+        }
+
+        E_M_data << std::setw(15) << "E";
+
     }
 
-    // init_spin.print();
+
+
+    // spin.print();
     std::cout << "tot M: " << total_magnetization << ", tot_E: " << total_energy << std::endl;
     std::cout << seed << std::endl;
     std::cout << std::endl;
