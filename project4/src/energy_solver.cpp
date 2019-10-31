@@ -1,12 +1,5 @@
 // #include <mpi.h>
-#include <iostream>
-#include <random>
-#include <fstream>
-#include <iomanip>
-#include <chrono>
-#include <cmath>
-#include "circular_matrix.cpp"
-double const pi = 3.14159265359;
+#include "circular_matrix.h"
 
 void total_energy_and_magnetization(CircularMatrix& spin, int n,
     double& total_energy, double& total_magnetization)
