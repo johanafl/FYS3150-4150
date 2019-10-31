@@ -118,19 +118,30 @@ private:
     double final_temp = 10;
     double dtemp = 1;
 
+    int seed;
+
     std::ofstream E_data;
     std::ofstream M_data;
 
-    std::mt19937 engine(seed);
-    std::uniform_int_distribution<int> uniform_discrete(0, n - 1);
-    std::uniform_real_distribution<double> uniform_continuous(0, 1);
-
+    // std::mt19937 engine(int seed);
+    // std::uniform_int_distribution<int> uniform_discrete(0, n - 1);
+    // std::uniform_real_distribution<double> uniform_continuous(0, 1);
+    std::mt19937 engine;
+    std::uniform_int_distribution<int> uniform_discrete;
+    std::uniform_real_distribution<double> uniform_continuous;
+    
     CircularMatrix spin;
 
 public:
-    IsingModel(int n, int seed)
+    IsingModel(int n)
     {
-        spin(n, seed);   // initializing matrix with spins
+        // seed = 1337;
+        // engine(seed);
+        // uniform_discrete(0, n-1);
+        // uniform_continuous(0, 1);
+
+        spin(4);   // initializing matrix with spins
+        
         total_energy_and_magnetization(spin, n, total_energy, total_magnetization);
 
         // initialising data files
@@ -300,7 +311,7 @@ int main()
     int n = 20;
     generate_data(the_magic_seed);
 
-    IsingModel q(n, the_magic_seed);
+    IsingModel q(n);
 
     return 0;
 }
