@@ -103,7 +103,7 @@ class IsingModel
 
 private:
     int n;    // grid points
-    int MC_iterations = 5;   // number of times the spin flip loop is run
+    int mc_iterations = 1e5;   // number of times the spin flip loop is run
     double* exp_delta_energy = new double[17];
     double J = 1;
 
@@ -118,7 +118,7 @@ private:
     double final_temp = 10;
     double dtemp = 1;
 
-    int seed;
+    int seed = 1337;
 
     std::ofstream E_data;
     std::ofstream M_data;
@@ -129,67 +129,66 @@ private:
     std::mt19937 engine;
     std::uniform_int_distribution<int> uniform_discrete;
     std::uniform_real_distribution<double> uniform_continuous;
-    
     CircularMatrix spin;
 
-public:
-    IsingModel(int n)
+public:    
+    IsingModel(int n_input) : uniform_discrete(0, n_input - 1), engine(seed), uniform_continuous(0, 1), spin(n_input, seed)
     {
-        // seed = 1337;
-        // engine(seed);
-        // uniform_discrete(0, n-1);
-        // uniform_continuous(0, 1);
-
-        spin(4);   // initializing matrix with spins
-        
+        n = n_input;
         total_energy_and_magnetization(spin, n, total_energy, total_magnetization);
 
         // initialising data files
         E_data.open("data_files/E_data.txt", std::ios_base::app);
         M_data.open("data_files/M_data.txt", std::ios_base::app);
 
-        E_data << std::setw(15) << " ";
-        M_data << std::setw(15) << " ";
+        // E_data << std::setw(15) << " ";
+        // M_data << std::setw(15) << " ";
 
-        for (int i = 1; i <= MC_iterations; i++)
-        {   // writing file header
-            E_data << std::setw(15) << i*n*n;
-            M_data << std::setw(15) << i*n*n;
-        }
+        // for (int i = 1; i <= mc_iterations; i++)
+        // {   // writing file header
+        //     E_data << std::setw(15) << i*n*n;
+        //     M_data << std::setw(15) << i*n*n;
+        // }
 
-        E_data << "\n";
-        M_data << "\n";
+        // E_data << "\n";
+        // M_data << "\n";
     }
 
 
-    void MC_iteration()
+    void mc_iteration(double temp)
     {   /*
         Runs the spin flip a given amount of times. Generates data for finding
         how many iterations is needed for convergence. Keeps the energy values
         without averaging. Only runs for a single temperature value.
         */
 
-        double single_temp = 1;    // runs the convergence check for a single temperature
 
-        exp_delta_energy[0]  = std::exp(-8*J/single_temp);
-        exp_delta_energy[4]  = std::exp(-4*J/single_temp);
+        exp_delta_energy[0]  = std::exp(-8*J/temp);
+        exp_delta_energy[4]  = std::exp(-4*J/temp);
         exp_delta_energy[8]  = 1;
-        exp_delta_energy[12] = std::exp(4*J/single_temp);
-        exp_delta_energy[16] = std::exp(8*J/single_temp);
+        exp_delta_energy[12] = std::exp(4*J/temp);
+        exp_delta_energy[16] = std::exp(8*J/temp);
 
-        for (int j = 0; j < MC_iterations; j++)
+        for (int j = 0; j < mc_iterations; j++)
         {   // loops over n*n spin flips a given amount of times
             // saves relevant data for each iteration
 
-            iterate_spin_flip(single_temp);
+            iterate_spin_flip(temp);
             // writing calculated data to file  
+            E_data << std::setw(15) << temp;
+            M_data << std::setw(15) << temp;
+            
             E_data << std::setw(15) << total_energy;
             M_data << std::setw(15) << total_magnetization;
 
         }
+
+        E_data << "\n";
+        M_data << "\n";
+
     }
 
-    void MC_iteration_average(double temp)
+    void mc_iteration_average(double temp)
     {   /*
         Runs the spin flip a given amount of times. Does not keep every energy
         value, but calculates the average.
@@ -200,7 +199,7 @@ public:
             Temperature value.
         */
 
-        for (int j = 0; j < MC_iterations; j++)
+        for (int j = 0; j < mc_iterations; j++)
         {   // loops over n*n spin flips a given amount of times
 
             // add array business to calculate average
@@ -233,10 +232,15 @@ public:
         }
     }
 
-    void iterate_temperature()
+    void iterate_temperature(double initial_temp_input, double final_temp_input,
+        double dtemp_input, bool average)
     {   /*
         Iterates over a given set of temperature values.
         */
+
+        initial_temp = initial_temp_input;
+        final_temp = final_temp_input;
+        dtemp = dtemp_input;
     
         for (double temp = initial_temp; temp <= final_temp; temp += dtemp)
         {   // looping over temperature values
@@ -247,13 +251,23 @@ public:
             exp_delta_energy[8]  = 1;
             exp_delta_energy[12] = std::exp(4*J/temp);
             exp_delta_energy[16] = std::exp(8*J/temp);
+
+            if (average)
+            {
+                mc_iteration_average(temp);
+                // writing temperature values in the first column
+                E_data << std::setw(15) << temp;
+                M_data << std::setw(15) << temp;
+                
+                E_data << "\n";
+                M_data << "\n";
+            }
             
-            // writing temperature values in the first column
-            E_data << std::setw(15) << temp;
-            M_data << std::setw(15) << temp;
+            else
+            {
+                mc_iteration(temp);
+            }
             
-            E_data << "\n";
-            M_data << "\n";
         }
     }
 
@@ -287,20 +301,6 @@ int generate_data(int seed)
     // time_t seed;
     // time(&seed);
 
-    // std::string filename = "data_files/E_M_data_T=" + std::to_string(temp) + ".txt";
-
-
-
-
-
-
-
-
-    // // spin.print();
-    // std::cout << "tot M: " << total_magnetization << ", tot_E: " << total_energy << std::endl;
-    // std::cout << seed << std::endl;
-    // std::cout << std::endl;
-    // // best value, forgot seed!!
 
     return 0;
 }
@@ -309,9 +309,16 @@ int main()
 {   
     int the_magic_seed = 1572032584;
     int n = 20;
-    generate_data(the_magic_seed);
+    
+    double initial_temp = 1;
+    double final_temp = 1;
+    double dtemp = 1;
 
+    bool average = false;
+    
     IsingModel q(n);
+    // q.mc_iteration();
+    q.iterate_temperature(initial_temp, final_temp, dtemp, average);
 
     return 0;
 }
