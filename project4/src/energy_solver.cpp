@@ -328,13 +328,13 @@ int main()
     int the_magic_seed = 1572032584;
     int n = 20;
     
-    double initial_temp = 2.4;
-    double final_temp = 2.4;
+    double initial_temp = 1;
+    double final_temp = 3;
     double dtemp = 1;
 
-    bool convergence = false;
+    bool convergence = true;
 
-    int mc_iterations = 1e5;
+    int mc_iterations = 1e4;
 
     time_t seed;
     time(&seed);

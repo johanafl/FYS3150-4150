@@ -2,7 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def analyse_energy_const_temp(energy):
-    plt.plot(energy[1], label="Total energy, [?]")
+    energy[2] = np.cumsum(energy[2])/np.arange(0, len(energy[2]), 1)
+    plt.plot(energy[2], label="Total energy, [?]")
     plt.xlabel("MC iterations")
     plt.ylabel("Energy, [?]")
     plt.legend(loc="best")
