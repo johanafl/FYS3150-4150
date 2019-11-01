@@ -14,7 +14,7 @@ energy_solver.o : circular_matrix.h energy_solver.cpp
 	g++ -c energy_solver.cpp -std=c++17
 
 energy_solver.out : circular_matrix.h energy_solver.o circular_matrix.o
-	g++ -o energy_solver.out energy_solver.o circular_matrix.o -std=c++17
+	g++ -o energy_solver.out energy_solver.o circular_matrix.o -std=c++17 -O3
 
 clean :
 	rm energy_solver.o circular_matrix.o test_progs.o
