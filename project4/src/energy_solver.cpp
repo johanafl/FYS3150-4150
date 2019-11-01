@@ -78,7 +78,7 @@ void metropolis_flap(CircularMatrix& spin, double& total_energy,
     spin_right = spin[row][col+1]
     spin_below = spin[row+1][col]
     */
-    double spin_here = (-1)*spin(row, col, true);
+    double spin_here = (1)*spin(row, col, true);
     double delta_energy = 2*spin_here*(spin(row-1, col, true) + spin(row+1, col, true)
                             + spin(row, col+1, true) + spin(row, col-1, true));
 
@@ -108,8 +108,8 @@ class IsingModel
 {
 
 private:
-    int n;    // grid points
-    int mc_iterations = 1e5;   // number of times the spin flip loop is run
+    int n;                      // grid points
+    int mc_iterations;
     double* exp_delta_energy = new double[17];
     double J = 1;
 
@@ -118,48 +118,34 @@ private:
     double metropolis_random;
     double total_energy;
     double total_magnetization;
-    
-    // setting temperature data
-    double initial_temp = 1;
-    double final_temp = 10;
-    double dtemp = 1;
 
-    // int seed = 1337;
+    double sum_total_energy;
+    double sum_total_energy_squared;
+    double sum_total_magnetization;
+    double sum_total_magnetization_absolute;
+    double sum_total_magnetization_squared;
 
+    std::ofstream E_convergence_data;
+    std::ofstream M_convergence_data;
+    std::ofstream ising_model_data;
 
-
-    std::ofstream E_data;
-    std::ofstream M_data;
-
-    // std::mt19937 engine(int seed);
-    // std::uniform_int_distribution<int> uniform_discrete(0, n - 1);
-    // std::uniform_real_distribution<double> uniform_continuous(0, 1);
     std::mt19937 engine;
     std::uniform_int_distribution<int> uniform_discrete;
     std::uniform_real_distribution<double> uniform_continuous;
     CircularMatrix spin;
 
 public:    
-    IsingModel(int n_input, long seed) : uniform_discrete(0, n_input - 1), engine(seed), uniform_continuous(0, 1), spin(n_input, seed)
+    IsingModel(int spin_mat_dim, int mc_iterations_input, long seed) : uniform_discrete(0, spin_mat_dim - 1), engine(seed), uniform_continuous(0, 1), spin(spin_mat_dim, seed)
     {
-        n = n_input;
+        n = spin_mat_dim;
+        mc_iterations = mc_iterations_input;
         total_energy_and_magnetization(spin, n, total_energy, total_magnetization);
-
+        
         // initialising data files
-        E_data.open("data_files/E_data.txt", std::ios_base::app);
-        M_data.open("data_files/M_data.txt", std::ios_base::app);
+        E_convergence_data.open("data_files/E_convergence_data.txt", std::ios_base::app);
+        M_convergence_data.open("data_files/M_convergence_data.txt", std::ios_base::app);
 
-        // E_data << std::setw(15) << " ";
-        // M_data << std::setw(15) << " ";
-
-        // for (int i = 1; i <= mc_iterations; i++)
-        // {   // writing file header
-        //     E_data << std::setw(15) << i*n*n;
-        //     M_data << std::setw(15) << i*n*n;
-        // }
-
-        // E_data << "\n";
-        // M_data << "\n";
+        ising_model_data.open("data_files/ising_model_data.txt", std::ios_base::app);
     }
 
 
@@ -170,14 +156,14 @@ public:
         without averaging. Only runs for a single temperature value.
         */
 
-            // E_data << std::setw(15) << temp;
-            // M_data << std::setw(15) << temp;
+        // E_convergence_data << std::setw(15) << temp;
+        // M_convergence_data << std::setw(15) << temp;
 
-        exp_delta_energy[0]  = std::exp(8*J/temp);
-        exp_delta_energy[4]  = std::exp(4*J/temp);
-        exp_delta_energy[8]  = 1;
-        exp_delta_energy[12] = std::exp(-4*J/temp);
-        exp_delta_energy[16] = std::exp(-8*J/temp);
+        // exp_delta_energy[0]  = std::exp(8*J/temp);
+        // exp_delta_energy[4]  = std::exp(4*J/temp);
+        // exp_delta_energy[8]  = 1;
+        // exp_delta_energy[12] = std::exp(-4*J/temp);
+        // exp_delta_energy[16] = std::exp(-8*J/temp);
 
         for (int j = 0; j < mc_iterations; j++)
         {   // loops over n*n spin flips a given amount of times
@@ -186,13 +172,13 @@ public:
             iterate_spin_flip(temp);
             // writing calculated data to file  
             
-            E_data << std::setw(15) << total_energy;
-            M_data << std::setw(15) << total_magnetization;
+            E_convergence_data << std::setw(15) << total_energy;
+            M_convergence_data << std::setw(15) << total_magnetization;
 
         }
 
-        E_data << "\n";
-        M_data << "\n";
+        E_convergence_data << "\n";
+        M_convergence_data << "\n";
 
     }
 
@@ -207,13 +193,30 @@ public:
             Temperature value.
         */
 
+        sum_total_energy = 0;
+        sum_total_energy_squared = 0;
+        sum_total_magnetization  = 0;
+        sum_total_magnetization_absolute = 0;
+        sum_total_magnetization_squared  = 0;
+
         for (int j = 0; j < mc_iterations; j++)
         {   // loops over n*n spin flips a given amount of times
 
-            // add array business to calculate average
             iterate_spin_flip(temp);
 
+            sum_total_energy += total_energy;
+            sum_total_energy_squared += total_energy*total_energy;
+            sum_total_magnetization  += total_magnetization;
+            sum_total_magnetization_absolute += std::fabs(total_magnetization);
+            sum_total_magnetization_squared  += total_magnetization*total_magnetization;
+
         }
+        
+        sum_total_energy /= mc_iterations;
+        sum_total_energy_squared /= mc_iterations;
+        sum_total_magnetization  /= mc_iterations;
+        sum_total_magnetization_absolute /= mc_iterations;
+        sum_total_magnetization_squared  /= mc_iterations;
 
     }
 
@@ -241,14 +244,14 @@ public:
     }
 
     void iterate_temperature(double initial_temp_input, double final_temp_input,
-        double dtemp_input, bool average)
+        double dtemp_input, bool convergence)
     {   /*
         Iterates over a given set of temperature values.
         */
 
-        initial_temp = initial_temp_input;
-        final_temp = final_temp_input;
-        dtemp = dtemp_input;
+        double initial_temp = initial_temp_input;
+        double final_temp = final_temp_input;
+        double dtemp = dtemp_input;
     
         for (double temp = initial_temp; temp <= final_temp; temp += dtemp)
         {   // looping over temperature values
@@ -260,21 +263,30 @@ public:
             exp_delta_energy[12] = std::exp(-4*J/temp);
             exp_delta_energy[16] = std::exp(-8*J/temp);
 
-            if (average)
+            if (convergence)
             {
-                mc_iteration_average(temp);
+                E_convergence_data << std::setw(15) << temp;
+                M_convergence_data << std::setw(15) << temp;
+                mc_iteration(temp);
                 // writing temperature values in the first column
-                E_data << std::setw(15) << temp;
-                M_data << std::setw(15) << temp;
                 
-                E_data << "\n";
-                M_data << "\n";
+                E_convergence_data << "\n";
+                M_convergence_data << "\n";
             }
-            
             else
             {
-                mc_iteration(temp);
+                mc_iteration_average(temp);
+
+                ising_model_data << std::setw(20) << std::setprecision(15) << temp;
+                ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_energy;
+                ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_energy_squared;
+                ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_magnetization;
+                ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_magnetization_squared;
+                ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_magnetization_absolute;
+                ising_model_data << std::endl;
             }
+            
+            
             
         }
     }
@@ -316,18 +328,20 @@ int main()
     int the_magic_seed = 1572032584;
     int n = 20;
     
-    double initial_temp = 1;
-    double final_temp = 1;
+    double initial_temp = 2.4;
+    double final_temp = 2.4;
     double dtemp = 1;
 
-    bool average = false;
+    bool convergence = false;
+
+    int mc_iterations = 1e5;
 
     time_t seed;
     time(&seed);
     
-    IsingModel q(n, seed);
+    IsingModel q(n, mc_iterations, seed);
     // q.mc_iteration();
-    q.iterate_temperature(initial_temp, final_temp, dtemp, average);
+    q.iterate_temperature(initial_temp, final_temp, dtemp, convergence);
 
     return 0;
 }
