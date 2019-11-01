@@ -15,7 +15,7 @@ class CircularMatrix
 {
 private:
 int dim;
-int seed;
+double seed;
 
 public:
     double* matrix;
@@ -25,6 +25,8 @@ public:
     CircularMatrix(int n, double* init_set);
     void initial_spin();
     void ordered_spin();
+    void new_dim(int n, double new_seed);
+    void new_dim(int n);
     void print();
     double& operator() (int row, int col);
     double& operator() (int row, int col, bool safe);

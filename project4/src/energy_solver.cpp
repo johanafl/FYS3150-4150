@@ -1,97 +1,6 @@
 // #include <mpi.h>
 #include "circular_matrix.h"
 
-void total_energy_and_magnetization(CircularMatrix& spin, int n,
-    double& total_energy, double& total_magnetization)
-{   /*
-    Computing from upper left in matrix and down to the right.
-
-    Parameters
-    ----------
-    spin : CircularMatrix
-        n x n matrix.
-    
-    n : int
-        Grid dimension.
-
-    total_energy : double refernce
-        Total energy.
-
-    total_magnetization : double refernce
-        Total magnetic moment.
-    */
-    for (int i = 0; i < n; i++)
-    {   // looping over rows 
-        for (int j = 0; j < n; j++)
-        {   /*
-            looping over columns
-            spin(i, j):     spin of the current indices
-            spin(i+1, j):   spin below
-            spin(i, j+1):   spin to the right
-            */
-            total_energy        -= spin(i, j, true)*(spin(i, j+1, true) + spin(i+1, j, true));
-            total_magnetization += spin(i, j, true);
-        }
-    }
-}
-
-void metropolis_flap(CircularMatrix& spin, double& total_energy,
-    double& total_magnetization, int row, int col, double metropolis_random,
-    double temperature, double* exp_delta_energy)
-{   /*
-    Flips a spin and calculates the energy difference. Accepts/rejects the flip
-    based on the Metropolis algorithm.
-
-    
-    Parameters
-    ----------
-    spin : CircularMatrix
-        Matrix of spin values.
-    
-    total_energy : double reference
-        Total energy of all the spins.
-
-    total_magnetization : double reference
-        Total magnetic moment of the system.
-
-    row : int
-        A randomly chosen row index.
-
-    col : int
-        A randomly chosen column index.
-
-    metropolis_random : double
-        Random variable drawn from a uniform distribution on the interval
-        [0, 1). Metropolis condition.
-
-    temperature : double
-        Temperature of the system.
-
-    exp_delta_energy : double pointer
-        Array containing the exponential of the possible energies.
-    
-    Note
-    ----
-    spin_here  = -1*spin[row][col]
-    spin_left  = spin[row][col-1]
-    spin_above = spin[row-1][col]
-    spin_right = spin[row][col+1]
-    spin_below = spin[row+1][col]
-    */
-    double spin_here = spin(row, col, true);
-    double delta_energy = 2*spin_here*(spin(row-1, col, true) + spin(row+1, col, true)
-                            + spin(row, col+1, true) + spin(row, col-1, true));
-
-    
-    if (metropolis_random < exp_delta_energy[(int) (delta_energy + 8)])
-    {   // checks if energy difference is positive and the metropolis condition true
-        spin(row, col, true) *= -1;
-        total_energy         += delta_energy;
-        total_magnetization  += -2*spin_here;
-    }
-}
-
-
 class IsingModel
 {
 
@@ -106,7 +15,9 @@ private:
     double metropolis_random;   // metropolis condition, will be randomly drawn
     double total_energy;
     double total_magnetization;
-
+    // // FASTER(?):
+    // double delta_energy
+    
     // values for the averages after convergence
     double sum_total_energy;
     double sum_total_energy_squared;
@@ -202,6 +113,72 @@ private:
             metropolis_random = uniform_continuous(engine);
             
             metropolis_flap(spin, total_energy, total_magnetization, row, col, metropolis_random, temp, exp_delta_energy);
+            // // FASTER(?):
+            // metropolis_flap(spin, total_energy, total_magnetization, 
+            //                 uniform_discrete(engine), uniform_discrete(engine), 
+            //                 uniform_continuous(engine), temp, exp_delta_energy);
+        }
+    }
+
+    void metropolis_flap(CircularMatrix& spin, double& total_energy,
+        double& total_magnetization, int row, int col, double metropolis_random,
+        double temperature, double* exp_delta_energy)
+    {   /*
+        Flips a spin and calculates the energy difference. Accepts/rejects the flip
+        based on the Metropolis algorithm.
+
+        
+        Parameters
+        ----------
+        spin : CircularMatrix
+            Matrix of spin values.
+        
+        total_energy : double reference
+            Total energy of all the spins.
+
+        total_magnetization : double reference
+            Total magnetic moment of the system.
+
+        row : int
+            A randomly chosen row index.
+
+        col : int
+            A randomly chosen column index.
+
+        metropolis_random : double
+            Random variable drawn from a uniform distribution on the interval
+            [0, 1). Metropolis condition.
+
+        temperature : double
+            Temperature of the system.
+
+        exp_delta_energy : double pointer
+            Array containing the exponential of the possible energies.
+        
+        Note
+        ----
+        spin_here  = -1*spin[row][col]
+        spin_left  = spin[row][col-1]
+        spin_above = spin[row-1][col]
+        spin_right = spin[row][col+1]
+        spin_below = spin[row+1][col]
+        */
+        double spin_here = spin(row, col, true);
+        double delta_energy = 2*spin_here*(spin(row-1, col, true) + spin(row+1, col, true)
+                                + spin(row, col+1, true) + spin(row, col-1, true));
+        // // FASTER(?):
+        // delta_energy = 2*spin(row, col)*(spin(row-1, col) + spin(row+1, col)
+        //                         + spin(row, col+1) + spin(row, col-1));
+        
+        if (metropolis_random < exp_delta_energy[(int) (delta_energy + 8)])
+        {   // checks if energy difference is positive and the metropolis condition true
+            spin(row, col, true) *= -1;
+            total_energy         += delta_energy;
+            total_magnetization  += -2*spin_here;
+            // // FASTER(?):
+            // spin(row, col) *= -1;
+            // total_energy         += delta_energy;
+            // total_magnetization  += 2*spin(row, col);
         }
     }
 
@@ -298,11 +275,83 @@ public:
         }
     }
 
+    void total_energy_and_magnetization(CircularMatrix& spin, int n,
+        double& total_energy, double& total_magnetization)
+    {   /*
+        Computing from upper left in matrix and down to the right.
+
+        Parameters
+        ----------
+        spin : CircularMatrix
+            n x n matrix.
+        
+        n : int
+            Grid dimension.
+
+        total_energy : double refernce
+            Total energy.
+
+        total_magnetization : double refernce
+            Total magnetic moment.
+        */
+        for (int i = 0; i < n; i++)
+        {   // looping over rows 
+            for (int j = 0; j < n; j++)
+            {   /*
+                looping over columns
+                spin(i, j):     spin of the current indices
+                spin(i+1, j):   spin below
+                spin(i, j+1):   spin to the right
+                */
+                total_energy        -= spin(i, j, true)*(spin(i, j+1, true) + spin(i+1, j, true));
+                total_magnetization += spin(i, j, true);
+                // // FASTER(?):
+                // total_energy        -= spin(i, j)*(spin(i, j+1) + spin(i+1, j));
+                // total_magnetization += spin(i, j);
+            }
+        }
+    }
+
+    /////////////////////////////////////////////////////
+    /*
+    Setter functions
+    */
+    /////////////////////////////////////////////////////
+    void set_new_input(int spin_mat_dim, int mc_iterations_input, double inter_strenght_J, long seed)
+    {
+        n = spin_mat_dim;
+        mc_iterations = mc_iterations_input;
+        J = inter_strenght_J;
+
+        engine.seed(seed);
+        spin.new_dim(spin_mat_dim, seed);
+    }
+
+    void set_interactions_strenght(double strength_J)
+    {
+        J = strength_J;
+    }
+
+    void set_mc_iterations(int mc_iterations_input)
+    {
+        mc_iterations = mc_iterations_input;
+    }
+
+    void set_spin_dim(int spin_mat_dim)
+    {
+        n = spin_mat_dim;
+        spin.new_dim(spin_mat_dim);
+    }
+
+    void set_order_spins()
+    {
+        spin.ordered_spin();
+    }
+
     ~IsingModel()
     {
         delete[] exp_delta_energy;
     }
-
 };
 
 
@@ -335,7 +384,7 @@ int main()
     int the_magic_seed = 1572032584;
     int spin_matrix_dim = 2;
     int mc_iterations = 1e3;
-    bool convergence = true;
+    // bool convergence = true;
     
     double initial_temp = 1;
     double final_temp = 1;
@@ -344,8 +393,11 @@ int main()
     time_t seed;
     time(&seed);
     
-    IsingModel q(spin_matrix_dim, mc_iterations, seed);
-    q.iterate_temperature(initial_temp, final_temp, dtemp, convergence);
+    IsingModel convergence_model(20, 1e5, seed);
+    // our_model.iterate_temperature(initial_temp, final_temp, dtemp, convergence);
+    convergence_model.set_order_spins();
+    convergence_model.iterate_temperature(1, 1, 0.2, true);
+    // our_model.iterate_temperature(initial_temp, final_temp, dtemp, false);
 
     return 0;
 }

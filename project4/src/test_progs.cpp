@@ -10,8 +10,11 @@ void test_print()
     q1.print();
     std::cout << std::endl;
     q2.print();
-    
-    std::cout << q1(0, 8, true) << std::endl;
+    std::cout << std::endl;
+    q1.new_dim(4);
+    q1.ordered_spin();
+    q1.print();
+    // std::cout << q1(0, 8, true) << std::endl;
 }
 
 void test_energy()
@@ -37,8 +40,8 @@ void test_energy()
 
 int main()
 {
-    // test_print();
-    test_energy();
+    test_print();
+    // test_energy();
 
     return 0;
 }
