@@ -24,6 +24,7 @@ public:
     CircularMatrix(int n);
     CircularMatrix(int n, double* init_set);
     void initial_spin();
+    void ordered_spin();
     void print();
     double& operator() (int row, int col);
     double& operator() (int row, int col, bool safe);

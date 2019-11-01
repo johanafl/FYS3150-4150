@@ -52,6 +52,11 @@ void CircularMatrix::initial_spin()
     }
 }
 
+void CircularMatrix::ordered_spin()
+{
+    for (int i = 0; i < dim*dim; i++) {matrix[i] = 1;}
+}
+
 
 void CircularMatrix::print()
 {   /*
