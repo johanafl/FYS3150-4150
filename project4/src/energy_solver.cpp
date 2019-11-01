@@ -71,7 +71,22 @@ private:
         sum_total_magnetization  = 0;
         sum_total_magnetization_absolute = 0;
         sum_total_magnetization_squared  = 0;
-
+        ////////////////////////////////////////////////
+        ////////////////////////////////////////////////
+        ////////////////////////////////////////////////
+        ////////////////////////////////////////////////
+        ////////////////////////////////////////////////
+        /* NB!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        Here are some thoughts:
+        We do not want the mean for the first 1e4 iterations. We should 
+        therefore split the calculations up in two loops to avoid an if-test;
+        one for the first 1e4 calculations (here we do not take the avrage), and
+        one for the rest (where we do take the avrage).
+        */
+        ////////////////////////////////////////////////
+        ////////////////////////////////////////////////
+        ////////////////////////////////////////////////
+        ////////////////////////////////////////////////
         for (int j = 0; j < mc_iterations; j++)
         {   // loops over n*n spin flips a given amount of times
 
@@ -237,7 +252,32 @@ public:
             M_convergence_data << " spin_matrix_dim: " << n;
             M_convergence_data << std::endl;
         }
-    
+
+        ////////////////////////////////////////////////
+        ////////////////////////////////////////////////
+        ////////////////////////////////////////////////
+        ////////////////////////////////////////////////
+        ////////////////////////////////////////////////
+        /* NB!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        Below are some thoughts for parallel computing. Remember that the files
+        this creates will contain unsorted temperatures. It might also write on
+        the same line. The best would be separate files or an array which fills
+        up over time and then written to file.
+        */
+        ////////////////////////////////////////////////
+        ////////////////////////////////////////////////
+        ////////////////////////////////////////////////
+        ////////////////////////////////////////////////
+        // MPI_Init(NULL, NULL);
+        // int world_rank;
+        // int world_size;
+        // MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+        // MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+        // double diff_temp = (final_temp - initial_temp)/world_size;
+        // double init_temp = initial_temp + diff_temp*world_rank;
+        // double fin_temp = initial_temp + diff_temp*(world_rank + 1);
+        // for (double temp = init_temp; temp <= fin_temp; temp += dtemp)
+
         for (double temp = initial_temp; temp <= final_temp; temp += dtemp)
         {   // looping over temperature values
 
@@ -271,8 +311,11 @@ public:
                 ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_magnetization_squared;
                 ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_magnetization_absolute;
                 ising_model_data << std::endl;
-            }     
+            }
+            // MPI_Barrier(MPI_COMM_WORLD); //Do not think this helps!!!
         }
+
+        // MPI_Finalize();
     }
 
     void total_energy_and_magnetization(CircularMatrix& spin, int n,
