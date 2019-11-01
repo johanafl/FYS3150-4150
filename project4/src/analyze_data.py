@@ -54,38 +54,39 @@ def analayz_tampratar(ax, filename, properties=[]):
     M_absolut = data[:, 5]
 
     if properties[0]:
-        ax.plot(T, E)
         ax.set_xlabel("Temperature")
         ax.set_ylabel("Energy")
         ax.set_title("Nice title here")
+        ax.plot(T, E);
     
     if properties[1]:
-        ax.plot(T, E_squared)
         ax.set_xlabel("Temperature")
         ax.set_ylabel("Energy squared")
         ax.set_title("Nice title here")
+        ax.plot(T, E_squared);
     
     if properties[2]:
-        ax.plot(T, M)
         ax.set_xlabel("Temperature")
         ax.set_ylabel("Magnetization")
         ax.set_title("Nice title here")
+        ax.plot(T, M);
     
     if properties[3]:
-        ax.plot(T, M_squared)
         ax.set_xlabel("Temperature")
         ax.set_ylabel("Magnetization squared")
         ax.set_title("Nice title here")
+        ax.plot(T, M_squared);
 
     if properties[4]:
-        ax.plot(T, M_absolut)
         ax.set_xlabel("Temperature")
         ax.set_ylabel("Absolute magnetization")
         ax.set_title("Nice title here")
+        ax.plot(T, M_absolut);
 
 if __name__ == "__main__":
     filename_energy = "data_files/E_data.txt"
     filename_magnet = "data_files/M_data.txt"
+    filename_props  = "data_files/bajsa_temperaturen"
 
     energy = np.loadtxt(filename_energy)
     magnet = np.loadtxt(filename_magnet)
@@ -93,4 +94,6 @@ if __name__ == "__main__":
 
     analyse_energy_const_temp(energy)
     analyse_magnet_const_temp(magnet)
+
+    analayz_tampratar(ax, filename_props, [True, False, False, False, False])
     pass
