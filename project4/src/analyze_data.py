@@ -2,15 +2,46 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def analyse_energy_const_temp(energy):
-    energy[2] = np.cumsum(energy[2])/np.arange(0, len(energy[2]), 1)
-    plt.plot(energy[2], label="Total energy, [?]")
+
+    try: 
+        temps = energy[:,0]
+        energy = energy[:,1:]
+        energy /= 20**2
+
+        for i in range(np.shape(energy)[0]): 
+            plt.plot(np.cumsum(energy[i])/np.arange(1, len(energy[i]) + 1, 1), label=f"T: {temps[i]}")
+
+    except IndexError:
+        temps = energy[0]
+        energy = energy[1:]
+        energy /= 20**2
+        plt.plot(np.cumsum(energy)/np.arange(1, len(energy) + 1, 1), label=f"T: {temps}")
+    
+    
     plt.xlabel("MC iterations")
     plt.ylabel("Energy, [?]")
     plt.legend(loc="best")
     plt.show()
 
 def analyse_magnet_const_temp(magnet):
-    plt.plot(magnet[2], label="Total magnetization, [?]")
+    try: 
+        temps = magnet[:,0]
+        magnet = magnet[:,1:]
+        magnet /= 20**2
+        print(np.min(magnet))
+
+        for i in range(np.shape(magnet)[0]): 
+            plt.plot(np.cumsum(magnet[i])/np.arange(1, len(magnet[i]) + 1, 1), label=f"T: {temps[i]}")
+
+    except IndexError:
+        temps = magnet[0]
+        magnet = magnet[1:]
+        magnet /= 20**2
+        magnet = np.abs(magnet)
+        print(np.min(magnet))
+        plt.plot(np.cumsum(magnet)/np.arange(1, len(magnet) + 1, 1), label=f"T: {temps}")
+        # plt.plot(magnet, label=f"T: {temps}")
+    
     plt.xlabel("MC iterations")
     plt.ylabel("Magnetization, [?]")
     plt.legend(loc="best")
@@ -30,7 +61,7 @@ def analyse_magnet(temp, avr_magnet):
     plt.legend(loc="best")
     plt.show()
 
-def analyse_heat_capasity(temp, avr_energy, avr_energy_square):
+def analyse_heat_capacity(temp, avr_energy, avr_energy_square):
     plt.plot(temp, avr_energy_square - avr_energy**2, label="?")
     plt.xlabel(r"Temperature, [$k_{b}T/J$]")
     plt.ylabel("Heat capasity, [?]")
@@ -128,12 +159,11 @@ def analayz_tampratar(ax, filename, properties=[]):
 if __name__ == "__main__":
     filename_energy = "data_files/E_convergence_data.txt"
     filename_magnet = "data_files/M_convergence_data.txt"
-    filename_props  = "data_files/ising_model_data.txt"
+    # filename_props  = "data_files/ising_model_data.txt"
 
-    energy = np.loadtxt(filename_energy)
-    magnet = np.loadtxt(filename_magnet)
+    energy = np.loadtxt(filename_energy, skiprows=1)
+    magnet = np.loadtxt(filename_magnet, skiprows=1)
     # filename_magnet = "M_data.txt"
-
     analyse_energy_const_temp(energy)
     analyse_magnet_const_temp(magnet)
 
