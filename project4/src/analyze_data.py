@@ -59,9 +59,10 @@ def analayz_tampratar(ax, filename, properties=[]):
     properties : bool, list_like(?)
         List of boolian values for triggering the plot for the different
         physical properties; the True value needs to be in 1st, 2nd, 3rd, 4th,
-        5th, 6th or 7th place in the list in order to see plot of mean energy,
-        mean energy^2, mean magnetization, mean magnetization^2, mean
-        absolute magnetization, heat capacity or susceptibility respectively.
+        5th, 6th or 7th place in the properties list in order to see plot of
+        mean energy, mean energy^2, mean magnetization, mean magnetization^2,
+        mean absolute magnetization, heat capacity or susceptibility
+        respectively.
 
         OBS!!
         Don't send in more than 1 True value!!!
