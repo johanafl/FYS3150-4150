@@ -34,8 +34,7 @@ void IsingModel::mc_iteration_stable(double temp)
     sum_total_magnetization_absolute = 0;
     sum_total_magnetization_squared  = 0;
 
-    int stable_iterations = 100;
-    std::cout << stable_iterations << std::endl;
+    int stable_iterations = 5000;
 
     int i;
     for (i = 0; i < stable_iterations; i++)
