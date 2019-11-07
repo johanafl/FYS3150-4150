@@ -6,7 +6,7 @@ CircularMatrix::CircularMatrix(int n, double seed_input)
     Parameters
     ----------
     n : int
-        Dimension of matrix is n X n, so n i # rows (and/or # columns).
+        Dimension of matrix is n x n.
     
     seed_input : double
         Seed making the matrix random.

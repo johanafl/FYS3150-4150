@@ -19,11 +19,12 @@ void test_print()
 
 void test_energy()
 {
-    double init1[4] = {1,1,1,1};
-    double init2[4] = {1,-1,-1,1};
-    double init3[4] = {1,1,-1,1};
-    double init4[4] = {-1,-1,-1,-1};
+    double init1[4] = {1, 1, 1, 1};
+    double init2[4] = {1, -1, -1, 1};
+    double init3[4] = {1, 1, -1, 1};
+    double init4[4] = {-1, -1, -1, -1};
 
+    // mat(dimension, configuration)
     CircularMatrix mat1(2, init1);
     CircularMatrix mat2(2, init2);
     CircularMatrix mat3(2, init3);
@@ -36,6 +37,26 @@ void test_energy()
     mat3.print();
     std::cout << std::endl;
     mat4.print();
+}
+
+void test_that_ordered_spin_produces_all_spin_up()
+{
+
+}
+
+void test_that_new_dim_produces_right_dimension()
+{
+
+}
+
+void test_indexing()
+{
+
+}
+
+void test_indexing_boundary_check()
+{
+
 }
 
 int main()

@@ -16,7 +16,7 @@ private:
     double total_energy;
     double total_magnetization;
     // // FASTER(?):
-    // double delta_energy
+    // double delta_energy;
     
     // values for the averages after convergence
     double sum_total_energy;
@@ -348,7 +348,7 @@ public:
                 */
                 total_energy        -= spin(i, j, true)*(spin(i, j+1, true) + spin(i+1, j, true));
                 total_magnetization += spin(i, j, true);
-                // // FASTER(?):
+                // // FASTER:
                 // total_energy        -= spin(i, j)*(spin(i, j+1) + spin(i+1, j));
                 // total_magnetization += spin(i, j);
             }
@@ -397,37 +397,12 @@ public:
     }
 };
 
-
-int generate_data(int seed)
-{   /*
-    Generates energy and magnetization data for a given set of temperature
-    values and a given set of average runs. Writes data to file.
-
-    Parameters
-    ----------
-    seed : int
-        Seed for the Mersenne Twister 19937 PRNG.
-    */
-
-    // MPI_Init(NULL, NULL);
-    // int world_rank;
-    // int world_size;
-    // MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-    // MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-    // MPI_Finalize();
-
-
-
-
-    return 0;
-}
-
 int main()
 {   
     int the_magic_seed = 1572032584;
-    int spin_matrix_dim = 2;
+    int spin_matrix_dim = 20;
     int mc_iterations = 1e3;
-    // bool convergence = true;
+    bool convergence = true;
     
     double initial_temp = 1;
     double final_temp = 1;
@@ -436,11 +411,9 @@ int main()
     time_t seed;
     time(&seed);
     
-    IsingModel convergence_model(20, 1e5, seed);
-    // our_model.iterate_temperature(initial_temp, final_temp, dtemp, convergence);
+    IsingModel convergence_model(spin_matrix_dim, mc_iterations, seed);
+    convergence_model.iterate_temperature(initial_temp, final_temp, dtemp, convergence);
     convergence_model.set_order_spins();
-    convergence_model.iterate_temperature(1, 1, 0.2, true);
-    // our_model.iterate_temperature(initial_temp, final_temp, dtemp, false);
 
     return 0;
 }
