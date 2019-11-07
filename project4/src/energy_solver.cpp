@@ -338,12 +338,15 @@ public:
         }
         else
         {   // title for the stable file
+            ising_model_data << "mc_iterations: " << mc_iterations;
+            ising_model_data << " spin_matrix_dim: " << n;
+            ising_model_data << std::endl;
             ising_model_data << std::setw(20) << "T";
-            ising_model_data << std::setw(20) << "E";
-            ising_model_data << std::setw(20) << "E**2";
-            ising_model_data << std::setw(20) << "M";
-            ising_model_data << std::setw(20) << "M**2";
-            ising_model_data << std::setw(20) << "|M|**2";
+            ising_model_data << std::setw(20) << "<E>";
+            ising_model_data << std::setw(20) << "<E**2>";
+            ising_model_data << std::setw(20) << "<M>";
+            ising_model_data << std::setw(20) << "<M**2>";
+            ising_model_data << std::setw(20) << "<|M|>";
             ising_model_data << std::endl;
         }
 
@@ -459,7 +462,7 @@ int main()
 {   
     int the_magic_seed = 1572032584;
     int spin_matrix_dim = 2;
-    int mc_iterations = 4e3;
+    int mc_iterations = 1e7;
     bool convergence = false;
     
     double initial_temp = 1;
