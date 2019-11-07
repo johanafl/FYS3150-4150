@@ -295,8 +295,21 @@ def analayz_tampratar(ax, filename, properties=[]):
         ax.set_ylabel("Susceptibility")
         ax.set_title("Nice title here")
 
+
+def quick_buizz():
+    data = np.loadtxt("data_files/ising_model_data.txt", skiprows=2, unpack=True)
+
+    T, E, M = data[0], data[1], data[5]
+
+    plt.plot(T, M)
+    plt.show()
+
+
+
 if __name__ == "__main__":
-    compare_values_task_a_and_b()
+    # compare_values_task_a_and_b()
+
+    quick_buizz()
     # filename_energy = "data_files/E_convergence_data.txt"
     # filename_magnet = "data_files/M_convergence_data.txt"
     # # filename_props  = "data_files/ising_model_data.txt"
