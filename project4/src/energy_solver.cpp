@@ -42,7 +42,7 @@ private:
     {   /*
         Runs the spin flip a given amount of times. Generates data for finding
         how many iterations is needed for convergence. Keeps the energy values
-        without averaging. Only runs for a single temperature value.
+        without averaging.
         */
 
         for (int j = 0; j < mc_iterations; j++)
@@ -71,23 +71,23 @@ private:
         sum_total_magnetization  = 0;
         sum_total_magnetization_absolute = 0;
         sum_total_magnetization_squared  = 0;
-        ////////////////////////////////////////////////
-        ////////////////////////////////////////////////
-        ////////////////////////////////////////////////
-        ////////////////////////////////////////////////
-        ////////////////////////////////////////////////
-        /* NB!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        Here are some thoughts:
-        We do not want the mean for the first 1e4 iterations. We should 
-        therefore split the calculations up in two loops to avoid an if-test;
-        one for the first 1e4 calculations (here we do not take the avrage), and
-        one for the rest (where we do take the avrage).
-        */
-        ////////////////////////////////////////////////
-        ////////////////////////////////////////////////
-        ////////////////////////////////////////////////
-        ////////////////////////////////////////////////
-        for (int j = 0; j < mc_iterations; j++)
+
+        int stable_iterations = 100;
+        std::cout << stable_iterations << std::endl;
+
+        int i;
+        for (i = 0; i < stable_iterations; i++)
+        {   /*
+            Runs the spin flip until the system is stable. Separate loop
+            to avoid an if statement. This saves us computation time
+            since we aren't interested in calculating any vaues in the
+            unstable phase.
+            */
+            
+            iterate_spin_flip(temp);
+        }
+
+        for (int j = i; j < mc_iterations; j++)
         {   // loops over n*n spin flips a given amount of times
 
             iterate_spin_flip(temp);
@@ -244,13 +244,23 @@ public:
         */
 
         if (convergence)
-        {
+        {   // title for the convergence files
             E_convergence_data << "mc_iterations: " << mc_iterations;
             E_convergence_data << " spin_matrix_dim: " << n;
             E_convergence_data << std::endl;
             M_convergence_data << "mc_iterations: " << mc_iterations;
             M_convergence_data << " spin_matrix_dim: " << n;
             M_convergence_data << std::endl;
+        }
+        else
+        {   // title for the stable file
+            ising_model_data << std::setw(20) << "T";
+            ising_model_data << std::setw(20) << "E";
+            ising_model_data << std::setw(20) << "E**2";
+            ising_model_data << std::setw(20) << "M";
+            ising_model_data << std::setw(20) << "M**2";
+            ising_model_data << std::setw(20) << "|M|**2";
+            ising_model_data << std::endl;
         }
 
         ////////////////////////////////////////////////
@@ -355,11 +365,6 @@ public:
         }
     }
 
-    /////////////////////////////////////////////////////
-    /*
-    Setter functions
-    */
-    /////////////////////////////////////////////////////
     void set_new_input(int spin_mat_dim, int mc_iterations_input, double inter_strenght_J, long seed)
     {
         n = spin_mat_dim;
@@ -400,9 +405,9 @@ public:
 int main()
 {   
     int the_magic_seed = 1572032584;
-    int spin_matrix_dim = 20;
-    int mc_iterations = 1e3;
-    bool convergence = true;
+    int spin_matrix_dim = 2;
+    int mc_iterations = 4e3;
+    bool convergence = false;
     
     double initial_temp = 1;
     double final_temp = 1;
@@ -413,7 +418,6 @@ int main()
     
     IsingModel convergence_model(spin_matrix_dim, mc_iterations, seed);
     convergence_model.iterate_temperature(initial_temp, final_temp, dtemp, convergence);
-    convergence_model.set_order_spins();
 
     return 0;
 }
