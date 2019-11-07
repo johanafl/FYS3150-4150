@@ -14,10 +14,10 @@ def compare_values_task_a_and_b():
 
     # Unpacking numerical values. All values are mean values except T.
     T, E_n, E_squared_n, M_n, M_squared_n, abs_M_n = \
-        np.loadtxt("data_files/ising_model_data.txt", skiprows=2)
+        np.loadtxt("data_files/ising_model_data_2x2.txt", skiprows=2)
 
-    Cv_n  = (E_squared_n - E_n**2)/(kb*T)     # Numerical heat capacity.
-    X_n   = (M_squared_n - abs_M_n**2)/(kb*T) # Numerical susceptibility.
+    Cv_n = (E_squared_n - E_n**2)/(kb*T)     # Numerical heat capacity.
+    X_n  = (M_squared_n - abs_M_n**2)/(kb*T) # Numerical susceptibility.
 
 
     def analytical_mean_absolute_magnetic_moment_2x2(T=1):
@@ -117,8 +117,6 @@ def compare_values_task_a_and_b():
         return X
 
     
-
-    
     M  = analytical_mean_absolute_magnetic_moment_2x2(T)
     E  = analytical_mean_energy_2x2(T)
     Cv = analytical_specific_heat_capacity_2x2(T)
@@ -132,6 +130,9 @@ def compare_values_task_a_and_b():
     print(f"Cv:    {Cv:9.4f} {Cv_n:9.4f}")
     print(f"X:     {X:9.4f} {X_n:9.4f}")
     print()
+
+
+
 
 def analyse_energy_const_temp(energy):
 
@@ -157,6 +158,7 @@ def analyse_energy_const_temp(energy):
     plt.legend(loc="best")
     plt.show()
 
+
 def analyse_magnet_const_temp(magnet):
     try: 
         temps = magnet[:,0]
@@ -181,12 +183,14 @@ def analyse_magnet_const_temp(magnet):
     plt.legend(loc="best")
     plt.show()
 
+
 def analyse_energy(temp, avg_energy):
     plt.plot(temp, avg_energy, label="avgage energy, [?]")
     plt.xlabel(r"Temperature, [$k_{b}T/J$]")
     plt.ylabel("Energy, [?]")
     plt.legend(loc="best")
     plt.show()
+
 
 def analyse_magnet(temp, avg_magnet):
     plt.plot(temp, avg_magnet, label="avgage magnetization, [?]")
@@ -195,10 +199,11 @@ def analyse_magnet(temp, avg_magnet):
     plt.legend(loc="best")
     plt.show()
 
+
 def analyse_heat_capacity(temp, avg_energy, avg_energy_square):
     plt.plot(temp, avg_energy_square - avg_energy**2, label="?")
     plt.xlabel(r"Temperature, [$k_{b}T/J$]")
-    plt.ylabel("Heat capasity, [?]")
+    plt.ylabel("Heat capacity, [?]")
     plt.legend(loc="best")
     plt.show()
 
@@ -274,9 +279,9 @@ def analayz_tampratar(ax, filename, properties=[]):
     
     if properties[5]:
         scaling_factor = 1
-        heat_capasity  = (E_squared - E**2)/scaling_factor
+        heat_capacity  = (E_squared - E**2)/scaling_factor
 
-        ax.plot(T, heat_capasity)
+        ax.plot(T, heat_capacity)
         ax.set_xlabel("Temperature")
         ax.set_ylabel("Heat capacity")
         ax.set_title("Nice title here")
