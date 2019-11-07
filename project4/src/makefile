@@ -1,5 +1,8 @@
-all : generate_data.out generate_parallel.out test_circular_matrix.out test_energy_solver.out
+all : generate_data.out generate_parallel.out
 	echo All done
+
+test : test_circular_matrix.out test_energy_solver.out
+	echo Test compilation done.
 
 circular_matrix.o : circular_matrix.h circular_matrix.cpp
 	g++ -c circular_matrix.cpp -std=c++17 -O3
@@ -26,7 +29,7 @@ generate_data.out : circular_matrix.h energy_solver.h energy_solver.o circular_m
 	g++ -o generate_data.out generate_data.o energy_solver.o circular_matrix.o -std=c++17
 
 generate_parallel.o : circular_matrix.h energy_solver.h energy_solver.o circular_matrix.o
-	mpic++ -c generate_parallel.cpp
+	mpic++ -c generate_parallel.cpp -std=c++17
 
 generate_parallel.out : circular_matrix.h energy_solver.h energy_solver.o circular_matrix.o generate_parallel.o
 	mpic++ -o generate_parallel.out generate_parallel.o energy_solver.o circular_matrix.o -std=c++17
