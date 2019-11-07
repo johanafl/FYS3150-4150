@@ -1,20 +1,147 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
+def compare_values_task_a_and_b():
+    """
+    Compares analytical values from task a) with the numerically
+    calculated values from b).
+    """
+
+    filename_energy = "data_files/E_convergence_data.txt"
+    filename_magnet = "data_files/M_convergence_data.txt"
+
+
+    def mean_absolute_magnetic_moment(T=1):
+        """
+        The analytical result for the mean absolute value of the
+        magnetic moment for a 2x2 spin matrix.
+
+        Parameters
+        ----------
+        T : float, np.ndarray
+            Temperature in units [kb*T*J**-1].
+
+        Returns
+        -------
+        M : float, numpy.ndarray
+            Mean absolute value of the magnetic moment.
+        """
+
+        beta = kb*T
+
+        M  = (4*np.exp(8*J*beta) + 8)
+        M /= (np.exp(8*J*beta) + np.exp(-8*J*beta) + 6)
+
+        return M
+
+
+    def mean_energy(T=1):
+        """
+        The analytical result for the mean energy for a 2x2 spin matrix.
+
+        Parameters
+        ----------
+        T : float, np.ndarray
+            Temperature in units [kb*T*J**-1].
+
+        Returns
+        -------
+        E : float, numpy.ndarray
+            Mean energy.
+        """
+
+        beta = kb*T
+
+        E  = (8*np.exp(-8*J*beta) - 8*np.exp(8*J*beta))
+        E /= (np.exp(8*J*beta) + np.exp(-8*J*beta) + 6)
+
+        return E
+
+    
+    def specific_heat_capacity(T=1):
+        """
+        The analytical result for the specific heat capacity.
+
+        Parameters
+        ----------
+        T : float, np.ndarray
+            Temperature in units [kb*T*J**-1].
+
+        Returns
+        -------
+        Cv : float, numpy.ndarray
+            Specific heat capacity.
+        """
+
+        beta = kb*T        
+
+        Cv  = 64*J**2*np.exp(8*J*beta) + 64*J**2*np.exp(-8*J*beta)
+        Cv /= np.exp(8*J*beta) + np.exp(-8*J*beta) + 6
+        Cv -= mean_energy()**2
+        Cv *= beta/T
+
+        return Cv
+
+    
+    def susceptibility(T=1):
+        """
+        The analytical result for the susceptibility.
+
+        Parameters
+        ----------
+        T : float, np.ndarray
+            Temperature in units [kb*T*J**-1].
+
+        Returns
+        -------
+        X : float, numpy.ndarray
+            Susceptibility.
+        """
+
+        beta = kb*T        
+
+        X  = 16*np.exp(8*J*beta) + 16
+        X /= np.exp(8*J*beta) + np.exp(-8*J*beta) + 6
+        X -= mean_absolute_magnetic_moment(T)**2
+        X *= beta
+
+        return X
+
+    
+    J  = 1
+    kb = 1
+    T  = 1
+    
+    M  = mean_absolute_magnetic_moment(T)
+    E  = mean_energy(T)
+    Cv = specific_heat_capacity(T)
+    X  = susceptibility(T)
+    
+    print("\nAnalytical results for a 2x2 spin matrix.")
+    print("-"*43)
+    print("Mean abs magnetic: ", M)
+    print("Mean energy:      ", E)
+    print("Specific heat cap: ", Cv)
+    print("Susceptibility:    ", X)
+    print()
+
 def analyse_energy_const_temp(energy):
 
-    try: 
+    try:
+        # Trying to unpack data for several temperatures.
         temps = energy[:,0]
         energy = energy[:,1:]
-        energy /= 20**2
+        # energy /= 20**2
 
         for i in range(np.shape(energy)[0]): 
             plt.plot(np.cumsum(energy[i])/np.arange(1, len(energy[i]) + 1, 1), label=f"T: {temps[i]}")
 
     except IndexError:
+        # If data for only one temperature.
         temps = energy[0]
         energy = energy[1:]
-        energy /= 20**2
+        # energy /= 20**2
         plt.plot(np.cumsum(energy)/np.arange(1, len(energy) + 1, 1), label=f"T: {temps}")
     
     
@@ -27,7 +154,7 @@ def analyse_magnet_const_temp(magnet):
     try: 
         temps = magnet[:,0]
         magnet = magnet[:,1:]
-        magnet /= 20**2
+        # magnet /= 20**2
         print(np.min(magnet))
 
         for i in range(np.shape(magnet)[0]): 
@@ -36,7 +163,7 @@ def analyse_magnet_const_temp(magnet):
     except IndexError:
         temps = magnet[0]
         magnet = magnet[1:]
-        magnet /= 20**2
+        # magnet /= 20**2
         magnet = np.abs(magnet)
         print(np.min(magnet))
         plt.plot(np.cumsum(magnet)/np.arange(1, len(magnet) + 1, 1), label=f"T: {temps}")
@@ -157,17 +284,18 @@ def analayz_tampratar(ax, filename, properties=[]):
         ax.set_title("Nice title here")
 
 if __name__ == "__main__":
-    filename_energy = "data_files/E_convergence_data.txt"
-    filename_magnet = "data_files/M_convergence_data.txt"
-    # filename_props  = "data_files/ising_model_data.txt"
+    compare_values_task_a_and_b()
+    # filename_energy = "data_files/E_convergence_data.txt"
+    # filename_magnet = "data_files/M_convergence_data.txt"
+    # # filename_props  = "data_files/ising_model_data.txt"
 
-    energy = np.loadtxt(filename_energy, skiprows=1)
-    magnet = np.loadtxt(filename_magnet, skiprows=1)
-    # filename_magnet = "M_data.txt"
-    analyse_energy_const_temp(energy)
-    analyse_magnet_const_temp(magnet)
+    # energy = np.loadtxt(filename_energy, skiprows=1)
+    # magnet = np.loadtxt(filename_magnet, skiprows=1)
+    # # filename_magnet = "M_data.txt"
+    # analyse_energy_const_temp(energy)
+    # analyse_magnet_const_temp(magnet)
 
-    # fig, ax = plt.subplots()
+    # # fig, ax = plt.subplots()
 
     # analayz_tampratar(ax, filename_props, [True, False, False, False, False, False, False])
     # plt.show()
