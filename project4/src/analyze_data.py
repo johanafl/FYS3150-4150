@@ -8,8 +8,11 @@ def compare_values_task_a_and_b():
     calculated values from b).
     """
 
-    filename_energy = "data_files/E_convergence_data.txt"
-    filename_magnet = "data_files/M_convergence_data.txt"
+    # unpacking numerical values
+    T, E_n, E_squared_n, M_n, M_squared_n, abs_M_squared_n = \
+        np.loadtxt("data_files/ising_model_data.txt", skiprows=1)
+
+
 
 
     def mean_absolute_magnetic_moment(T=1):
@@ -118,12 +121,13 @@ def compare_values_task_a_and_b():
     Cv = specific_heat_capacity(T)
     X  = susceptibility(T)
     
-    print("\nAnalytical results for a 2x2 spin matrix.")
+    print("\nComparing results for a 2x2 spin matrix.")
     print("-"*43)
-    print("Mean abs magnetic: ", M)
-    print("Mean energy:      ", E)
-    print("Specific heat cap: ", Cv)
-    print("Susceptibility:    ", X)
+    print("       analytical   numerical")
+    print(f"<|M|>: {M:9.4f} {abs_M_squared_n:9.4f}")
+    print(f"<E>:   {E:9.4f} {E_n:9.4f}")
+    print(f"Cv:    {Cv:9.4f} {np.nan:9.4f}")
+    print(f"X:     {X:9.4f} {np.nan:9.4f}")
     print()
 
 def analyse_energy_const_temp(energy):
