@@ -8,14 +8,19 @@ def compare_values_task_a_and_b():
     calculated values from b).
     """
 
-    # unpacking numerical values
-    T, E_n, E_squared_n, M_n, M_squared_n, abs_M_squared_n = \
+    J  = 1
+    kb = 1
+    T  = 1
+
+    # Unpacking numerical values. All values are mean values except T.
+    T, E_n, E_squared_n, M_n, M_squared_n, abs_M_n = \
         np.loadtxt("data_files/ising_model_data.txt", skiprows=2)
 
+    Cv_n  = (E_squared_n - E_n**2)/(kb*T)     # Numerical heat capacity.
+    X_n   = (M_squared_n - abs_M_n**2)/(kb*T) # Numerical susceptibility.
 
 
-
-    def mean_absolute_magnetic_moment(T=1):
+    def analytical_mean_absolute_magnetic_moment_2x2(T=1):
         """
         The analytical result for the mean absolute value of the
         magnetic moment for a 2x2 spin matrix.
@@ -39,7 +44,7 @@ def compare_values_task_a_and_b():
         return M
 
 
-    def mean_energy(T=1):
+    def analytical_mean_energy_2x2(T=1):
         """
         The analytical result for the mean energy for a 2x2 spin matrix.
 
@@ -62,7 +67,7 @@ def compare_values_task_a_and_b():
         return E
 
     
-    def specific_heat_capacity(T=1):
+    def analytical_specific_heat_capacity_2x2(T=1):
         """
         The analytical result for the specific heat capacity.
 
@@ -81,13 +86,13 @@ def compare_values_task_a_and_b():
 
         Cv  = 64*J**2*np.exp(8*J*beta) + 64*J**2*np.exp(-8*J*beta)
         Cv /= np.exp(8*J*beta) + np.exp(-8*J*beta) + 6
-        Cv -= mean_energy()**2
+        Cv -= analytical_mean_energy_2x2()**2
         Cv *= beta/T
 
         return Cv
 
     
-    def susceptibility(T=1):
+    def analytical_susceptibility_2x2(T=1):
         """
         The analytical result for the susceptibility.
 
@@ -106,28 +111,26 @@ def compare_values_task_a_and_b():
 
         X  = 16*np.exp(8*J*beta) + 16
         X /= np.exp(8*J*beta) + np.exp(-8*J*beta) + 6
-        X -= mean_absolute_magnetic_moment(T)**2
+        X -= analytical_mean_absolute_magnetic_moment_2x2(T)**2
         X *= beta
 
         return X
 
     
-    J  = 1
-    kb = 1
-    T  = 1
+
     
-    M  = mean_absolute_magnetic_moment(T)
-    E  = mean_energy(T)
-    Cv = specific_heat_capacity(T)
-    X  = susceptibility(T)
+    M  = analytical_mean_absolute_magnetic_moment_2x2(T)
+    E  = analytical_mean_energy_2x2(T)
+    Cv = analytical_specific_heat_capacity_2x2(T)
+    X  = analytical_susceptibility_2x2(T)
     
     print("\nComparing results for a 2x2 spin matrix.")
     print("-"*43)
     print("       analytical   numerical")
-    print(f"<|M|>: {M:9.4f} {abs_M_squared_n:9.4f}")
+    print(f"<|M|>: {M:9.4f} {abs_M_n:9.4f}")
     print(f"<E>:   {E:9.4f} {E_n:9.4f}")
-    print(f"Cv:    {Cv:9.4f} {np.nan:9.4f}")
-    print(f"X:     {X:9.4f} {np.nan:9.4f}")
+    print(f"Cv:    {Cv:9.4f} {Cv_n:9.4f}")
+    print(f"X:     {X:9.4f} {X_n:9.4f}")
     print()
 
 def analyse_energy_const_temp(energy):
