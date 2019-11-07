@@ -1,4 +1,7 @@
+#define CATCH_CONFIG_MAIN
+#include "catch.hpp"
 #include "circular_matrix.h"
+
 
 // TEST_CASE("test_print")
 void test_print()
@@ -18,10 +21,21 @@ void test_print()
     // std::cout << q1(0, 8, true) << std::endl;
 }
 
-// TEST_CASE("test_that_ordered_spin_produces_all_spin_up")
-void test_that_ordered_spin_produces_all_spin_up()
+// void test_that_ordered_spin_produces_all_spin_up()
+TEST_CASE("test_that_ordered_spin_produces_all_spin_up")
 {
+    int n    = 2;
+    int seed = 1337;
 
+    CircularMatrix q(n, seed);
+
+    q.ordered_spin();
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+            REQUIRE(q(i, j) == 1);
+    }
 }
 
 // TEST_CASE("test_that_new_dim_produces_right_dimension")
@@ -42,9 +56,9 @@ void test_indexing_boundary_check()
 
 }
 
-int main()
-{
-    // test_print();
+// int main()
+// {
+//     // test_print();
 
-    return 0;
-}
+//     return 0;
+// }
