@@ -1,17 +1,17 @@
-all : generate_data.out #test_circular_matrix.out # energy_solver.out test_energy_solver.out
+all : generate_data.out test_circular_matrix.out # energy_solver.out test_energy_solver.out
 	echo All done
 
 circular_matrix.o : circular_matrix.h circular_matrix.cpp
 	g++ -c circular_matrix.cpp -std=c++17
 
-# test_circular_matrix.o : circular_matrix.h test_energy_solver.cpp
-# 	g++ -c test_circular_matrix.cpp -std=c++17
+test_circular_matrix.o : circular_matrix.h test_circular_matrix.cpp circular_matrix.o catch.hpp
+	g++ -c test_circular_matrix.cpp -std=c++17
 
-# test_circular_matrix.out : circular_matrix.h test_energy_solver.o circular_matrix.o
-# 	g++ -o test_circular_matrix.out test_circular_matrix.o circular_matrix.o -std=c++17
+test_circular_matrix.out : circular_matrix.h test_circular_matrix.o circular_matrix.o catch.hpp
+	g++ -o test_circular_matrix.out test_circular_matrix.o circular_matrix.o -std=c++17
 
 # test_energy_solver.o : circular_matrix.h test_energy_solver.cpp
-# 	g++ -c test_energy_solver.cpp -std=c++17
+# 	g++ -c test_energy_solver.cpp -std=c++17 // REMEMBER CLEAN WHEN DONE!!!!
 
 # test_energy_solver.out : circular_matrix.h test_energy_solver.o circular_matrix.o
 # 	g++ -o test_energy_solver.out test_energy_solver.o circular_matrix.o -std=c++17
