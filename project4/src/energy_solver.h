@@ -1,12 +1,12 @@
 #ifndef ENERGY_SOLVER_H
 #define ENERGY_SOLVER_H
 
-// #include <mpi.h>
 #include "circular_matrix.h"
 
 class IsingModel
 {
-private:
+protected:
+// private:
     int n;              // matrix is of dimension nxn
     int mc_iterations;  // number of Monte Carlo iterations
     double* exp_delta_energy = new double[17];  // pre-calculated energy values
@@ -48,7 +48,7 @@ private:
         double& total_magnetization, int row, int col, double metropolis_random,
         double temperature, double* exp_delta_energy);
 
-public:    
+public:
     IsingModel(int spin_mat_dim, int mc_iterations_input, long seed);
     void iterate_temperature(double initial_temp, double final_temp,
         double dtemp, bool convergence);
