@@ -1,4 +1,4 @@
-all : generate_data.out test_circular_matrix.out # energy_solver.out test_energy_solver.out
+all : generate_data.out test_circular_matrix.out test_energy_solver.out
 	echo All done
 
 circular_matrix.o : circular_matrix.h circular_matrix.cpp
@@ -19,11 +19,8 @@ test_energy_solver.out : circular_matrix.h test_energy_solver.o circular_matrix.
 energy_solver.o : circular_matrix.h energy_solver.h energy_solver.cpp
 	g++ -c energy_solver.cpp -std=c++17
 
-# energy_solver.out : circular_matrix.h energy_solver.h energy_solver.o circular_matrix.o
-# 	g++ -o energy_solver.out energy_solver.o circular_matrix.o -std=c++17 -O3
-
 generate_data.o : circular_matrix.h energy_solver.h energy_solver.o circular_matrix.o
-	g++ -c generate_data.cpp energy_solver.o circular_matrix.o -std=c++17
+	g++ -c generate_data.cpp -std=c++17
 
 generate_data.out : circular_matrix.h energy_solver.h energy_solver.o circular_matrix.o generate_data.o
 	g++ -o generate_data.out generate_data.o energy_solver.o circular_matrix.o -std=c++17 -O3
