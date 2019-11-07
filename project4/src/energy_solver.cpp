@@ -1,4 +1,4 @@
-// #include <mpi.h>
+#include <mpi.h>
 #include "circular_matrix.h"
 
 class IsingModel
@@ -15,8 +15,9 @@ private:
     double metropolis_random;   // metropolis condition, will be randomly drawn
     double total_energy;
     double total_magnetization;
-    // // FASTER(?):
-    // double delta_energy;
+    // FASTER(?):
+    double delta_energy;
+    double spin_here;
     
     // values for the averages after convergence
     double sum_total_energy;
@@ -123,15 +124,15 @@ private:
         for (int i = 0; i < n*n; i++)
         {   // flips n*n randomly drawn spins in the spin matrix
             
-            row = uniform_discrete(engine);
-            col = uniform_discrete(engine);
-            metropolis_random = uniform_continuous(engine);
+            // row = uniform_discrete(engine);
+            // col = uniform_discrete(engine);
+            // metropolis_random = uniform_continuous(engine);
             
-            metropolis_flap(spin, total_energy, total_magnetization, row, col, metropolis_random, temp, exp_delta_energy);
-            // // FASTER(?):
-            // metropolis_flap(spin, total_energy, total_magnetization, 
-            //                 uniform_discrete(engine), uniform_discrete(engine), 
-            //                 uniform_continuous(engine), temp, exp_delta_energy);
+            // metropolis_flap(spin, total_energy, total_magnetization, row, col, metropolis_random, temp, exp_delta_energy);
+            // FASTER(?):
+            metropolis_flap(spin, total_energy, total_magnetization, 
+                            uniform_discrete(engine), uniform_discrete(engine), 
+                            uniform_continuous(engine), temp, exp_delta_energy);
         }
     }
 
@@ -178,16 +179,18 @@ private:
         spin_right = spin[row][col+1]
         spin_below = spin[row+1][col]
         */
-        double spin_here = spin(row, col, true);
-        double delta_energy = 2*spin_here*(spin(row-1, col, true) + spin(row+1, col, true)
-                                + spin(row, col+1, true) + spin(row, col-1, true));
-        // // FASTER(?):
-        // delta_energy = 2*spin(row, col)*(spin(row-1, col) + spin(row+1, col)
-        //                         + spin(row, col+1) + spin(row, col-1));
+        // double spin_here = spin(row, col, true);
+        // double delta_energy = 2*spin_here*(spin(row-1, col, true) + spin(row+1, col, true)
+                                // + spin(row, col+1, true) + spin(row, col-1, true));
+        // FASTER(?):
+        spin_here = spin(row, col, true);
+        delta_energy = 2*spin(row, col)*(spin(row-1, col) + spin(row+1, col)
+                                + spin(row, col+1) + spin(row, col-1));
         
         if (metropolis_random < exp_delta_energy[(int) (delta_energy + 8)])
         {   // checks if energy difference is positive and the metropolis condition true
-            spin(row, col, true) *= -1;
+            spin(row, col) *= -1;
+            // spin(row, col, true) *= -1;
             total_energy         += delta_energy;
             total_magnetization  += -2*spin_here;
             // // FASTER(?):
@@ -222,6 +225,87 @@ public:
         ising_model_data.open("data_files/ising_model_data.txt", std::ios_base::app);
     }
 
+    void iterate_temperature_parallel(double initial_temp, double final_temp,
+        int num_of_temp_divided_by_num_of_threds)
+    {   /*
+        Iterates over a given set of temperature values.
+
+        Parameters
+        ----------
+        initial_temp : double
+            Start temperature value.
+
+        final_temp : double
+            End temperature value.
+
+        dtemp : double
+            Temperature step length.
+        */
+
+        ////////////////////////////////////////////////
+        ////////////////////////////////////////////////
+        ////////////////////////////////////////////////
+        ////////////////////////////////////////////////
+        ////////////////////////////////////////////////
+        /* NB!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        Below are some thoughts for parallel computing. Remember that the files
+        this creates will contain unsorted temperatures. It might also write on
+        the same line. The best would be separate files or an array which fills
+        up over time and then written to file.
+        */
+        ////////////////////////////////////////////////
+        ////////////////////////////////////////////////
+        ////////////////////////////////////////////////
+        ////////////////////////////////////////////////
+        MPI_Init(NULL, NULL);
+        int world_rank;
+        int world_size;
+        MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+        MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+        double diff_temp = (final_temp - initial_temp)/((world_size + 1)*num_of_temp_divided_by_num_of_threds);
+        double init_temp = initial_temp + diff_temp*num_of_temp_divided_by_num_of_threds*world_rank;
+        double fin_temp = initial_temp + diff_temp*num_of_temp_divided_by_num_of_threds*(world_rank + 1);
+
+        double* sum_total_energy_array = new double[num_of_temp_divided_by_num_of_threds];
+        double* sum_total_energy_squared_array = new double[num_of_temp_divided_by_num_of_threds];
+        double* sum_total_magnetization_array = new double[num_of_temp_divided_by_num_of_threds];
+        double* sum_total_magnetization_absolute_array = new double[num_of_temp_divided_by_num_of_threds];
+        double* sum_total_magnetization_squared_array = new double[num_of_temp_divided_by_num_of_threds];
+
+        double temp;
+        // for (double temp = initial_temp; temp <= final_temp; temp += dtemp)
+        // for (double temp = init_temp; temp <= fin_temp; temp += diff_temp)
+        for (int num_iteration = 0; num_iteration <= num_of_temp_divided_by_num_of_threds; num_iteration++)
+        {   // looping over temperature values
+
+            temp = init_temp + diff_temp*num_iteration;
+            // pre-calculated exponential values
+            exp_delta_energy[0]  = std::exp(8*J/temp);
+            exp_delta_energy[4]  = std::exp(4*J/temp);
+            exp_delta_energy[8]  = 1;
+            exp_delta_energy[12] = std::exp(-4*J/temp);
+            exp_delta_energy[16] = std::exp(-8*J/temp);
+
+            mc_iteration_stable(temp);
+
+            sum_total_energy_array[world_rank*num_iteration] = sum_total_energy;
+            sum_total_energy_squared_array[world_rank*num_iteration] = sum_total_energy_squared;
+            sum_total_magnetization_array[world_rank*num_iteration] = sum_total_magnetization;
+            sum_total_magnetization_absolute_array[world_rank*num_iteration] = sum_total_magnetization_absolute;
+            sum_total_magnetization_squared_array[world_rank*num_iteration] = sum_total_magnetization_squared;
+
+        }
+        // ising_model_data << std::setw(20) << std::setprecision(15) << temp;
+        // ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_energy;
+        // ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_energy_squared;
+        // ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_magnetization;
+        // ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_magnetization_squared;
+        // ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_magnetization_absolute;
+        // ising_model_data << std::endl;
+
+        MPI_Finalize();
+    }
+
     void iterate_temperature(double initial_temp, double final_temp,
         double dtemp, bool convergence)
     {   /*
@@ -253,34 +337,8 @@ public:
             M_convergence_data << std::endl;
         }
 
-        ////////////////////////////////////////////////
-        ////////////////////////////////////////////////
-        ////////////////////////////////////////////////
-        ////////////////////////////////////////////////
-        ////////////////////////////////////////////////
-        /* NB!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        Below are some thoughts for parallel computing. Remember that the files
-        this creates will contain unsorted temperatures. It might also write on
-        the same line. The best would be separate files or an array which fills
-        up over time and then written to file.
-        */
-        ////////////////////////////////////////////////
-        ////////////////////////////////////////////////
-        ////////////////////////////////////////////////
-        ////////////////////////////////////////////////
-        // MPI_Init(NULL, NULL);
-        // int world_rank;
-        // int world_size;
-        // MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-        // MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-        // double diff_temp = (final_temp - initial_temp)/world_size;
-        // double init_temp = initial_temp + diff_temp*world_rank;
-        // double fin_temp = initial_temp + diff_temp*(world_rank + 1);
-        // for (double temp = init_temp; temp <= fin_temp; temp += dtemp)
-
         for (double temp = initial_temp; temp <= final_temp; temp += dtemp)
         {   // looping over temperature values
-
             // pre-calculated exponential values
             exp_delta_energy[0]  = std::exp(8*J/temp);
             exp_delta_energy[4]  = std::exp(4*J/temp);
@@ -289,8 +347,7 @@ public:
             exp_delta_energy[16] = std::exp(-8*J/temp);
 
             if (convergence)
-            {   // generates and writes convergence data
-                
+            {   // generates and writes convergence data                
                 // writing temperature values in the first column
                 E_convergence_data << std::setw(15) << temp;
                 M_convergence_data << std::setw(15) << temp;
@@ -302,7 +359,6 @@ public:
             }
             else
             {   // generates and writes stable data
-                
                 mc_iteration_stable(temp);
                 ising_model_data << std::setw(20) << std::setprecision(15) << temp;
                 ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_energy;
@@ -312,10 +368,7 @@ public:
                 ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_magnetization_absolute;
                 ising_model_data << std::endl;
             }
-            // MPI_Barrier(MPI_COMM_WORLD); //Do not think this helps!!!
         }
-
-        // MPI_Finalize();
     }
 
     void total_energy_and_magnetization(CircularMatrix& spin, int n,
@@ -346,11 +399,11 @@ public:
                 spin(i+1, j):   spin below
                 spin(i, j+1):   spin to the right
                 */
-                total_energy        -= spin(i, j, true)*(spin(i, j+1, true) + spin(i+1, j, true));
-                total_magnetization += spin(i, j, true);
-                // // FASTER:
-                // total_energy        -= spin(i, j)*(spin(i, j+1) + spin(i+1, j));
-                // total_magnetization += spin(i, j);
+                // total_energy        -= spin(i, j, true)*(spin(i, j+1, true) + spin(i+1, j, true));
+                // total_magnetization += spin(i, j, true);
+                // FASTER:
+                total_energy        -= spin(i, j)*(spin(i, j+1) + spin(i+1, j));
+                total_magnetization += spin(i, j);
             }
         }
     }
