@@ -23,13 +23,13 @@ energy_solver.o : circular_matrix.h energy_solver.h energy_solver.cpp
 # 	g++ -o energy_solver.out energy_solver.o circular_matrix.o -std=c++17 -O3
 
 generate_data.o : circular_matrix.h energy_solver.h energy_solver.o circular_matrix.o
-	g++ -c generate_data.cpp energy_solver.o circular_matrix.o -std=c++17
+	g++ -c generate_data.cpp -std=c++17
 
 generate_data.out : circular_matrix.h energy_solver.h energy_solver.o circular_matrix.o generate_data.o
 	g++ -o generate_data.out generate_data.o energy_solver.o circular_matrix.o -std=c++17 -O3
 
 clean :
-	rm energy_solver.o circular_matrix.o generate_data.o
-	rm generate_data.out
+	rm energy_solver.o circular_matrix.o generate_data.o test_circular_matrix.o
+	rm generate_data.out test_circular_matrix.out
 	# rm energy_solver.o circular_matrix.o test_circular_matrix.o test_energy_solver.o
 	# rm energy_solver.out test_circular_matrix.out test_energy_solver
