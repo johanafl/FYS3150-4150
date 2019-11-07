@@ -2,9 +2,7 @@
 #include <chrono>
 
 int main()
-{   
-
-    // average_time += comp_time.count();
+{   // average_time += comp_time.count();
     int the_magic_seed = 1572032584;
     int spin_matrix_dim = 2;
     int mc_iterations = 1e6;
