@@ -10,7 +10,7 @@ def compare_values_task_a_and_b():
 
     # unpacking numerical values
     T, E_n, E_squared_n, M_n, M_squared_n, abs_M_squared_n = \
-        np.loadtxt("data_files/ising_model_data.txt", skiprows=1)
+        np.loadtxt("data_files/ising_model_data.txt", skiprows=2)
 
 
 
@@ -178,29 +178,29 @@ def analyse_magnet_const_temp(magnet):
     plt.legend(loc="best")
     plt.show()
 
-def analyse_energy(temp, avr_energy):
-    plt.plot(temp, avr_energy, label="Avrage energy, [?]")
+def analyse_energy(temp, avg_energy):
+    plt.plot(temp, avg_energy, label="avgage energy, [?]")
     plt.xlabel(r"Temperature, [$k_{b}T/J$]")
     plt.ylabel("Energy, [?]")
     plt.legend(loc="best")
     plt.show()
 
-def analyse_magnet(temp, avr_magnet):
-    plt.plot(temp, avr_magnet, label="Avrage magnetization, [?]")
+def analyse_magnet(temp, avg_magnet):
+    plt.plot(temp, avg_magnet, label="avgage magnetization, [?]")
     plt.xlabel(r"Temperature, [$k_{b}T/J$]")
     plt.ylabel("Magnetization, [?]")
     plt.legend(loc="best")
     plt.show()
 
-def analyse_heat_capacity(temp, avr_energy, avr_energy_square):
-    plt.plot(temp, avr_energy_square - avr_energy**2, label="?")
+def analyse_heat_capacity(temp, avg_energy, avg_energy_square):
+    plt.plot(temp, avg_energy_square - avg_energy**2, label="?")
     plt.xlabel(r"Temperature, [$k_{b}T/J$]")
     plt.ylabel("Heat capasity, [?]")
     plt.legend(loc="best")
     plt.show()
 
-def analyse_magnet(temp, avr_magnet, avr_magnet_square):
-    plt.plot(temp, avr_magnet_square - avr_magnet**2, label="?")
+def analyse_magnet(temp, avg_magnet, avg_magnet_square):
+    plt.plot(temp, avg_magnet_square - avg_magnet**2, label="?")
     plt.xlabel(r"Temperature, [$k_{b}T/J$]")
     plt.ylabel("Suceptibility, [?]")
     plt.legend(loc="best")
