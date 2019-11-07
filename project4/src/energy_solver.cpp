@@ -139,24 +139,17 @@ void IsingModel::metropolis_flap(CircularMatrix& spin, double& total_energy,
     spin_right = spin[row][col+1]
     spin_below = spin[row+1][col]
     */
-    // double spin_here = spin(row, col, true);
-    // double delta_energy = 2*spin_here*(spin(row-1, col, true) + spin(row+1, col, true)
-                            // + spin(row, col+1, true) + spin(row, col-1, true));
-    // FASTER(?):
-    spin_here = spin(row, col, true);
-    delta_energy = 2*spin(row, col)*(spin(row-1, col) + spin(row+1, col)
+
+    spin_here = spin(row, col);
+    delta_energy = 2*spin_here*(spin(row-1, col) + spin(row+1, col)
                             + spin(row, col+1) + spin(row, col-1));
     
     if (metropolis_random < exp_delta_energy[(int) (delta_energy + 8)])
-    {   // checks if energy difference is positive and the metropolis condition true
+    {   // checks if energy difference is positive and the metropolis
+        // condition true
         spin(row, col) *= -1;
-        // spin(row, col, true) *= -1;
         total_energy         += delta_energy;
         total_magnetization  += -2*spin_here;
-        // // FASTER(?):
-        // spin(row, col) *= -1;
-        // total_energy         += delta_energy;
-        // total_magnetization  += 2*spin(row, col);
     }
 }
 
@@ -262,6 +255,59 @@ void IsingModel::iterate_temperature(double initial_temp, double final_temp,
     }
 }
 
+void IsingModel::iterate_monte_carlo_cycles(int initial_MC, int final_MC, int dMC)
+{   /*
+    Loops over different number of Monte Carlo iterations. Currently
+    only implemented for the stable phase.
+
+    Parameters
+    ----------
+    initial_MC : int
+        The initial number of Monte Carlo iterations.
+
+    final_MC : int
+        The final number of Monte Carlo iterations.
+
+    dMC : int
+        Monte Carlo iterations step length.
+    */
+
+    // File title.
+    ising_model_data << "initial_MC: " << initial_MC;
+    ising_model_data << " final_MC : " << final_MC;
+    ising_model_data << " dMC: " << dMC;
+    ising_model_data << " spin_matrix_dim: " << n;
+    ising_model_data << std::endl;
+    ising_model_data << std::setw(20) << "MC";
+    ising_model_data << std::setw(20) << "<E>";
+    ising_model_data << std::setw(20) << "<E**2>";
+    ising_model_data << std::setw(20) << "<M>";
+    ising_model_data << std::setw(20) << "<M**2>";
+    ising_model_data << std::setw(20) << "<|M|>";
+    ising_model_data << std::endl;
+
+    double temp = 1;
+
+    exp_delta_energy[0]  = std::exp(8*J/temp);
+    exp_delta_energy[4]  = std::exp(4*J/temp);
+    exp_delta_energy[8]  = 1;
+    exp_delta_energy[12] = std::exp(-4*J/temp);
+    exp_delta_energy[16] = std::exp(-8*J/temp);
+
+    for (int MC = initial_MC; MC < final_MC; MC += dMC)
+    {   // Iterates over a set of Monte Carlo iterations.
+        
+        mc_iteration_stable(temp);
+        ising_model_data << std::setw(20) << std::setprecision(15) << MC;
+        ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_energy;
+        ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_energy_squared;
+        ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_magnetization;
+        ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_magnetization_squared;
+        ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_magnetization_absolute;
+        ising_model_data << std::endl;
+    }
+}
+
 void IsingModel::total_energy_and_magnetization(CircularMatrix& spin, int n,
     double& total_energy, double& total_magnetization)
 {   /*
@@ -281,6 +327,7 @@ void IsingModel::total_energy_and_magnetization(CircularMatrix& spin, int n,
     total_magnetization : double refernce
         Total magnetic moment.
     */
+    
     for (int i = 0; i < n; i++)
     {   // looping over rows 
         for (int j = 0; j < n; j++)
@@ -290,9 +337,6 @@ void IsingModel::total_energy_and_magnetization(CircularMatrix& spin, int n,
             spin(i+1, j):   spin below
             spin(i, j+1):   spin to the right
             */
-            // total_energy        -= spin(i, j, true)*(spin(i, j+1, true) + spin(i+1, j, true));
-            // total_magnetization += spin(i, j, true);
-            // FASTER:
             total_energy        -= spin(i, j)*(spin(i, j+1) + spin(i+1, j));
             total_magnetization += spin(i, j);
         }

@@ -59,6 +59,7 @@ public:
     void set_mc_iterations(int mc_iterations_input);
     void set_spin_dim(int spin_mat_dim);
     void set_order_spins();
+    void iterate_monte_carlo_cycles(int initial_MC, int final_MC, int dMC);
     ~IsingModel();
 };
 
