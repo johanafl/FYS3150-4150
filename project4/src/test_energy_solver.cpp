@@ -105,7 +105,7 @@ TEST_CASE("test_if_set_spin_dim_gives_new_dim_value")
     REQUIRE(q.n == value);
 }
 
-TEST_CASE("test_if_set_order_spins_gives_new_dim_value")
+TEST_CASE("test_if_set_order_spins_gives_all_spins_up")
 {
     int n = 7;
 
