@@ -109,35 +109,38 @@ TEST_CASE("test_if_set_order_spins_gives_all_spins_up")
 
     q.set_order_spins();
 
-    for (int i = 0; i < 7; i++)
+    for (int i = 0; i < n; i++)
     {
-        for (int j = 0; j < 7; j++)
+        for (int j = 0; j < n; j++)
         {
             REQUIRE(q.spin(i, j) == 1);
         }
     }
 }
 
-void metropolis_flap(CircularMatrix& spin, double& total_energy,
-       double& total_magnetization, int row, int col, double metropolis_random,
-       double temperature, double* exp_delta_energy);
-TEST_CASE("test_if_metropolis_flap_flapping_bird")
+TEST_CASE("test_if_metropolis_flap_flips_a_value_or_not_depending_on_the_random_value")
 {
     int n   = 2;
     int row = 0;
     int col = 1;
     double r1 = 1e4;
     double r2 = -1e4;
-    double temperature;
-    double* exp_delta_energy;
+    double temp = 1;
     double total_energy;
     double total_magnetization;
 
     IsingModel q(n, 0, 1337);
 
+    double* exp_delta_energy = new double[17];
+    exp_delta_energy[0]  = std::exp(8*q.J/temp);
+    exp_delta_energy[4]  = std::exp(4*q.J/temp);
+    exp_delta_energy[8]  = 1;
+    exp_delta_energy[12] = std::exp(-4*q.J/temp);
+    exp_delta_energy[16] = std::exp(-8*q.J/temp);
+
     q.set_order_spins();
     q.metropolis_flap(q.spin, total_energy, total_magnetization, row, col, r1,
-                      temperature, exp_delta_energy);
+                      temp, exp_delta_energy);
     
     for (int i = 0; i < 2; i++)
     {
@@ -149,7 +152,7 @@ TEST_CASE("test_if_metropolis_flap_flapping_bird")
 
     q.set_order_spins();
     q.metropolis_flap(q.spin, total_energy, total_magnetization, row, col, r2,
-                      temperature, exp_delta_energy);
+                      temp, exp_delta_energy);
     
     for (int i = 0; i < 2; i++)
     {
@@ -166,11 +169,3 @@ TEST_CASE("test_if_metropolis_flap_flapping_bird")
         }
     }
 }
-
-// int main()
-// {
-//     // test_print();
-//     test_if_energy_for_four_given_configurations_match_analytic_answer_for_dim_2();
-
-//     return 0;
-// }
