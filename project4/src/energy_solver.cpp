@@ -353,7 +353,7 @@ void IsingModel::set_new_input(int spin_mat_dim, int mc_iterations_input, double
     spin.new_dim(spin_mat_dim, seed);
 }
 
-void IsingModel::set_interactions_strenght(double strength_J)
+void IsingModel::set_interactions_strength(double strength_J)
 {
     J = strength_J;
 }
