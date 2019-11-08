@@ -220,11 +220,18 @@ void IsingModel::iterate_temperature(double initial_temp, double final_temp,
         ising_model_data << std::setw(20) << "<|M|>";
         ising_model_data << std::endl;
     }
+    
+    std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
 
     for (double temp = initial_temp; temp <= final_temp; temp += dtemp)
     {   // looping over temperature values
         // pre-calculated exponential values
-        std::cout << "temp: " << temp << " of: " << final_temp << std::endl;
+        
+        
+        std::cout << "temp: " << temp << " of: " << final_temp;
+        std::cout << " dtemp: " << dtemp << std::endl;
+        
+        
         exp_delta_energy[0]  = std::exp(8*J/temp);
         exp_delta_energy[4]  = std::exp(4*J/temp);
         exp_delta_energy[8]  = 1;
@@ -253,6 +260,12 @@ void IsingModel::iterate_temperature(double initial_temp, double final_temp,
             ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_magnetization_absolute;
             ising_model_data << std::endl;
         }
+
+        // ending timer
+        std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
+        std::chrono::duration<double> comp_time  = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1);
+        std::cout << "time since beginning: " << comp_time.count() << std::endl;
+        std::cout << std::endl;
     }
 }
 
