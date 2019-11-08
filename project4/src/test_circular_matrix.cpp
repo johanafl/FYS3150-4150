@@ -53,10 +53,9 @@ TEST_CASE("test_that_new_dim_and_seed_produces_new_dimension_and_seed")
     REQUIRE(mat.seed == new_seed);
 }
 
-// TEST_CASE("test_indexing")
-void test_indexing()
+TEST_CASE("test_indexing")
 {
-
+    
 }
 
 // TEST_CASE("test_indexing_boundary_check")
