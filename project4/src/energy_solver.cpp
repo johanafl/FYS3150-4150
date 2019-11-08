@@ -61,11 +61,11 @@ void IsingModel::mc_iteration_stable(double temp)
 
     }
     
-    sum_total_energy /= mc_iterations;
-    sum_total_energy_squared /= mc_iterations;
-    sum_total_magnetization  /= mc_iterations;
-    sum_total_magnetization_absolute /= mc_iterations;
-    sum_total_magnetization_squared  /= mc_iterations;
+    sum_total_energy /= mc_iterations - stable_iterations;
+    sum_total_energy_squared /= mc_iterations - stable_iterations;
+    sum_total_magnetization  /= mc_iterations - stable_iterations;
+    sum_total_magnetization_absolute /= mc_iterations - stable_iterations;
+    sum_total_magnetization_squared  /= mc_iterations - stable_iterations;
 
 }
 
@@ -144,7 +144,7 @@ void IsingModel::metropolis_flap(CircularMatrix& spin, double& total_energy,
     delta_energy = 2*spin_here*(spin(row-1, col) + spin(row+1, col)
                             + spin(row, col+1) + spin(row, col-1));
     
-    if (metropolis_random < exp_delta_energy[(int) (delta_energy + 8)])
+    if (metropolis_random <= exp_delta_energy[(int) (delta_energy + 8)])
     {   // checks if energy difference is positive and the metropolis
         // condition true
         spin(row, col) *= -1;
