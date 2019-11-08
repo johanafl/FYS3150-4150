@@ -134,30 +134,25 @@ def compare_values_task_a_and_b():
 
 
 
-def analyse_energy_const_temp(energy):
+def analyse_energy_const_temp():
 
-    try:
-        # Trying to unpack data for several temperatures.
-        temps = energy[:,0]
-        energy = energy[:,1:]
-        # energy /= 20**2
+    # filename_energy = "data_files/E_convergence_data_20x20.txt"
+    # filename_magnet = "data_files/M_convergence_data_20x20.txt"
 
-        for i in range(np.shape(energy)[0]): 
-            plt.plot(np.cumsum(energy[i])/np.arange(1, len(energy[i]) + 1, 1), label=f"T: {temps[i]}")
+    filename_energy = "data_files/E_convergence_data.txt"
+    filename_magnet = "data_files/M_convergence_data.txt"
 
-    except IndexError:
-        # If data for only one temperature.
-        temps = energy[0]
-        energy = energy[1:]
-        # energy /= 20**2
-        plt.plot(np.cumsum(energy)/np.arange(1, len(energy) + 1, 1), label=f"T: {temps}")
-    
+    energy = np.loadtxt(filename_energy, skiprows=1)
+    magnet = np.loadtxt(filename_magnet, skiprows=1)
+
+    # plt.plot(np.cumsum(energy[0, :10000])/np.arange(1, len(energy[0, :10000]) + 1, 1))
+    plt.plot(np.cumsum(magnet[0])/np.arange(1, len(magnet[0]) + 1, 1))
+    # plt.plot(energy[0, :1000])
     
     plt.xlabel("MC iterations")
-    plt.ylabel("Energy, [?]")
+    plt.ylabel("Magnet, [?]")
     plt.legend(loc="best")
     plt.show()
-
 
 def analyse_magnet_const_temp(magnet):
     try: 
@@ -324,19 +319,48 @@ def quick_buizz():
     plt.show()
 
 
+def quick_hist_buizz():
+
+    filename = "data_files/E_convergence_data.txt"
+    with open(filename, "r") as infile:
+        MC = float(infile.readline().split()[1])
+
+    data = np.loadtxt(filename, skiprows=1)
+    std1, std2 = np.std(data[:, 5001:], axis=1)
+    std1_scaled, std2_scaled = np.std(data[:, 5001:]/(20*20), axis=1)
+
+    print("std1: ", std1)
+    print("std2: ", std2)
+
+    print("std1: ", std1_scaled)
+    print("std2: ", std2_scaled)
+
+    bins = np.arange(-802, 802+1, 4)/(20*20)
+
+    data /= 20*20
+
+    n, _, _ = plt.hist(data[1, 5001:], bins=bins)
+    plt.xlabel("E")
+    plt.ylabel("occurrence")
+    plt.show()
+
+    energy_array = np.arange(-800, 800+1, 4)
+
+    plt.plot(energy_array, n/(MC - 5000))
+    plt.xlabel("E")
+    plt.ylabel("P(E)")
+    plt.show()
+
+
 
 if __name__ == "__main__":
     # compare_values_task_a_and_b()
 
-    quick_buizz()
-    # filename_energy = "data_files/E_convergence_data.txt"
-    # filename_magnet = "data_files/M_convergence_data.txt"
-    # # filename_props  = "data_files/ising_model_data.txt"
+    # quick_buizz()
+    # quick_hist_buizz()
 
-    # energy = np.loadtxt(filename_energy, skiprows=1)
-    # magnet = np.loadtxt(filename_magnet, skiprows=1)
     # # filename_magnet = "M_data.txt"
-    # analyse_energy_const_temp(energy)
+    analyse_energy_const_temp()
     # analyse_magnet_const_temp(magnet)
 
     # # fig, ax = plt.subplots()
