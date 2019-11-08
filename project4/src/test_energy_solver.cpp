@@ -2,16 +2,12 @@
 #include "energy_solver.h"
 #include "catch.hpp"
 
-void metropolis_flap(CircularMatrix& spin, double& total_energy,
-        double& total_magnetization, int row, int col, double metropolis_random,
-        double temperature, double* exp_delta_energy);
 
 TEST_CASE("test_if_calculated_energy_and_magnetization_match_analytic_answer")
 {
     double total_energy;
     double total_magnetization;
     int n = 2;
-    double tol = 1e7;
     double spin1[4]  = {1, 1, 1, 1};
     double spin2[4]  = {1, 1, 1, -1};
     double spin3[4]  = {1, -1, 1, -1};
@@ -118,6 +114,55 @@ TEST_CASE("test_if_set_order_spins_gives_all_spins_up")
         for (int j = 0; j < 7; j++)
         {
             REQUIRE(q.spin(i, j) == 1);
+        }
+    }
+}
+
+void metropolis_flap(CircularMatrix& spin, double& total_energy,
+       double& total_magnetization, int row, int col, double metropolis_random,
+       double temperature, double* exp_delta_energy);
+TEST_CASE("test_if_metropolis_flap_flapping_bird")
+{
+    int n   = 2;
+    int row = 0;
+    int col = 1;
+    double r1 = 1e4;
+    double r2 = -1e4;
+    double temperature;
+    double* exp_delta_energy;
+    double total_energy;
+    double total_magnetization;
+
+    IsingModel q(n, 0, 1337);
+
+    q.set_order_spins();
+    q.metropolis_flap(q.spin, total_energy, total_magnetization, row, col, r1,
+                      temperature, exp_delta_energy);
+    
+    for (int i = 0; i < 2; i++)
+    {
+        for (int j = 0; j < 2; j++)
+        {
+            REQUIRE(q.spin(i, j) == 1);
+        }
+    }
+
+    q.set_order_spins();
+    q.metropolis_flap(q.spin, total_energy, total_magnetization, row, col, r2,
+                      temperature, exp_delta_energy);
+    
+    for (int i = 0; i < 2; i++)
+    {
+        for (int j = 0; j < 2; j++)
+        {
+            if (i == row and j == col)
+            {
+                REQUIRE(q.spin(i, j) == -1);
+            }
+            else
+            {
+                REQUIRE(q.spin(i, j) == 1);
+            }
         }
     }
 }

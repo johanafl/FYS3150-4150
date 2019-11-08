@@ -49,9 +49,6 @@ protected:
     void mc_iteration_convergence(double temp);
     void mc_iteration_stable(double temp);
     void iterate_spin_flip(double temp);
-    void metropolis_flap(CircularMatrix& spin, double& total_energy,
-        double& total_magnetization, int row, int col, double metropolis_random,
-        double temperature, double* exp_delta_energy);
 
 public:
 
@@ -66,6 +63,9 @@ public:
     void set_spin_dim(int spin_mat_dim);
     void set_order_spins();
     void iterate_monte_carlo_cycles(int initial_MC, int final_MC, int dMC);
+    void metropolis_flap(CircularMatrix& spin, double& total_energy,
+        double& total_magnetization, int row, int col, double metropolis_random,
+        double temperature, double* exp_delta_energy);
     ~IsingModel();
 };
 
