@@ -7,10 +7,7 @@ class IsingModel
 {
 protected:
 // private:
-    int n;              // matrix is of dimension nxn
-    int mc_iterations;  // number of Monte Carlo iterations
     double* exp_delta_energy = new double[17];  // pre-calculated energy values
-    double J = 1;
 
     int row;    // row index, will be randomly drawn
     int col;    // column index, will be randomly drawn
@@ -41,6 +38,13 @@ protected:
     // defining the spin matrix
     CircularMatrix spin;
 
+public:
+    int n;              // matrix is of dimension nxn
+    int mc_iterations;  // number of Monte Carlo iterations
+    double J = 1;
+
+protected:
+
     void mc_iteration_convergence(double temp);
     void mc_iteration_stable(double temp);
     void iterate_spin_flip(double temp);
@@ -49,13 +53,14 @@ protected:
         double temperature, double* exp_delta_energy);
 
 public:
+
     IsingModel(int spin_mat_dim, int mc_iterations_input, long seed);
     void iterate_temperature(double initial_temp, double final_temp,
         double dtemp, bool convergence);
     void total_energy_and_magnetization(CircularMatrix& spin, int n,
         double& total_energy, double& total_magnetization);
     void set_new_input(int spin_mat_dim, int mc_iterations_input, double inter_strenght_J, long seed);
-    void set_interactions_strenght(double strength_J);
+    void set_interactions_strength(double strength_J);
     void set_mc_iterations(int mc_iterations_input);
     void set_spin_dim(int spin_mat_dim);
     void set_order_spins();
