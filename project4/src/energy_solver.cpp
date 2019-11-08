@@ -224,6 +224,7 @@ void IsingModel::iterate_temperature(double initial_temp, double final_temp,
     for (double temp = initial_temp; temp <= final_temp; temp += dtemp)
     {   // looping over temperature values
         // pre-calculated exponential values
+        std::cout << "temp: " << temp << " of: " << final_temp << std::endl;
         exp_delta_energy[0]  = std::exp(8*J/temp);
         exp_delta_energy[4]  = std::exp(4*J/temp);
         exp_delta_energy[8]  = 1;
