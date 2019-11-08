@@ -35,13 +35,14 @@ protected:
     std::uniform_int_distribution<int> uniform_discrete;
     std::uniform_real_distribution<double> uniform_continuous;
 
-    // defining the spin matrix
-    CircularMatrix spin;
 
 public:
     int n;              // matrix is of dimension nxn
     int mc_iterations;  // number of Monte Carlo iterations
     double J = 1;
+    
+    // defining the spin matrix
+    CircularMatrix spin;
 
 protected:
 
