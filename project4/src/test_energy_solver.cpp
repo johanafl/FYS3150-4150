@@ -20,12 +20,12 @@ TEST_CASE("test_if_calculated_energy_and_magnetization_match_analytic_answer")
     double spin6[4]  = {-1, -1, -1, -1};
 
     // mat(dimension, configuration)
-    CircularMatrix mat1(2, spin1);
-    CircularMatrix mat2(2, spin2);
-    CircularMatrix mat3(2, spin3);
-    CircularMatrix mat4(2, spin4);
-    CircularMatrix mat5(2, spin5);
-    CircularMatrix mat6(2, spin6);
+    CircularMatrix mat1(n, spin1);
+    CircularMatrix mat2(n, spin2);
+    CircularMatrix mat3(n, spin3);
+    CircularMatrix mat4(n, spin4);
+    CircularMatrix mat5(n, spin5);
+    CircularMatrix mat6(n, spin6);
 
     IsingModel q(n, 0, 1337);
 
@@ -105,10 +105,21 @@ TEST_CASE("test_if_set_spin_dim_gives_new_dim_value")
     REQUIRE(q.n == value);
 }
 
-void set_order_spins()
+TEST_CASE("test_if_set_order_spins_gives_new_dim_value")
 {
-    int n        = 2;
+    int n = 7;
+
     IsingModel q(n, 0, 1337);
+
+    q.set_order_spins();
+
+    for (int i = 0; i < 7; i++)
+    {
+        for (int j = 0; j < 7; j++)
+        {
+            REQUIRE(q.spin(i, j) == 1);
+        }
+    }
 }
 
 // int main()
