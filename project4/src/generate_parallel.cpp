@@ -98,12 +98,12 @@ public:
 
 int main()
 {   
-    int spin_matrix_dim = 2;
-    int mc_iterations = 1e7;
+    int spin_matrix_dim = 40;
+    int mc_iterations = 1e5;
     
-    double initial_temp = 1;
-    double final_temp = 3;
-    double num_of_temperatures = 5;
+    double initial_temp = 2;
+    double final_temp = 2.4;
+    double num_of_temperatures = 1;
 
     time_t seed;
     time(&seed);
