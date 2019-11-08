@@ -299,9 +299,28 @@ def analayz_tampratar(ax, filename, properties=[]):
 def quick_buizz():
     data = np.loadtxt("data_files/ising_model_data.txt", skiprows=2, unpack=True)
 
-    T, E, M = data[0], data[1], data[5]
+    T, E, E_squared, M, M_squared, M_abs = data
+    kb = 1
+    
+    Cv = (E_squared - E**2)/(kb*T**2)     # Numerical heat capacity.
+    X  = (M_squared - M_abs**2)/(kb*T) # Numerical susceptibility.
 
-    plt.plot(T, M)
+    fig, ax = plt.subplots(ncols=2, nrows=2)
+
+    ax[0, 0].plot(T, E)
+    ax[0, 0].set_title("E")
+
+    ax[0, 1].plot(T, M_abs)
+    ax[0, 1].set_title("M abs")
+
+    ax[1, 0].plot(T, Cv)
+    ax[1, 0].set_title("Cv")
+
+    ax[1, 1].plot(T, X)
+    ax[1, 1].set_title("X")
+
+
+
     plt.show()
 
 
