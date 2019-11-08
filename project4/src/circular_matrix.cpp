@@ -69,7 +69,7 @@ void CircularMatrix::new_dim_and_seed(int n, double new_seed)
 
 void CircularMatrix::new_dim(int n)
 {
-    CircularMatrix::new_dim(n, seed);
+    CircularMatrix::new_dim_and_seed(n, seed);
 }
 
 void CircularMatrix::print()
