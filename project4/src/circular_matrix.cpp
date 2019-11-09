@@ -76,7 +76,7 @@ void CircularMatrix::ordered_spin()
     for (int i = 0; i < dim*dim; i++) {matrix[i] = 1;}
 }
 
-void CircularMatrix::new_dim(int n, double new_seed)
+void CircularMatrix::new_dim_and_seed(int n, double new_seed)
 {
     delete[] matrix;
     dim  = n;
@@ -88,7 +88,7 @@ void CircularMatrix::new_dim(int n, double new_seed)
 
 void CircularMatrix::new_dim(int n)
 {
-    CircularMatrix::new_dim(n, seed);
+    CircularMatrix::new_dim_and_seed(n, seed);
 }
 
 void CircularMatrix::print()

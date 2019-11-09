@@ -13,11 +13,9 @@ const double pi = 3.14159265358979323846;
 
 class CircularMatrix
 {
-private:
-int dim;
-double seed;
-
 public:
+    int dim;
+    double seed;
     double* matrix;
 
     CircularMatrix(int n, double seed_input);
@@ -25,7 +23,7 @@ public:
     CircularMatrix(int n, double* init_set);
     void initial_spin();
     void ordered_spin();
-    void new_dim(int n, double new_seed);
+    void new_dim_and_seed(int n, double new_seed);
     void new_dim(int n);
     void print();
     double& operator() (int row, int col);

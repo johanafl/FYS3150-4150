@@ -32,6 +32,8 @@ public:
 
         double temp;
 
+        std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
+
         for (int num_iteration = 0; num_iteration < num_of_temp_divided_by_num_of_threds; num_iteration++)
         {   // looping over temperature values
 
@@ -71,7 +73,8 @@ public:
             if (rank == world_rank)
             {   
                 for (int i = 0; i < num_of_temp_divided_by_num_of_threds; i++)
-                {
+                {   
+                    std::cout << init_temp << std::endl;
                     ising_model_data << std::setw(20) << std::setprecision(15) << init_temp + diff_temp*i;
                     ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_energy_array[i];
                     ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_energy_squared_array[i];
@@ -90,6 +93,16 @@ public:
         delete[] sum_total_magnetization_array;
         delete[] sum_total_magnetization_absolute_array;
         delete[] sum_total_magnetization_squared_array;
+
+        // ending timer
+        std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
+        std::chrono::duration<double> comp_time  = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1);
+
+        if (world_rank == 0)
+        {
+            // std::cout << "iterations: " << mc_iterations;
+            std::cout << " time: " << comp_time.count() << std::endl;
+        }
         
         MPI_Finalize();
     }
@@ -99,7 +112,7 @@ public:
 int main()
 {   
     int spin_matrix_dim = 40;
-    int mc_iterations = 1e5;
+    int mc_iterations = 1e4;
     
     double initial_temp = 2;
     double final_temp = 2.4;
