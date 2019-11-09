@@ -1,15 +1,14 @@
 #include "circular_matrix.h"
 
 CircularMatrix::CircularMatrix(int n, double seed_input)
-{   
-    /*
+{   /*
     Parameters
     ----------
     n : int
         Dimension of matrix is n x n.
     
     seed_input : double
-        Seed making the matrix random.
+        Initializin the matrix radomly with given seed.
     */
     dim  = n;
     seed = seed_input;
@@ -19,7 +18,15 @@ CircularMatrix::CircularMatrix(int n, double seed_input)
 }
 
 CircularMatrix::CircularMatrix(int n)
-{   
+{   /*
+    Parameters
+    ----------
+    n : int
+        Dimension of matrix is n x n.
+    
+    seed_input : double
+        Initializin the matrix radomly with Unix-time as seed.
+    */
     time_t time_seed;
     time(&time_seed);
     
@@ -31,7 +38,19 @@ CircularMatrix::CircularMatrix(int n)
 }
 
 CircularMatrix::CircularMatrix(int n, double* init_set)
-{
+{   /*
+    Parameters
+    ----------
+    n : int
+        Dimension of matrix is n x n.
+    
+    init_set : double pointer
+        Initializin the matrix with given input.
+    
+    Note
+    ----
+    Does not give error if input is larger or smaller than dimension n.
+    */
     dim  = n;
     matrix = new double[dim*dim];
 
@@ -42,7 +61,7 @@ CircularMatrix::CircularMatrix(int n, double* init_set)
 }
 
 void CircularMatrix::initial_spin()
-{
+{   /*Initializes the matrix randomly with spins up and down from given seed.*/
     std::mt19937 engine(seed);
     std::uniform_int_distribution<int> uniform(0, 1);
     
