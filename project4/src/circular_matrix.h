@@ -22,7 +22,9 @@ public:
     CircularMatrix(int n);
     CircularMatrix(int n, double* init_set);
     void initial_spin();
+    void initial_spin(double seed_input);
     void ordered_spin();
+    void initial_spin(bool ordered);
     void new_dim_and_seed(int n, double new_seed);
     void new_dim(int n);
     void print();

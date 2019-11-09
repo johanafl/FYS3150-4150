@@ -71,9 +71,20 @@ void CircularMatrix::initial_spin()
     }
 }
 
+void CircularMatrix::initial_spin(double seed_input)
+{
+    seed = seed_input;
+    CircularMatrix::initial_spin();
+}
+
 void CircularMatrix::ordered_spin()
 {
     for (int i = 0; i < dim*dim; i++) {matrix[i] = 1;}
+}
+
+void CircularMatrix::initial_spin(bool ordered)
+{
+    CircularMatrix::ordered_spin();
 }
 
 void CircularMatrix::new_dim_and_seed(int n, double new_seed)

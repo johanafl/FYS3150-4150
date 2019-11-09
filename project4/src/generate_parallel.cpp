@@ -5,20 +5,146 @@
 
 class ParallelEnergySolver: public IsingModel
 {
+private:
+    int world_rank;
+    int world_size;
+
+    double* energy_array;
+    double* magnet_array;
+
 public:
     ParallelEnergySolver(int spin_mat_dim, int mc_iterations_input, long seed) 
-    : IsingModel(spin_mat_dim, mc_iterations_input, seed){}
+    : IsingModel(spin_mat_dim, mc_iterations_input, seed)
+    {
+        MPI_Init(NULL, NULL);
+        MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+        MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    }
+
+
+    void mc_iteration_convergence_parallel(double temp, int num_temp_iter_energy)
+    {   /*
+        Runs the spin flip a given amount of times. Generates data for finding
+        how many iterations is needed for convergence. Keeps the energy values
+        without averaging.
+
+        Parameters
+        ----------
+        temp : double
+            Temperature of current iteration
+
+        num_temp_iter_energy : int
+            Number of temperature that has been calculated times number of 
+            Monte Carlo iterations. (Jumps forward to the correct number of 
+            calculated energies/magnetizations.)
+        */
+
+        for (int j = 0; j < mc_iterations; j++)
+        {   // loops over n*n spin flips a given amount of times
+            // saves relevant data for each iteration
+
+            iterate_spin_flip(temp);
+            energy_array[num_temp_iter_energy + j] = total_energy;
+            magnet_array[num_temp_iter_energy + j] = total_magnetization;
+        }
+    }
+
+
+    void iterate_temperature_convergence_parallel(double initial_temp, double final_temp, int num_of_temp_divided_by_num_of_threds, bool ordered_spins)
+    {   /*
+        ????????????????
+        */
+        
+        double diff_temp = (final_temp - initial_temp)/(world_size*num_of_temp_divided_by_num_of_threds);
+        double init_temp = initial_temp + diff_temp*num_of_temp_divided_by_num_of_threds*world_rank;
+        double fin_temp = initial_temp + diff_temp*num_of_temp_divided_by_num_of_threds*(world_rank + 1);
+
+
+        energy_array = new double[num_of_temp_divided_by_num_of_threds*mc_iterations];
+        magnet_array = new double[num_of_temp_divided_by_num_of_threds*mc_iterations];
+
+        double temp;
+
+        if (world_rank == 0)
+        {
+            E_convergence_data << "mc_iterations: " << mc_iterations;
+            E_convergence_data << " spin_matrix_dim: " << n;
+            E_convergence_data << " T is first row";
+            E_convergence_data << std::endl;
+            M_convergence_data << "mc_iterations: " << mc_iterations;
+            M_convergence_data << " spin_matrix_dim: " << n;
+            M_convergence_data << " T is first row";
+            M_convergence_data << std::endl;
+        }
+
+        std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
+
+        for (int num_iteration = 0; num_iteration < num_of_temp_divided_by_num_of_threds; num_iteration++)
+        {   // looping over temperature values
+
+            if (ordered_spins)
+            {
+                spin.initial_spin(ordered_spins);
+            }
+            else
+            {
+                spin.initial_spin();
+            }
+
+            temp = init_temp + diff_temp*num_iteration;
+            // pre-calculated exponential values
+            exp_delta_energy[0]  = std::exp(8*J/temp);
+            exp_delta_energy[4]  = std::exp(4*J/temp);
+            exp_delta_energy[8]  = 1;
+            exp_delta_energy[12] = std::exp(-4*J/temp);
+            exp_delta_energy[16] = std::exp(-8*J/temp);
+
+            mc_iteration_convergence_parallel(temp, num_iteration*mc_iterations);
+
+            if (world_rank == 0)
+            {
+                std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
+                std::chrono::duration<double> comp_time  = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1);
+                std::cout << "rank:" << world_rank << ", time since beginning: " << comp_time.count() << std::endl;
+                std::cout << std::endl;
+            }
+        }
+
+
+        for (int rank = 0; rank < world_size; rank++)
+        {
+            if (rank == world_rank)
+            {   
+                for (int i = 0; i < num_of_temp_divided_by_num_of_threds; i++)
+                {   
+                    std::cout << init_temp + diff_temp*i << std::endl;
+                    E_convergence_data << std::setw(20) << std::setprecision(15) << init_temp + diff_temp*i;
+                    M_convergence_data << std::setw(20) << std::setprecision(15) << init_temp + diff_temp*i;
+                    
+                    for (int j = 0; j < mc_iterations; j++)
+                    {
+                        E_convergence_data << std::setw(20) << std::setprecision(15) << energy_array[i*mc_iterations + j];
+                        M_convergence_data << std::setw(20) << std::setprecision(15) << magnet_array[i*mc_iterations + j];
+                    }
+
+                    E_convergence_data << std::endl;
+                    M_convergence_data << std::endl;
+                }
+            }
+            MPI_Barrier(MPI_COMM_WORLD);
+        }
+
+
+        delete[] energy_array;
+        delete[] magnet_array;
+    }
+
 
     void iterate_temperature_parallel(double initial_temp, double final_temp,
         int num_of_temp_divided_by_num_of_threds)
     {   /*
         ????????????????
         */
-        MPI_Init(NULL, NULL);
-        int world_rank;
-        int world_size;
-        MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-        MPI_Comm_size(MPI_COMM_WORLD, &world_size);
         
         double diff_temp = (final_temp - initial_temp)/(world_size*num_of_temp_divided_by_num_of_threds);
         double init_temp = initial_temp + diff_temp*num_of_temp_divided_by_num_of_threds*world_rank;
@@ -104,25 +230,49 @@ public:
             std::cout << " time: " << comp_time.count() << std::endl;
         }
         
-        MPI_Finalize();
     }
+
+    ~ParallelEnergySolver()
+    {
+        MPI_Finalize();
+        // delete[] exp_delta_energy;
+    }
+
 };
 
 
 int main()
 {   
-    int spin_matrix_dim = 40;
+    int spin_matrix_dim = 2;
     int mc_iterations = 1e4;
     
     double initial_temp = 2;
     double final_temp = 2.4;
-    double num_of_temperatures = 1;
+    double num_of_temperatures = 2;
 
     time_t seed;
     time(&seed);
     
+    // ParallelEnergySolver data_model(spin_matrix_dim, mc_iterations, seed);
+    // data_model.iterate_temperature_parallel(initial_temp, final_temp, num_of_temperatures);
+
     ParallelEnergySolver convergence_model(spin_matrix_dim, mc_iterations, seed);
-    convergence_model.iterate_temperature_parallel(initial_temp, final_temp, num_of_temperatures);
+    convergence_model.iterate_temperature_convergence_parallel(initial_temp, final_temp, num_of_temperatures);
 
     return 0;
 }
+
+
+
+/*
+NB!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+I have noticed that the spin matrix is not initialized for every temperature, 
+and thus perhaps introducing covariance and faster convergence than it should. 
+We also need to make it possible to initialize with all spins up for every 
+temperature.
+
+Make initial_spin() take bool variable such that spins can be ordered.
+
+On line 95-115: Jon -> you are now free to choose how the data should be 
+written. Write temp to the right.
+*/
