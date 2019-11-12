@@ -25,16 +25,16 @@ generate_data.out : circular_matrix.h energy_solver.h energy_solver.o circular_m
 	g++ -o generate_data.out generate_data.o energy_solver.o circular_matrix.o -std=c++17
 
 generate_parallel.o : circular_matrix.h energy_solver.h energy_solver.o circular_matrix.o
-	mpic++ -c generate_parallel.cpp -std=c++17
+	mpic++ -c generate_parallel.cpp -std=c++17 -O3
 
 generate_parallel.out : circular_matrix.h energy_solver.h energy_solver.o circular_matrix.o generate_parallel.o
-	mpic++ -o generate_parallel.out generate_parallel.o energy_solver.o circular_matrix.o -std=c++17
+	mpic++ -o generate_parallel.out generate_parallel.o energy_solver.o circular_matrix.o -std=c++17 -O3
 
 generate_data : circular_matrix.h energy_solver.h energy_solver.o circular_matrix.o
 	g++ -c generate_data.cpp -std=c++17; g++ -o generate_data.out generate_data.o energy_solver.o circular_matrix.o -std=c++17
 
 ########
-# testes
+# tests
 ########
 
 test_circular_matrix.o : circular_matrix.h test_circular_matrix.cpp circular_matrix.o catch.hpp
