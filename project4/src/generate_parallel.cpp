@@ -22,11 +22,12 @@ public:
     }
 
 
-    void mc_iteration_convergence_parallel(double temp, int num_temp_iter_energy)
+    void mc_iteration_convergence_parallel(double temp,
+        int num_temp_iter_energy)
     {   /*
-        Runs the spin flip a given amount of times. Generates data for finding
-        how many iterations is needed for convergence. Keeps the energy values
-        without averaging.
+        Run the spin flip a given amount of times. Generate data for
+        finding how many iterations is needed for convergence. Keep the
+        energy values without averaging.
 
         Parameters
         ----------
@@ -34,9 +35,9 @@ public:
             Temperature of current iteration
 
         num_temp_iter_energy : int
-            Number of temperature that has been calculated times number of 
-            Monte Carlo iterations. (Jumps forward to the correct number of 
-            calculated energies/magnetizations.)
+            Number of temperature that has been calculated times number
+            of  Monte Carlo iterations. (Jumps forward to the correct
+            number of calculated energies/magnetizations.)
         */
 
         for (int j = 0; j < mc_iterations; j++)
@@ -53,47 +54,72 @@ public:
     }
 
 
-    void iterate_temperature_convergence_parallel(double initial_temp, double final_temp, int num_of_temp_divided_by_num_of_threds, bool ordered_spins)
+    void iterate_temperature_convergence_parallel(double initial_temp,
+        double final_temp, int temps_per_thread, bool ordered_spins)
     {   /*
-        ????????????????
+        Run the calculation for several temperatures in parallel. Keep
+        all energy and magnetization raw values.
+
+        Parameters
+        ----------
+        initial_temp : double
+            Initial temperature.
+        
+        final_temp : double
+            Final temperature.
+
+        temps_per_thread : int
+            Number of temperatures every thread will calculate.
+
+        ordered_spins : bool
+            For toggling initial ordering of the spins to ordered or
+            random.
         */
         
-        double diff_temp = (final_temp - initial_temp)/(world_size*num_of_temp_divided_by_num_of_threds);
-        double init_temp = initial_temp + diff_temp*num_of_temp_divided_by_num_of_threds*world_rank;
-        double fin_temp = initial_temp + diff_temp*num_of_temp_divided_by_num_of_threds*(world_rank + 1);
-
-
-        energy_array = new double[num_of_temp_divided_by_num_of_threds*mc_iterations];
-        magnet_array = new double[num_of_temp_divided_by_num_of_threds*mc_iterations];
+        // Temperature interval and initial temperature for each thread.
+        double diff_temp = (final_temp - initial_temp)/(world_size*temps_per_thread);
+        double initial_temp_thread = initial_temp + diff_temp*temps_per_thread*world_rank;
+        double temp;
+ 
+        energy_array = new double[temps_per_thread*mc_iterations];
+        magnet_array = new double[temps_per_thread*mc_iterations];
 
         int root = 0;   // Main thread.
-        double* energy_buffer;
-        double* magnet_buffer;
+        double* energy_buffer;  // Buffer for MPI_Gather
+        double* magnet_buffer;  // Buffer for MPI_Gather
 
         if (world_rank == root)
-        {
-            energy_buffer = new double[world_size*num_of_temp_divided_by_num_of_threds*mc_iterations];
-            magnet_buffer = new double[world_size*num_of_temp_divided_by_num_of_threds*mc_iterations];
+        {   /*
+            Only the root thread initializes the buffer arrays to
+            save memory.
+            */
+            energy_buffer = new double[world_size*temps_per_thread*mc_iterations];
+            magnet_buffer = new double[world_size*temps_per_thread*mc_iterations];
         }
 
-        double temp;
-
+        // Starting timer.
         std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
 
-        for (int num_iteration = 0; num_iteration < num_of_temp_divided_by_num_of_threds; num_iteration++)
+        for (int current_temp = 0; current_temp < temps_per_thread; current_temp++)
         {   // looping over temperature values
 
             if (ordered_spins)
-            {   // Resetting the spin matrix for every temperature.
+            {   /*
+                Resetting the spin matrix for every temperature to the
+                initial ordered state.
+                */
                 spin.initial_spin(ordered_spins);
             }
             
             else
-            {
+            {   /*
+                Resetting the spin matrix for every temperature to the
+                initial random state.
+                */
                 spin.initial_spin();
             }
 
-            temp = init_temp + diff_temp*num_iteration;
+            temp = initial_temp_thread + diff_temp*current_temp;
             // pre-calculated exponential values
             exp_delta_energy[0]  = std::exp(8*J/temp);
             exp_delta_energy[4]  = std::exp(4*J/temp);
@@ -101,28 +127,34 @@ public:
             exp_delta_energy[12] = std::exp(-4*J/temp);
             exp_delta_energy[16] = std::exp(-8*J/temp);
 
-            mc_iteration_convergence_parallel(temp, num_iteration*mc_iterations);
+            mc_iteration_convergence_parallel(temp,current_temp*mc_iterations);
 
-            if (world_rank == 0)
-            {
+            if (world_rank == root)
+            {   // The root thread prints progress information.
                 std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
                 std::chrono::duration<double> comp_time  = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1);
-                std::cout << "rank:" << world_rank << ", time since beginning: " << comp_time.count() << std::endl;
-                std::cout << std::endl;
+                
+                std::cout << "rank:" << world_rank << ", time since beginning: ";
+                std::cout << comp_time.count() << std::endl << std::endl;
             }
         }
 
-        MPI_Gather(energy_array, num_of_temp_divided_by_num_of_threds*mc_iterations, MPI_DOUBLE, energy_buffer, num_of_temp_divided_by_num_of_threds*mc_iterations, MPI_DOUBLE, root, MPI_COMM_WORLD);
-        MPI_Gather(magnet_array, num_of_temp_divided_by_num_of_threds*mc_iterations, MPI_DOUBLE, magnet_buffer, num_of_temp_divided_by_num_of_threds*mc_iterations, MPI_DOUBLE, root, MPI_COMM_WORLD);
+        // Collects the information from every thread and gathers it into buffer.
+        MPI_Gather(energy_array, temps_per_thread*mc_iterations, MPI_DOUBLE,
+            energy_buffer, temps_per_thread*mc_iterations, MPI_DOUBLE, root,
+            MPI_COMM_WORLD);
+        MPI_Gather(magnet_array, temps_per_thread*mc_iterations, MPI_DOUBLE,
+            magnet_buffer, temps_per_thread*mc_iterations, MPI_DOUBLE, root,
+            MPI_COMM_WORLD);
 
         if (world_rank == root)
-        {
-            for (int i = 0; i < num_of_temp_divided_by_num_of_threds*world_size; i++)
-            {
+        {   // Root thread writes the data to file.
+            for (int i = 0; i < temps_per_thread*world_size; i++)
+            {   // Header with temperature values.
                 E_convergence_data << std::setw(20) << std::setprecision(15);
-                E_convergence_data << init_temp + diff_temp*i;
+                E_convergence_data << initial_temp_thread + diff_temp*i;
                 M_convergence_data << std::setw(20) << std::setprecision(15);
-                M_convergence_data << init_temp + diff_temp*i;
+                M_convergence_data << initial_temp_thread + diff_temp*i;
             }
             
             E_convergence_data << std::endl;
@@ -130,10 +162,21 @@ public:
 
             for (int i = 0; i < mc_iterations; i++)
             {   
-                for (int j = 0; j < num_of_temp_divided_by_num_of_threds*world_size; j++)
-                {
-                    E_convergence_data << std::setw(20) << std::setprecision(15) << energy_buffer[i+j*mc_iterations];
-                    M_convergence_data << std::setw(20) << std::setprecision(15) << magnet_buffer[i+j*mc_iterations];
+                for (int j = 0; j < temps_per_thread*world_size; j++)
+                {   /*
+                    Some funky indexing to write the data as columns
+                    instead of rows. The data are stored in a single
+                    long array, [[T1E1, T1E2, ...], [T2E1, T2E2, ...], ...]
+                    and the indexing fetches first all the E1 values and
+                    writes the data as the first row, then the E2 values
+                    as the second row, etc. Each column is then all the
+                    energy/magnetization values for each temperature. 
+                    */
+                   
+                    E_convergence_data << std::setw(20) << std::setprecision(15) 
+                    << energy_buffer[i+j*mc_iterations];
+                    M_convergence_data << std::setw(20) << std::setprecision(15)
+                    << magnet_buffer[i+j*mc_iterations];
                 }
                 
                 E_convergence_data << std::endl;
@@ -154,29 +197,39 @@ public:
 
 
     void iterate_temperature_parallel(double initial_temp, double final_temp,
-        int num_of_temp_divided_by_num_of_threds)
+        int temps_per_thread)
     {   /*
-        ????????????????
+        Run the calculation for several temperatures in parallel.
+        Calculate average values on the fly. Do not keep all raw data.
+
+        Parameters
+        ----------
+        initial_temp : double
+            Initial temperature.
+        
+        final_temp : double
+            Final temperature.
+
+        temps_per_thread : int
+            Number of temperatures every thread will calculate.
         */
         
-        double diff_temp = (final_temp - initial_temp)/(world_size*num_of_temp_divided_by_num_of_threds);
-        double init_temp = initial_temp + diff_temp*num_of_temp_divided_by_num_of_threds*world_rank;
-        double fin_temp = initial_temp + diff_temp*num_of_temp_divided_by_num_of_threds*(world_rank + 1);
-
-        double* sum_total_energy_array = new double[num_of_temp_divided_by_num_of_threds];
-        double* sum_total_energy_squared_array = new double[num_of_temp_divided_by_num_of_threds];
-        double* sum_total_magnetization_array = new double[num_of_temp_divided_by_num_of_threds];
-        double* sum_total_magnetization_absolute_array = new double[num_of_temp_divided_by_num_of_threds];
-        double* sum_total_magnetization_squared_array = new double[num_of_temp_divided_by_num_of_threds];
-
+        double diff_temp = (final_temp - initial_temp)/(world_size*temps_per_thread);
+        double initial_temp_thread = initial_temp + diff_temp*temps_per_thread*world_rank;
         double temp;
+
+        double* sum_total_energy_array = new double[temps_per_thread];
+        double* sum_total_energy_squared_array = new double[temps_per_thread];
+        double* sum_total_magnetization_array = new double[temps_per_thread];
+        double* sum_total_magnetization_absolute_array = new double[temps_per_thread];
+        double* sum_total_magnetization_squared_array = new double[temps_per_thread];
 
         std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
 
-        for (int num_iteration = 0; num_iteration < num_of_temp_divided_by_num_of_threds; num_iteration++)
+        for (int current_temp = 0; current_temp < temps_per_thread; current_temp++)
         {   // looping over temperature values
 
-            temp = init_temp + diff_temp*num_iteration;
+            temp = initial_temp_thread + diff_temp*current_temp;
             // pre-calculated exponential values
             exp_delta_energy[0]  = std::exp(8*J/temp);
             exp_delta_energy[4]  = std::exp(4*J/temp);
@@ -186,11 +239,11 @@ public:
 
             mc_iteration_stable(temp);
 
-            sum_total_energy_array[num_iteration] = sum_total_energy;
-            sum_total_energy_squared_array[num_iteration] = sum_total_energy_squared;
-            sum_total_magnetization_array[num_iteration] = sum_total_magnetization;
-            sum_total_magnetization_absolute_array[num_iteration] = sum_total_magnetization_absolute;
-            sum_total_magnetization_squared_array[num_iteration] = sum_total_magnetization_squared;
+            sum_total_energy_array[current_temp] = sum_total_energy;
+            sum_total_energy_squared_array[current_temp] = sum_total_energy_squared;
+            sum_total_magnetization_array[current_temp] = sum_total_magnetization;
+            sum_total_magnetization_absolute_array[current_temp] = sum_total_magnetization_absolute;
+            sum_total_magnetization_squared_array[current_temp] = sum_total_magnetization_squared;
         }
 
         if (world_rank == 0)
@@ -211,10 +264,10 @@ public:
         {
             if (rank == world_rank)
             {   
-                for (int i = 0; i < num_of_temp_divided_by_num_of_threds; i++)
+                for (int i = 0; i < temps_per_thread; i++)
                 {   
-                    std::cout << init_temp << std::endl;
-                    ising_model_data << std::setw(20) << std::setprecision(15) << init_temp + diff_temp*i;
+                    std::cout << initial_temp_thread << std::endl;
+                    ising_model_data << std::setw(20) << std::setprecision(15) << initial_temp_thread + diff_temp*i;
                     ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_energy_array[i];
                     ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_energy_squared_array[i];
                     ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_magnetization_array[i];
