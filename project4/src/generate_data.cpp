@@ -2,8 +2,10 @@
 #include <chrono>
 
 int main()
-{   // average_time += comp_time.count();
-    int the_magic_seed = 1572032584;
+{   /*
+    Interface for using the energy solver class in non-parallel mode.
+    */
+    int the_magic_seed = 1572032584;    // the holy seed
     int spin_matrix_dim = 2;
     int mc_iterations = 1e3;
     bool convergence = true;
@@ -27,9 +29,8 @@ int main()
     
     // ending timer
     std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
-    std::chrono::duration<double> comp_time  = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1);
+    std::chrono::duration<double> comp_time = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1);
 
-    // std::cout << "iterations: " << mc_iterations;
     std::cout << "\ntotal time: " << comp_time.count() << std::endl;
 
     return 0;
