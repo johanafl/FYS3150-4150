@@ -1,10 +1,42 @@
 #include "energy_solver.h"
 
+
+IsingModel::IsingModel(int spin_mat_dim, int mc_iterations_input, long seed)
+    : uniform_discrete(0, spin_mat_dim - 1), engine(seed),
+    uniform_continuous(0, 1), spin(spin_mat_dim, seed)
+{   /*
+    Parameters
+    ----------
+    spin_mat_dim : int
+        The spin matrix is of dimenstion spin_mat_dim x spin_mat_dim.
+
+    mc_iterations_input : int
+        The number of Monte Carlo iterations.
+
+    seed : long
+        Seed for the PRNG.
+    */
+    
+    n = spin_mat_dim;
+    mc_iterations = mc_iterations_input;
+    total_energy_and_magnetization(spin, n, total_energy, total_magnetization);
+    
+    // initialising data files
+    E_convergence_data.open("data_files/E_convergence_data.txt", std::ios_base::app);
+    M_convergence_data.open("data_files/M_convergence_data.txt", std::ios_base::app);
+    ising_model_data.open("data_files/ising_model_data.txt", std::ios_base::app);
+}
+
 void IsingModel::mc_iteration_convergence(double temp)
 {   /*
     Runs the spin flip a given amount of times. Generates data for finding
     how many iterations is needed for convergence. Keeps the energy values
     without averaging.
+
+    Parameters
+    ----------
+    temp : double
+        Temperature value.
     */
 
     for (int j = 0; j < mc_iterations; j++)
@@ -19,8 +51,8 @@ void IsingModel::mc_iteration_convergence(double temp)
 
 void IsingModel::mc_iteration_stable(double temp)
 {   /*
-    Runs the spin flip a given amount of times. Does not keep every energy
-    value, but calculates the average.
+    Run the spin flip a given amount of times. Calculate the average
+    values instead of keeping all data.
 
     Parameters
     ----------
@@ -71,9 +103,9 @@ void IsingModel::mc_iteration_stable(double temp)
 
 void IsingModel::iterate_spin_flip(double temp)
 {   /*
-    Picks a random row and a random column. Picks a random number for the
-    Metropolis condition. Flips the spin with the function metropolis_flap.
-    This is done n*n times.
+    Pick a random row and a random column. Pick a random number for the
+    Metropolis condition. Flip the spin with the function
+    metropolis_flap n*n times.
 
     Parameters
     ----------
@@ -84,15 +116,9 @@ void IsingModel::iterate_spin_flip(double temp)
     for (int i = 0; i < n*n; i++)
     {   // flips n*n randomly drawn spins in the spin matrix
         
-        // row = uniform_discrete(engine);
-        // col = uniform_discrete(engine);
-        // metropolis_random = uniform_continuous(engine);
-        
-        // metropolis_flap(spin, total_energy, total_magnetization, row, col, metropolis_random, temp, exp_delta_energy);
-        // FASTER(?):
-        metropolis_flap(spin, total_energy, total_magnetization, 
-                        uniform_discrete(engine), uniform_discrete(engine), 
-                        uniform_continuous(engine), temp, exp_delta_energy);
+        metropolis_flap(spin, total_energy, total_magnetization,
+            uniform_discrete(engine), uniform_discrete(engine),
+            uniform_continuous(engine), temp, exp_delta_energy);
     }
 }
 
@@ -100,8 +126,8 @@ void IsingModel::metropolis_flap(CircularMatrix& spin, double& total_energy,
     double& total_magnetization, int row, int col, double metropolis_random,
     double temperature, double* exp_delta_energy)
 {   /*
-    Flips a spin and calculates the energy difference. Accepts/rejects the flip
-    based on the Metropolis algorithm.
+    Flips a spin and calculates the energy difference. Accepts/rejects
+    the flip based on the Metropolis algorithm.
 
     
     Parameters
@@ -122,8 +148,8 @@ void IsingModel::metropolis_flap(CircularMatrix& spin, double& total_energy,
         A randomly chosen column index.
 
     metropolis_random : double
-        Random variable drawn from a uniform distribution on the interval
-        [0, 1). Metropolis condition.
+        Random variable drawn from a uniform distribution on the
+        interval [0, 1). Metropolis condition.
 
     temperature : double
         Temperature of the system.
@@ -142,45 +168,23 @@ void IsingModel::metropolis_flap(CircularMatrix& spin, double& total_energy,
 
     spin_here = spin(row, col);
     delta_energy = 2*spin_here*(spin(row-1, col) + spin(row+1, col)
-                            + spin(row, col+1) + spin(row, col-1));
+        + spin(row, col+1) + spin(row, col-1));
     
     if (metropolis_random <= exp_delta_energy[(int) (delta_energy + 8)])
     {   // checks if energy difference is positive and the metropolis
         // condition true
-        spin(row, col) *= -1;
-        total_energy         += delta_energy;
-        total_magnetization  += -2*spin_here;
+        spin(row, col)      *= -1;
+        total_energy        += delta_energy;
+        total_magnetization += -2*spin_here;
     }
 }
 
-IsingModel::IsingModel(int spin_mat_dim, int mc_iterations_input, long seed) : uniform_discrete(0, spin_mat_dim - 1), engine(seed), uniform_continuous(0, 1), spin(spin_mat_dim, seed)
-{   /*
-    Parameters
-    ----------
-    spin_mat_dim : int
-        The spin matrix is of dimenstion spin_mat_dim x spin_mat_dim.
 
-    mc_iterations_input : int
-        The number of Monte Carlo iterations.
-
-    seed : long
-        Seed for the PRNG.
-    */
-    
-    n = spin_mat_dim;
-    mc_iterations = mc_iterations_input;
-    total_energy_and_magnetization(spin, n, total_energy, total_magnetization);
-    
-    // initialising data files
-    E_convergence_data.open("data_files/E_convergence_data.txt", std::ios_base::app);
-    M_convergence_data.open("data_files/M_convergence_data.txt", std::ios_base::app);
-    ising_model_data.open("data_files/ising_model_data.txt", std::ios_base::app);
-}
 
 void IsingModel::iterate_temperature(double initial_temp, double final_temp,
     double dtemp, bool convergence)
 {   /*
-    Iterates over a given set of temperature values.
+    Iterate over a given set of temperature values.
 
     Parameters
     ----------
@@ -194,8 +198,8 @@ void IsingModel::iterate_temperature(double initial_temp, double final_temp,
         Temperature step length.
 
     convergence : bool
-        This class generates data, either for the convergence phase or for
-        the stable phase. convergence toggles this.
+        This class generates data, either for the convergence phase or
+        for the stable phase. Convergence toggles this.
     */
 
     if (convergence)
@@ -271,7 +275,7 @@ void IsingModel::iterate_temperature(double initial_temp, double final_temp,
 
 void IsingModel::iterate_monte_carlo_cycles(int initial_MC, int final_MC, int dMC)
 {   /*
-    Loops over different number of Monte Carlo iterations. Currently
+    Loop over different number of Monte Carlo iterations. Currently
     only implemented for the stable phase.
 
     Parameters
@@ -325,7 +329,7 @@ void IsingModel::iterate_monte_carlo_cycles(int initial_MC, int final_MC, int dM
 void IsingModel::total_energy_and_magnetization(CircularMatrix& spin, int n,
     double& total_energy, double& total_magnetization)
 {   /*
-    Computing from upper left in matrix and down to the right.
+    Compute from upper left in matrix and down to the right.
 
     Parameters
     ----------
@@ -335,10 +339,10 @@ void IsingModel::total_energy_and_magnetization(CircularMatrix& spin, int n,
     n : int
         Grid dimension.
 
-    total_energy : double refernce
+    total_energy : double reference
         Total energy.
 
-    total_magnetization : double refernce
+    total_magnetization : double reference
         Total magnetic moment.
     */
     
@@ -357,34 +361,77 @@ void IsingModel::total_energy_and_magnetization(CircularMatrix& spin, int n,
     }
 }
 
-void IsingModel::set_new_input(int spin_mat_dim, int mc_iterations_input, double inter_strenght_J, long seed)
-{
+void IsingModel::set_new_input(int spin_mat_dim, int mc_iterations_input,
+    double J_input, long seed)
+{   /*
+    Set all parameters to new input values.
+
+    Parameters
+    ----------
+    spin_mat_dim : int
+        Matrix dimension.
+
+    mc_iterations_input : int
+        Number of Monte Carlo iterations.
+
+    J_input : double
+        Strength of the interaction between neighbouring spins.
+
+    seed : long
+        Seed for the PRNG.
+    */
     n = spin_mat_dim;
     mc_iterations = mc_iterations_input;
-    J = inter_strenght_J;
+    J = J_input;
 
     engine.seed(seed);
     spin.new_dim_and_seed(spin_mat_dim, seed);
 }
 
-void IsingModel::set_interactions_strength(double strength_J)
-{
-    J = strength_J;
+void IsingModel::set_interactions_strength(double J_input)
+{   /*
+    Set the strength of the spin interactions.
+
+    Parameters
+    ----------
+    J_input : double
+        Strength of the interaction between neighbouring spins.
+    */
+    
+    J = J_input;
 }
 
 void IsingModel::set_mc_iterations(int mc_iterations_input)
-{
+{   /*
+    Set the number of Monte Carlo iterations.
+
+    Parameters
+    ----------
+    mc_iterations_input : int
+        Number of Monte Carlo iterations.
+    */
+
     mc_iterations = mc_iterations_input;
 }
 
 void IsingModel::set_spin_dim(int spin_mat_dim)
-{
+{   /*
+    Set the dimention of the spin matrix.
+
+    Parameters
+    ----------
+    spin_mat_dim : int
+        Matrix dimension.
+    */
+
     n = spin_mat_dim;
     spin.new_dim(spin_mat_dim);
 }
 
 void IsingModel::set_order_spins()
-{
+{   /*
+    Set the spin matrix to ordered initial configuration.
+    */
     spin.ordered_spin();
 }
 
