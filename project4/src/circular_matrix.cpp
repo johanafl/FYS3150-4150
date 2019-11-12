@@ -61,7 +61,11 @@ CircularMatrix::CircularMatrix(int n, double* init_set)
 }
 
 void CircularMatrix::initial_spin()
-{   /*Initializes the matrix randomly with spins up and down from given seed.*/
+{   /*
+    Initialize the matrix with spins drawn randomly using Mersenne
+    Twister 19937 PRNG with seed from system time.
+    */
+
     std::mt19937 engine(seed);
     std::uniform_int_distribution<int> uniform(0, 1);
     
@@ -72,23 +76,53 @@ void CircularMatrix::initial_spin()
 }
 
 void CircularMatrix::initial_spin(double seed_input)
-{
+{   /*
+    Initialize the matrix with spins drawn randomly using Mersenne
+    Twister 19937 PRNG with seed given as input.
+
+    Parameters
+    ----------
+    seed_input : double
+        Input seed value for the PRNG.
+    */
     seed = seed_input;
     CircularMatrix::initial_spin();
 }
 
 void CircularMatrix::ordered_spin()
-{
+{   /*
+    Initialize the spin matrix ordered with all spin up.
+    */
     for (int i = 0; i < dim*dim; i++) {matrix[i] = 1;}
 }
 
 void CircularMatrix::initial_spin(bool ordered)
-{
+{   /*
+    Initialize the spin matrix ordered with all spin up.
+
+    Parameters
+    ----------
+    ordered : bool
+        Isn't directly used. Only used for overloading
+        initial_spin() to accept a bool for toggling ordered initial
+        spins on/off.
+    */
     CircularMatrix::ordered_spin();
 }
 
 void CircularMatrix::new_dim_and_seed(int n, double new_seed)
-{
+{   /*
+    Reset the spin matrix with size nxn and initial spins randomly
+    drawn with input seed.
+
+    Parameters
+    ----------
+    n : int
+        Matrix dimension (nxn).
+
+    new_seed : double
+        New seed value for the PRNG.
+    */
     delete[] matrix;
     dim  = n;
     seed = new_seed;
@@ -98,7 +132,14 @@ void CircularMatrix::new_dim_and_seed(int n, double new_seed)
 }
 
 void CircularMatrix::new_dim(int n)
-{
+{   /*
+    Reset the spin matrix with size nxn.
+
+    Parameters
+    ----------
+    n : int
+        Matrix dimension (nxn).
+    */
     CircularMatrix::new_dim_and_seed(n, seed);
 }
 
@@ -106,31 +147,54 @@ void CircularMatrix::print()
 {   /*
     Prints a nice visualization of the matrix.
     */ 
+    
     std::cout << "[";
     
     for (int i = 0; i < dim*dim - 1; i++)
     {   // iterates over all elements in the matrix
+        
         std::cout << std::setw(3) << matrix[i];
+        
         if ( (i + 1)%dim == 0 )
         {   // prints a line shift for every new row
             std::cout << "\n" << " ";
         }
     }
+    
     // special case for the last row
     std::cout << std::setw(3) << matrix[dim*dim-1] << "  ]" << std::endl;
 }
 
 double& CircularMatrix::operator() (int row, int col)
 {   /*
-    Translates the 2D indices to flat indices.
+    Index the matrix. Translate 2D indices to flat indices.
+
+    Parameters
+    ----------
+    row : int
+        Row index.
+
+    col : int
+        Column index.
     */
+    
     return matrix[dim*((row + dim)%dim) + ((col + dim)%dim)];
 }
 
 double& CircularMatrix::operator() (int row, int col, bool safe)
 {   /*
-    Boundary checks for matrix indexing. Allows index of padding, but
-    nothing more.
+    Index the matrix. Translate 2D indices to flat indices. Boundary
+    checks for matrix indexing. Allows index of padding, but nothing
+    more.
+
+    Parameters
+    ----------
+    row : int
+        Row index.
+
+    col : int
+        Column index.
+
     */
     if ( (row < -1) or (row > dim) or (col < -1) or (col > dim) )
     {   // throws error if index is out of padding range  
