@@ -27,6 +27,7 @@ IsingModel::IsingModel(int spin_mat_dim, int mc_iterations_input, long seed)
     ising_model_data.open("data_files/ising_model_data.txt", std::ios_base::app);
 }
 
+
 void IsingModel::mc_iteration_convergence(double temp)
 {   /*
     Runs the spin flip a given amount of times. Generates data for finding
@@ -48,6 +49,7 @@ void IsingModel::mc_iteration_convergence(double temp)
         M_convergence_data << std::setw(15) << total_magnetization;
     }
 }
+
 
 void IsingModel::mc_iteration_stable(double temp)
 {   /*
@@ -101,6 +103,7 @@ void IsingModel::mc_iteration_stable(double temp)
 
 }
 
+
 void IsingModel::iterate_spin_flip(double temp)
 {   /*
     Pick a random row and a random column. Pick a random number for the
@@ -121,6 +124,7 @@ void IsingModel::iterate_spin_flip(double temp)
             uniform_continuous(engine), temp, exp_delta_energy);
     }
 }
+
 
 void IsingModel::metropolis_flap(CircularMatrix& spin, double& total_energy,
     double& total_magnetization, int row, int col, double metropolis_random,
@@ -178,7 +182,6 @@ void IsingModel::metropolis_flap(CircularMatrix& spin, double& total_energy,
         total_magnetization += -2*spin_here;
     }
 }
-
 
 
 void IsingModel::iterate_temperature(double initial_temp, double final_temp,
@@ -273,6 +276,7 @@ void IsingModel::iterate_temperature(double initial_temp, double final_temp,
     }
 }
 
+
 void IsingModel::iterate_monte_carlo_cycles(int initial_MC, int final_MC, int dMC)
 {   /*
     Loop over different number of Monte Carlo iterations. Currently
@@ -326,6 +330,7 @@ void IsingModel::iterate_monte_carlo_cycles(int initial_MC, int final_MC, int dM
     }
 }
 
+
 void IsingModel::total_energy_and_magnetization(CircularMatrix& spin, int n,
     double& total_energy, double& total_magnetization)
 {   /*
@@ -361,6 +366,7 @@ void IsingModel::total_energy_and_magnetization(CircularMatrix& spin, int n,
     }
 }
 
+
 void IsingModel::set_new_input(int spin_mat_dim, int mc_iterations_input,
     double J_input, long seed)
 {   /*
@@ -388,6 +394,7 @@ void IsingModel::set_new_input(int spin_mat_dim, int mc_iterations_input,
     spin.new_dim_and_seed(spin_mat_dim, seed);
 }
 
+
 void IsingModel::set_interactions_strength(double J_input)
 {   /*
     Set the strength of the spin interactions.
@@ -401,6 +408,7 @@ void IsingModel::set_interactions_strength(double J_input)
     J = J_input;
 }
 
+
 void IsingModel::set_mc_iterations(int mc_iterations_input)
 {   /*
     Set the number of Monte Carlo iterations.
@@ -413,6 +421,7 @@ void IsingModel::set_mc_iterations(int mc_iterations_input)
 
     mc_iterations = mc_iterations_input;
 }
+
 
 void IsingModel::set_spin_dim(int spin_mat_dim)
 {   /*
@@ -428,12 +437,14 @@ void IsingModel::set_spin_dim(int spin_mat_dim)
     spin.new_dim(spin_mat_dim);
 }
 
+
 void IsingModel::set_order_spins()
 {   /*
     Set the spin matrix to ordered initial configuration.
     */
     spin.ordered_spin();
 }
+
 
 IsingModel::~IsingModel()
 {
