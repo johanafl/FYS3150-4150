@@ -45,11 +45,8 @@ public:
             // saves relevant data for each iteration
 
             iterate_spin_flip(temp);
-            // energy_array[num_temp_iter_energy + j] = total_energy;
-            // magnet_array[num_temp_iter_energy + j] = total_magnetization;
-
-            energy_array[num_temp_iter_energy + j] = j;
-            magnet_array[num_temp_iter_energy + j] = j;
+            energy_array[num_temp_iter_energy + j] = total_energy;
+            magnet_array[num_temp_iter_energy + j] = total_magnetization;
         }
     }
 
@@ -100,8 +97,14 @@ public:
         // Starting timer.
         std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
 
-        for (int current_temp = 0; current_temp < temps_per_thread; current_temp++)
-        {   // looping over temperature values
+        for (int temp_iteration = 0; temp_iteration < temps_per_thread; temp_iteration++)
+        {   // Looping over temperature values.
+
+            if (world_rank == root)
+            {
+                std::cout << "temperature iteration: " << temp_iteration + 1
+                << " of: " << temps_per_thread << std::endl;
+            }
 
             if (ordered_spins)
             {   /*
@@ -119,7 +122,7 @@ public:
                 spin.initial_spin();
             }
 
-            temp = initial_temp_thread + diff_temp*current_temp;
+            temp = initial_temp_thread + diff_temp*temp_iteration;
             // pre-calculated exponential values
             exp_delta_energy[0]  = std::exp(8*J/temp);
             exp_delta_energy[4]  = std::exp(4*J/temp);
@@ -127,15 +130,15 @@ public:
             exp_delta_energy[12] = std::exp(-4*J/temp);
             exp_delta_energy[16] = std::exp(-8*J/temp);
 
-            mc_iteration_convergence_parallel(temp,current_temp*mc_iterations);
+            mc_iteration_convergence_parallel(temp,temp_iteration*mc_iterations);
 
             if (world_rank == root)
             {   // The root thread prints progress information.
                 std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
                 std::chrono::duration<double> comp_time  = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1);
                 
-                std::cout << "rank:" << world_rank << ", time since beginning: ";
-                std::cout << comp_time.count() << std::endl << std::endl;
+                std::cout << "time since beginning: " << comp_time.count()
+                << std::endl;
             }
         }
 
@@ -226,10 +229,10 @@ public:
 
         std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
 
-        for (int current_temp = 0; current_temp < temps_per_thread; current_temp++)
+        for (int temp_iteration = 0; temp_iteration < temps_per_thread; temp_iteration++)
         {   // looping over temperature values
 
-            temp = initial_temp_thread + diff_temp*current_temp;
+            temp = initial_temp_thread + diff_temp*temp_iteration;
             // pre-calculated exponential values
             exp_delta_energy[0]  = std::exp(8*J/temp);
             exp_delta_energy[4]  = std::exp(4*J/temp);
@@ -239,11 +242,11 @@ public:
 
             mc_iteration_stable(temp);
 
-            sum_total_energy_array[current_temp] = sum_total_energy;
-            sum_total_energy_squared_array[current_temp] = sum_total_energy_squared;
-            sum_total_magnetization_array[current_temp] = sum_total_magnetization;
-            sum_total_magnetization_absolute_array[current_temp] = sum_total_magnetization_absolute;
-            sum_total_magnetization_squared_array[current_temp] = sum_total_magnetization_squared;
+            sum_total_energy_array[temp_iteration] = sum_total_energy;
+            sum_total_energy_squared_array[temp_iteration] = sum_total_energy_squared;
+            sum_total_magnetization_array[temp_iteration] = sum_total_magnetization;
+            sum_total_magnetization_absolute_array[temp_iteration] = sum_total_magnetization_absolute;
+            sum_total_magnetization_squared_array[temp_iteration] = sum_total_magnetization_squared;
         }
 
         if (world_rank == 0)
@@ -309,12 +312,12 @@ public:
 
 int main()
 {   
-    int spin_matrix_dim = 2;
+    int spin_matrix_dim = 20;
     int mc_iterations = 1e4;
     
     double initial_temp = 2;
     double final_temp = 2.4;
-    double num_of_temperatures = 2;
+    double temps_per_thread = 2;
 
     bool ordered_spins = false;
 
@@ -322,10 +325,11 @@ int main()
     time(&seed);
     
     // ParallelEnergySolver data_model(spin_matrix_dim, mc_iterations, seed);
-    // data_model.iterate_temperature_parallel(initial_temp, final_temp, num_of_temperatures);
+    // data_model.iterate_temperature_parallel(initial_temp, final_temp, temps_per_thread);
 
     ParallelEnergySolver convergence_model(spin_matrix_dim, mc_iterations, seed);
-    convergence_model.iterate_temperature_convergence_parallel(initial_temp, final_temp, num_of_temperatures, ordered_spins);
+    convergence_model.iterate_temperature_convergence_parallel(initial_temp,
+        final_temp, temps_per_thread, ordered_spins);
 
     return 0;
 }
