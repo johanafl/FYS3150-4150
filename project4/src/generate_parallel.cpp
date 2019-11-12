@@ -44,8 +44,11 @@ public:
             // saves relevant data for each iteration
 
             iterate_spin_flip(temp);
-            energy_array[num_temp_iter_energy + j] = total_energy;
-            magnet_array[num_temp_iter_energy + j] = total_magnetization;
+            // energy_array[num_temp_iter_energy + j] = total_energy;
+            // magnet_array[num_temp_iter_energy + j] = total_magnetization;
+
+            energy_array[num_temp_iter_energy + j] = j;
+            magnet_array[num_temp_iter_energy + j] = j;
         }
     }
 
@@ -63,19 +66,17 @@ public:
         energy_array = new double[num_of_temp_divided_by_num_of_threds*mc_iterations];
         magnet_array = new double[num_of_temp_divided_by_num_of_threds*mc_iterations];
 
-        double temp;
+        int root = 0;   // Main thread.
+        double* energy_buffer;
+        double* magnet_buffer;
 
-        if (world_rank == 0)
+        if (world_rank == root)
         {
-            E_convergence_data << "mc_iterations: " << mc_iterations;
-            E_convergence_data << " spin_matrix_dim: " << n;
-            E_convergence_data << " T is first row";
-            E_convergence_data << std::endl;
-            M_convergence_data << "mc_iterations: " << mc_iterations;
-            M_convergence_data << " spin_matrix_dim: " << n;
-            M_convergence_data << " T is first row";
-            M_convergence_data << std::endl;
+            energy_buffer = new double[world_size*num_of_temp_divided_by_num_of_threds*mc_iterations];
+            magnet_buffer = new double[world_size*num_of_temp_divided_by_num_of_threds*mc_iterations];
         }
+
+        double temp;
 
         std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
 
@@ -83,9 +84,10 @@ public:
         {   // looping over temperature values
 
             if (ordered_spins)
-            {
+            {   // Resetting the spin matrix for every temperature.
                 spin.initial_spin(ordered_spins);
             }
+            
             else
             {
                 spin.initial_spin();
@@ -110,30 +112,41 @@ public:
             }
         }
 
+        MPI_Gather(energy_array, num_of_temp_divided_by_num_of_threds*mc_iterations, MPI_DOUBLE, energy_buffer, num_of_temp_divided_by_num_of_threds*mc_iterations, MPI_DOUBLE, root, MPI_COMM_WORLD);
+        MPI_Gather(magnet_array, num_of_temp_divided_by_num_of_threds*mc_iterations, MPI_DOUBLE, magnet_buffer, num_of_temp_divided_by_num_of_threds*mc_iterations, MPI_DOUBLE, root, MPI_COMM_WORLD);
 
-        for (int rank = 0; rank < world_size; rank++)
+        if (world_rank == root)
         {
-            if (rank == world_rank)
-            {   
-                for (int i = 0; i < num_of_temp_divided_by_num_of_threds; i++)
-                {   
-                    std::cout << init_temp + diff_temp*i << std::endl;
-                    E_convergence_data << std::setw(20) << std::setprecision(15) << init_temp + diff_temp*i;
-                    M_convergence_data << std::setw(20) << std::setprecision(15) << init_temp + diff_temp*i;
-                    
-                    for (int j = 0; j < mc_iterations; j++)
-                    {
-                        E_convergence_data << std::setw(20) << std::setprecision(15) << energy_array[i*mc_iterations + j];
-                        M_convergence_data << std::setw(20) << std::setprecision(15) << magnet_array[i*mc_iterations + j];
-                    }
-
-                    E_convergence_data << std::endl;
-                    M_convergence_data << std::endl;
-                }
+            for (int i = 0; i < num_of_temp_divided_by_num_of_threds*world_size; i++)
+            {
+                E_convergence_data << std::setw(20) << std::setprecision(15);
+                E_convergence_data << init_temp + diff_temp*i;
+                M_convergence_data << std::setw(20) << std::setprecision(15);
+                M_convergence_data << init_temp + diff_temp*i;
             }
-            MPI_Barrier(MPI_COMM_WORLD);
+            
+            E_convergence_data << std::endl;
+            M_convergence_data << std::endl;
+
+            for (int i = 0; i < mc_iterations; i++)
+            {   
+                for (int j = 0; j < num_of_temp_divided_by_num_of_threds*world_size; j++)
+                {
+                    E_convergence_data << std::setw(20) << std::setprecision(15) << energy_buffer[i+j*mc_iterations];
+                    M_convergence_data << std::setw(20) << std::setprecision(15) << magnet_buffer[i+j*mc_iterations];
+                }
+                
+                E_convergence_data << std::endl;
+                M_convergence_data << std::endl;
+            }
+
         }
 
+        if (world_rank == root)
+        {
+            delete[] energy_buffer;
+            delete[] magnet_buffer;
+        }
 
         delete[] energy_array;
         delete[] magnet_array;
@@ -250,6 +263,8 @@ int main()
     double final_temp = 2.4;
     double num_of_temperatures = 2;
 
+    bool ordered_spins = false;
+
     time_t seed;
     time(&seed);
     
@@ -257,7 +272,7 @@ int main()
     // data_model.iterate_temperature_parallel(initial_temp, final_temp, num_of_temperatures);
 
     ParallelEnergySolver convergence_model(spin_matrix_dim, mc_iterations, seed);
-    convergence_model.iterate_temperature_convergence_parallel(initial_temp, final_temp, num_of_temperatures);
+    convergence_model.iterate_temperature_convergence_parallel(initial_temp, final_temp, num_of_temperatures, ordered_spins);
 
     return 0;
 }
