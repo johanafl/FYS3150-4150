@@ -152,6 +152,11 @@ public:
 
         if (world_rank == root)
         {   // Root thread writes the data to file.
+
+            E_convergence_data << "mc_iterations: " << mc_iterations
+            << " grid: " << n << std::endl;
+            M_convergence_data << "mc_iterations: " << mc_iterations << std::endl;
+            
             for (int i = 0; i < temps_per_thread*world_size; i++)
             {   // Header with temperature values.
                 E_convergence_data << std::setw(20) << std::setprecision(15);
@@ -313,7 +318,7 @@ public:
 int main()
 {   
     int spin_matrix_dim = 20;
-    int mc_iterations = 1e4;
+    int mc_iterations = 1e7;
     
     double initial_temp = 2;
     double final_temp = 2.4;
