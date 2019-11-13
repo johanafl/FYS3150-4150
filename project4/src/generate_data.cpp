@@ -9,6 +9,7 @@ int main()
     int spin_matrix_dim = 2;
     int mc_iterations = 1e3;
     bool convergence = true;
+    int stable_iterations = 5000;
     
     double initial_temp = 1;
     double final_temp = 3;
@@ -24,8 +25,8 @@ int main()
     std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
     
     IsingModel convergence_model(spin_matrix_dim, mc_iterations, seed);
-    convergence_model.iterate_temperature(initial_temp, final_temp, dtemp, convergence);
-    // convergence_model.iterate_monte_carlo_cycles(initial_MC, final_MC, dMC);
+    convergence_model.iterate_temperature(initial_temp, final_temp, dtemp, convergence, stable_iterations);
+    // convergence_model.iterate_monte_carlo_cycles(initial_MC, final_MC, dMC, stable_iterations);
     
     // ending timer
     std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
