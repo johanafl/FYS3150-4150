@@ -92,10 +92,13 @@ public:
             */
             energy_buffer = new double[world_size*temps_per_thread*mc_iterations];
             magnet_buffer = new double[world_size*temps_per_thread*mc_iterations];
+
+            std::cout << "mc_iterations: " << mc_iterations
+            << ", matrix size: " << n << "x" << n << std::endl << std::endl;
         }
 
-        // Starting timer.
-        std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
+        // Starting main timer.
+        std::chrono::steady_clock::time_point t_main_1 = std::chrono::steady_clock::now();
 
         for (int temp_iteration = 0; temp_iteration < temps_per_thread; temp_iteration++)
         {   // Looping over temperature values.
@@ -134,14 +137,22 @@ public:
 
             if (world_rank == root)
             {   // The root thread prints progress information.
-                std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
-                std::chrono::duration<double> comp_time  = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1);
+                std::chrono::steady_clock::time_point t_main_2 = std::chrono::steady_clock::now();
+                std::chrono::duration<double> main_comp_time  = std::chrono::duration_cast<std::chrono::duration<double> >(t_main_2 - t_main_1);
                 
-                std::cout << "time since beginning: " << comp_time.count()
+                std::cout << "time since beginning: " << main_comp_time.count()
                 << std::endl;
             }
         }
 
+        // Starting gather timer.
+        std::chrono::steady_clock::time_point t_gather_1 = std::chrono::steady_clock::now();
+
+        if (world_rank == root)
+        {
+            std::cout << "\ngathering data from all threads" << std::endl;
+        }
+ 
         // Collects the information from every thread and gathers it into buffer.
         MPI_Gather(energy_array, temps_per_thread*mc_iterations, MPI_DOUBLE,
             energy_buffer, temps_per_thread*mc_iterations, MPI_DOUBLE, root,
@@ -151,7 +162,19 @@ public:
             MPI_COMM_WORLD);
 
         if (world_rank == root)
+        {
+            std::chrono::steady_clock::time_point t_gather_2 = std::chrono::steady_clock::now();
+            std::chrono::duration<double> gather_comp_time  = std::chrono::duration_cast<std::chrono::duration<double> >(t_gather_2 - t_gather_1);
+            std::cout << "gather completed in: " << gather_comp_time.count() << std::endl;
+        }
+
+        // Starting write timer.
+        std::chrono::steady_clock::time_point t_write_1 = std::chrono::steady_clock::now();
+
+        if (world_rank == root)
         {   // Root thread writes the data to file.
+
+            std::cout << "\nwriting to file" << std::endl;
 
             E_convergence_data << "mc_iterations: " << mc_iterations
             << " grid: " << n << std::endl;
@@ -189,6 +212,16 @@ public:
                 
                 E_convergence_data << std::endl;
                 M_convergence_data << std::endl;
+            }
+            
+            if (world_rank == root)
+            {
+                std::chrono::steady_clock::time_point t_write_2 = std::chrono::steady_clock::now();
+                std::chrono::steady_clock::time_point t_final = std::chrono::steady_clock::now();
+                std::chrono::duration<double> write_comp_time  = std::chrono::duration_cast<std::chrono::duration<double> >(t_write_2 - t_write_1);
+                std::chrono::duration<double> final_comp_time  = std::chrono::duration_cast<std::chrono::duration<double> >(t_final - t_main_1);
+                std::cout << "write completed in: " << write_comp_time.count() << std::endl;
+                std::cout << "\ntotal time: " << final_comp_time.count() << std::endl;
             }
 
         }
@@ -317,11 +350,11 @@ public:
 
 int main()
 {   
-    int spin_matrix_dim = 20;
-    int mc_iterations = 1e7;
+    int spin_matrix_dim = 40;
+    int mc_iterations = 1e3;
     
-    double initial_temp = 2;
-    double final_temp = 2.4;
+    double initial_temp = 1;
+    double final_temp = 3;
     double temps_per_thread = 2;
 
     bool ordered_spins = false;
