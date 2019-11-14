@@ -21,7 +21,6 @@ void test_print()
     // std::cout << q1(0, 8, true) << std::endl;
 }
 
-// void test_that_ordered_spin_produces_all_spin_up()
 TEST_CASE("test_that_ordered_spin_produces_all_spin_up")
 {
     int n    = 2;
@@ -55,13 +54,27 @@ TEST_CASE("test_that_new_dim_and_seed_produces_new_dimension_and_seed")
 
 TEST_CASE("test_indexing")
 {
-    
+    int n    = 2;
+    int seed = 1337;
+    int row  = 0;
+    int col  = 1;
+
+    double spin1[4]  = {-1, -1, 1, -1};
+    double spin2[4]  = {1, 1, -1, 1};
+
+    CircularMatrix mat1(n, spin1);
+    CircularMatrix mat2(n, spin2);
+
+    REQUIRE(mat1(row, col, true));
+    REQUIRE(mat2(row, col, true));
+    REQUIRE(mat1(row, col));
+    REQUIRE(mat2(row, col));
 }
 
 // TEST_CASE("test_indexing_boundary_check")
 void test_indexing_boundary_check()
 {
-
+    // google how to require (test) EXIT_FAILURE.
 }
 
 // int main()
