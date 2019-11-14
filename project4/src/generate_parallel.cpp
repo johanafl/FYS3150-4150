@@ -509,23 +509,19 @@ public:
 
 int main()
 {   
-<<<<<<< HEAD
     int spin_matrix_dim = 40;
-=======
-    int spin_matrix_dim = 100;
->>>>>>> 3b088fb7618b5a9464245cc6aeebcb02d3cf373d
+    // int spin_matrix_dim = 100;
+
     int mc_iterations = 1e4;
+    // int mc_iterations = 2e6;
+
     int stable_iterations = 1e3;
+    // int stable_iterations = 1e6;
     
     double initial_temp = 2;
     double final_temp = 2.6;
-<<<<<<< HEAD
     // double temps_per_thread = 5;
-    double nr_temps = 5;
-=======
-    double temps_per_thread = 4;
-    // double nr_temps = 5;
->>>>>>> 3b088fb7618b5a9464245cc6aeebcb02d3cf373d
+    double nr_temps = 50;
 
     bool not_ordered_spins = false;
     bool ordered_spins = true;
@@ -544,8 +540,3 @@ int main()
 
     return 0;
 }
-
-/*
-Make stable_iterations a class variable with a setter function. This lets us not
-call every function with it, but rather set it when it is needed.
-*/
