@@ -21,6 +21,7 @@ public:
         MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     }
 
+
     void iterate_temperature_convergence_parallel(double initial_temp,
         double final_temp, int temps_per_thread, bool ordered_spins)
     {   /*
@@ -245,6 +246,7 @@ public:
         double* sum_total_magnetization_absolute_array = new double[temps_per_thread];
         double* sum_total_magnetization_squared_array = new double[temps_per_thread];
 
+        // Starting main timer.
         std::chrono::steady_clock::time_point t_main_1 = std::chrono::steady_clock::now();
 
 
@@ -364,6 +366,7 @@ public:
         
     }
 
+
     void iterate_temperature_parallel_more_data(double initial_temp, double final_temp,
         int nr_temps, bool ordered_spins)
     {   /*
@@ -385,14 +388,14 @@ public:
         double diff_temp = (final_temp - initial_temp)/nr_temps;
         double temp;
 
-        // if (world_rank == 0)
-        // {
-            double* sum_total_energy_array = new double[nr_temps];
-            double* sum_total_energy_squared_array = new double[nr_temps];
-            double* sum_total_magnetization_array = new double[nr_temps];
-            double* sum_total_magnetization_absolute_array = new double[nr_temps];
-            double* sum_total_magnetization_squared_array = new double[nr_temps];
-        // }
+        int root = 0;
+        double total_gather_time = 0;
+
+        double* sum_total_energy_array = new double[nr_temps];
+        double* sum_total_energy_squared_array = new double[nr_temps];
+        double* sum_total_magnetization_array = new double[nr_temps];
+        double* sum_total_magnetization_absolute_array = new double[nr_temps];
+        double* sum_total_magnetization_squared_array = new double[nr_temps];
 
         double sum_total_energy_all_threads;
         double sum_total_energy_squared_all_threads;
@@ -400,10 +403,25 @@ public:
         double sum_total_magnetization_absolute_all_threads;
         double sum_total_magnetization_squared_all_threads;
 
-        std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
+        // Starting main timer.
+        std::chrono::steady_clock::time_point t_main_1 = std::chrono::steady_clock::now();
+
+        if (world_rank == root)
+        {   // Root thread prints progress info.
+
+            std::cout << "mc_iterations: " << mc_iterations
+            << ", matrix size: " << n << "x" << n << std::endl << std::endl;
+            std::cout << "number of threads: " << world_size << std::endl;
+        }
 
         for (int temp_iteration = 0; temp_iteration < nr_temps; temp_iteration++)
         {   // looping over temperature values
+
+            if (world_rank == root)
+            {   // Root thread prints progress info.
+                std::cout << "temperature iteration: " << temp_iteration + 1
+                << " of: " << nr_temps << std::endl;
+            }
 
             if (ordered_spins)
             {   /*
@@ -436,20 +454,35 @@ public:
 
             mc_iteration_stable(temp);
 
+            // Starting gather timer.
+            std::chrono::steady_clock::time_point t_gather_1 = std::chrono::steady_clock::now();
+
             MPI_Reduce(&sum_total_energy, &sum_total_energy_all_threads, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
             MPI_Reduce(&sum_total_energy_squared, &sum_total_energy_squared_all_threads, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
             MPI_Reduce(&sum_total_magnetization, &sum_total_magnetization_all_threads, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
             MPI_Reduce(&sum_total_magnetization_absolute, &sum_total_magnetization_absolute_all_threads, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
             MPI_Reduce(&sum_total_magnetization_squared, &sum_total_magnetization_squared_all_threads, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
-            // if (world_rank == 0)
-            // {
-            // }
-                sum_total_energy_array[temp_iteration] = sum_total_energy_all_threads/world_size;
-                sum_total_energy_squared_array[temp_iteration] = sum_total_energy_squared_all_threads/world_size;
-                sum_total_magnetization_array[temp_iteration] = sum_total_magnetization_all_threads/world_size;
-                sum_total_magnetization_absolute_array[temp_iteration] = sum_total_magnetization_absolute_all_threads/world_size;
-                sum_total_magnetization_squared_array[temp_iteration] = sum_total_magnetization_squared_all_threads/world_size;
+            // Ending gather timer.
+            std::chrono::steady_clock::time_point t_gather_2 = std::chrono::steady_clock::now();
+            std::chrono::duration<double> gather_time = std::chrono::duration_cast<std::chrono::duration<double> >(t_gather_2 - t_gather_1);
+            total_gather_time += gather_time.count();
+
+
+            sum_total_energy_array[temp_iteration] = sum_total_energy_all_threads/world_size;
+            sum_total_energy_squared_array[temp_iteration] = sum_total_energy_squared_all_threads/world_size;
+            sum_total_magnetization_array[temp_iteration] = sum_total_magnetization_all_threads/world_size;
+            sum_total_magnetization_absolute_array[temp_iteration] = sum_total_magnetization_absolute_all_threads/world_size;
+            sum_total_magnetization_squared_array[temp_iteration] = sum_total_magnetization_squared_all_threads/world_size;
+
+            if (world_rank == root)
+            {   // The root thread prints progress information.
+                std::chrono::steady_clock::time_point t_main_2 = std::chrono::steady_clock::now();
+                std::chrono::duration<double> main_comp_time  = std::chrono::duration_cast<std::chrono::duration<double> >(t_main_2 - t_main_1);
+                
+                std::cout << "time since beginning: " << main_comp_time.count()
+                << std::endl;
+            }
         }
 
         if (world_rank == 0)
@@ -467,7 +500,7 @@ public:
 
             for (int i = 0; i < nr_temps; i++)
             {   
-                std::cout << initial_temp << std::endl;
+                // std::cout << initial_temp << std::endl;
                 ising_model_data << std::setw(20) << std::setprecision(15) << initial_temp + diff_temp*i;
                 ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_energy_array[i];
                 ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_energy_squared_array[i];
@@ -477,18 +510,12 @@ public:
                 ising_model_data << std::endl;
             }
 
-            // delete[] sum_total_energy_array;
-            // delete[] sum_total_energy_squared_array;
-            // delete[] sum_total_magnetization_array;
-            // delete[] sum_total_magnetization_absolute_array;
-            // delete[] sum_total_magnetization_squared_array;
-
             // ending timer
-            std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
-            std::chrono::duration<double> comp_time  = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1);
+            std::chrono::steady_clock::time_point t_final = std::chrono::steady_clock::now();
+            std::chrono::duration<double> comp_time  = std::chrono::duration_cast<std::chrono::duration<double> >(t_final - t_main_1);
 
-            // std::cout << "iterations: " << mc_iterations;
-            std::cout << " time: " << comp_time.count() << std::endl;
+            std::cout << "\ntotal gather time: " << total_gather_time << std::endl;
+            std::cout << "total time: " << comp_time.count() << std::endl;
         }
             delete[] sum_total_energy_array;
             delete[] sum_total_energy_squared_array;
@@ -497,6 +524,7 @@ public:
             delete[] sum_total_magnetization_squared_array;
         
     }
+
 
     ~ParallelEnergySolver()
     {
@@ -509,14 +537,14 @@ public:
 
 int main()
 {   
-    int spin_matrix_dim = 40;
-    // int spin_matrix_dim = 100;
+    // int spin_matrix_dim = 20;
+    int spin_matrix_dim = 100;
 
-    int mc_iterations = 1e4;
-    // int mc_iterations = 2e6;
+    // int mc_iterations = 1e4;
+    int mc_iterations = 2e6;
 
-    int stable_iterations = 1e3;
-    // int stable_iterations = 1e6;
+    // int stable_iterations = 1e3;
+    int stable_iterations = 1e6;
     
     double initial_temp = 2;
     double final_temp = 2.6;
