@@ -17,7 +17,7 @@ protected:
 
     double delta_energy;
     double spin_here;
-    
+
     // values for the averages after convergence
     double sum_total_energy;
     double sum_total_energy_squared;
@@ -39,6 +39,7 @@ protected:
 public:
     int n;              // matrix is of dimension nxn
     int mc_iterations;  // number of Monte Carlo iterations
+    int stable_iterations = 5000;
     double J = 1;
     
     // defining the spin matrix
@@ -47,22 +48,23 @@ public:
 protected:
 
     void mc_iteration_convergence(double temp);
-    void mc_iteration_stable(double temp, int stable_iterations);
+    void mc_iteration_stable(double temp);
     void iterate_spin_flip(double temp);
 
 public:
 
     IsingModel(int spin_mat_dim, int mc_iterations_input, long seed);
     void iterate_temperature(double initial_temp, double final_temp,
-        double dtemp, bool convergence, int stable_iterations);
+        double dtemp, bool convergence);
     void total_energy_and_magnetization(CircularMatrix& spin, int n,
         double& total_energy, double& total_magnetization);
     void set_new_input(int spin_mat_dim, int mc_iterations_input, double inter_strenght_J, long seed);
     void set_interactions_strength(double strength_J);
     void set_mc_iterations(int mc_iterations_input);
+    void set_stable_iterations(int stable_iterations_input);
     void set_spin_dim(int spin_mat_dim);
     void set_order_spins();
-    void iterate_monte_carlo_cycles(int initial_MC, int final_MC, int dMC, int stable_iterations);
+    void iterate_monte_carlo_cycles(int initial_MC, int final_MC, int dMC);
     void metropolis_flap(CircularMatrix& spin, double& total_energy,
         double& total_magnetization, int row, int col, double metropolis_random,
         double temperature, double* exp_delta_energy);

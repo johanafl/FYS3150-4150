@@ -215,7 +215,7 @@ public:
 
 
     void iterate_temperature_parallel(double initial_temp, double final_temp,
-        int temps_per_thread, bool ordered_spins, int stable_iterations)
+        int temps_per_thread, bool ordered_spins)
     {   /*
         Run the calculation for several temperatures in parallel.
         Calculate average values on the fly. Do not keep all raw data.
@@ -269,7 +269,7 @@ public:
             exp_delta_energy[12] = std::exp(-4*J/temp);
             exp_delta_energy[16] = std::exp(-8*J/temp);
 
-            mc_iteration_stable(temp, stable_iterations);
+            mc_iteration_stable(temp);
 
             sum_total_energy_array[temp_iteration] = sum_total_energy;
             sum_total_energy_squared_array[temp_iteration] = sum_total_energy_squared;
@@ -331,7 +331,7 @@ public:
     }
 
     void iterate_temperature_parallel_more_data(double initial_temp, double final_temp,
-        int nr_temps, bool ordered_spins, int stable_iterations)
+        int nr_temps, bool ordered_spins)
     {   /*
         Run the calculation for several temperatures in parallel.
         Calculate average values on the fly. Do not keep all raw data.
@@ -400,7 +400,7 @@ public:
             exp_delta_energy[12] = std::exp(-4*J/temp);
             exp_delta_energy[16] = std::exp(-8*J/temp);
 
-            mc_iteration_stable(temp, stable_iterations);
+            mc_iteration_stable(temp);
 
             MPI_Reduce(&sum_total_energy, &sum_total_energy_all_threads, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
             MPI_Reduce(&sum_total_energy_squared, &sum_total_energy_squared_all_threads, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
@@ -475,23 +475,25 @@ public:
 
 int main()
 {   
-    int spin_matrix_dim = 100;
-    int mc_iterations = 1e7;
-    int stable_iterations = 1e6;
+    int spin_matrix_dim = 40;
+    int mc_iterations = 1e4;
+    int stable_iterations = 1e3;
     
     double initial_temp = 2;
     double final_temp = 2.6;
-    double temps_per_thread = 5;
-    // double nr_temps = 5;
+    // double temps_per_thread = 5;
+    double nr_temps = 5;
 
-    bool ordered_spins = false;
+    bool not_ordered_spins = false;
+    bool ordered_spins = true;
 
     time_t seed;
     time(&seed);
     
     ParallelEnergySolver data_model(spin_matrix_dim, mc_iterations, seed);
-    data_model.iterate_temperature_parallel(initial_temp, final_temp, temps_per_thread, ordered_spins, stable_iterations);
-    // data_model.iterate_temperature_parallel_more_data(initial_temp, final_temp, nr_temps, ordered_spins, stable_iterations);
+    data_model.set_stable_iterations(stable_iterations);
+    // data_model.iterate_temperature_parallel(initial_temp, final_temp, temps_per_thread, ordered_spins);
+    data_model.iterate_temperature_parallel_more_data(initial_temp, final_temp, nr_temps, not_ordered_spins);
 
     // ParallelEnergySolver convergence_model(spin_matrix_dim, mc_iterations, seed);
     // convergence_model.iterate_temperature_convergence_parallel(initial_temp,
