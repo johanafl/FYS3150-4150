@@ -2,8 +2,9 @@
 # Created by https://www.gitignore.io/api/c++,latex,python,jupyternotebooks
 # Edit at https://www.gitignore.io/?templates=c++,latex,python,jupyternotebooks
 
-### Self defined ###
+### User defined ###
 *.txt
+*.npy
 
 ### C++ ###
 # Prerequisites
@@ -443,3 +444,4 @@ dmypy.json
 .pyre/
 
 # End of https://www.gitignore.io/api/c++,latex,python,jupyternotebooks
+
