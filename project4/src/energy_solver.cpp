@@ -51,7 +51,7 @@ void IsingModel::mc_iteration_convergence(double temp)
 }
 
 
-void IsingModel::mc_iteration_stable(double temp)
+void IsingModel::mc_iteration_stable(double temp, int stable_iterations)
 {   /*
     Run the spin flip a given amount of times. Calculate the average
     values instead of keeping all data.
@@ -68,7 +68,7 @@ void IsingModel::mc_iteration_stable(double temp)
     sum_total_magnetization_absolute = 0;
     sum_total_magnetization_squared  = 0;
 
-    int stable_iterations = 5000;
+    // int stable_iterations = 1e6;
 
     int i;
     for (i = 0; i < stable_iterations; i++)
@@ -185,7 +185,7 @@ void IsingModel::metropolis_flap(CircularMatrix& spin, double& total_energy,
 
 
 void IsingModel::iterate_temperature(double initial_temp, double final_temp,
-    double dtemp, bool convergence)
+    double dtemp, bool convergence, int stable_iterations)
 {   /*
     Iterate over a given set of temperature values.
 
@@ -258,7 +258,7 @@ void IsingModel::iterate_temperature(double initial_temp, double final_temp,
         }
         else
         {   // generates and writes stable data
-            mc_iteration_stable(temp);
+            mc_iteration_stable(temp, stable_iterations);
             ising_model_data << std::setw(20) << std::setprecision(15) << temp;
             ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_energy;
             ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_energy_squared;
@@ -277,7 +277,7 @@ void IsingModel::iterate_temperature(double initial_temp, double final_temp,
 }
 
 
-void IsingModel::iterate_monte_carlo_cycles(int initial_MC, int final_MC, int dMC)
+void IsingModel::iterate_monte_carlo_cycles(int initial_MC, int final_MC, int dMC, int stable_iterations)
 {   /*
     Loop over different number of Monte Carlo iterations. Currently
     only implemented for the stable phase.
@@ -319,7 +319,7 @@ void IsingModel::iterate_monte_carlo_cycles(int initial_MC, int final_MC, int dM
     for (int MC = initial_MC; MC < final_MC; MC += dMC)
     {   // Iterates over a set of Monte Carlo iterations.
         
-        mc_iteration_stable(temp);
+        mc_iteration_stable(temp, stable_iterations);
         ising_model_data << std::setw(20) << std::setprecision(15) << MC;
         ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_energy;
         ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_energy_squared;
