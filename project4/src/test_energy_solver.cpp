@@ -90,6 +90,17 @@ TEST_CASE("test_if_set_mc_iterations_gives_new_mc_iterations_value")
     REQUIRE(q.mc_iterations == value);
 }
 
+TEST_CASE("test_if_set_stable_iterations_gives_new_stable_iterations_value")
+{
+    int n        = 2;
+    double stable_iterations = 117;
+
+    IsingModel q(n, 0, 1337);
+
+    q.set_stable_iterations(stable_iterations);
+    REQUIRE(q.stable_iterations == stable_iterations);
+}
+
 TEST_CASE("test_if_set_spin_dim_gives_new_dim_value")
 {
     int n        = 2;

@@ -132,25 +132,45 @@ def compare_values_task_a_and_b():
     print()
 
 
-def analyse_energy_const_temp():
+def task_c():
+    """
+    Cheat sheet:
+    Columns are temperatures. Rows are data points.
+    data[:, 0]: all data points for temperature 0.
+    data[:, 0]: all data points for temperature 0.
+    data[5000:, 0]: all data points except the first 5000 for temperature 0.
+    All .npy files are calculated with 1e7 MC iterations.
+    """
 
-    # filename_energy = "data_files/E_convergence_data_20x20.txt"
-    # filename_magnet = "data_files/M_convergence_data_20x20.txt"
 
-    filename_energy = "data_files/E_convergence_data.txt"
-    filename_magnet = "data_files/M_convergence_data.txt"
+    filename_energy = "/Users/Jon/Desktop/project4/E_convergence_data_20x20.npy"
+    filename_magnet = "/Users/Jon/Desktop/project4/E_convergence_data_20x20.npy"
 
-    energy = np.loadtxt(filename_energy, skiprows=1)
-    magnet = np.loadtxt(filename_magnet, skiprows=1)
+    energy = np.load(filename_energy)
+    magnet = np.load(filename_magnet)
 
-    # plt.plot(np.cumsum(energy[0, :10000])/np.arange(1, len(energy[0, :10000]) + 1, 1))
-    plt.plot(np.cumsum(magnet[0])/np.arange(1, len(magnet[0]) + 1, 1))
-    # plt.plot(energy[0, :1000])
-    
+    temperatures = energy[0, :]
+    temp = 16
+    energy = energy[1:, :]
+    magnet = magnet[1:, :]
+
+    selection = slice(3000000, -1, 1)
+    MC_values = np.arange(1, 1e7+1, 1)
+    E_cum_avg = np.cumsum(energy[selection, temp])/np.arange(1, len(energy[selection, temp]) + 1, 1)
+    M_cum_avg = np.cumsum(magnet[selection, temp])/np.arange(1, len(magnet[selection, temp]) + 1, 1)
+
+
+    plt.plot(MC_values[selection], E_cum_avg, label=f"T: {temperatures[temp]:.1f}")    
     plt.xlabel("MC iterations")
-    plt.ylabel("Magnet, [?]")
+    plt.ylabel("Energy, [?]")
     plt.legend(loc="best")
     plt.show()
+
+    # plt.plot(MC_values[selection], M_cum_avg, label=f"T: {temperatures[temp]:.1f}")    
+    # plt.xlabel("MC iterations")
+    # plt.ylabel("Magnet, [?]")
+    # plt.legend(loc="best")
+    # plt.show()
 
 
 def analyse_magnet_const_temp(magnet):
@@ -202,94 +222,7 @@ def analyse_heat_capacity(temp, avg_energy, avg_energy_square):
     plt.show()
 
 
-def analyse_magnet(temp, avg_magnet, avg_magnet_square):
-    plt.plot(temp, avg_magnet_square - avg_magnet**2, label="?")
-    plt.xlabel(r"Temperature, [$k_{b}T/J$]")
-    plt.ylabel("Suceptibility, [?]")
-    plt.legend(loc="best")
-    plt.show()
 
-
-def analayz_tampratar(ax, filename, properties=[]):
-    """
-    Function for plotting the different properties of the crystal against 
-    temperature, i.e., plotting average energy, average (energy^2), ...
-
-    Parameters
-    ----------
-
-    ax : axis object
-
-    filename : string
-        name of the data file
-
-    properties : bool, list_like(?)
-        List of boolian values for triggering the plot for the different
-        physical properties; the True value needs to be in 1st, 2nd, 3rd, 4th,
-        5th, 6th or 7th place in the properties list in order to see plot of
-        mean energy, mean energy^2, mean magnetization, mean magnetization^2,
-        mean absolute magnetization, heat capacity or susceptibility
-        respectively.
-
-        OBS!!
-        Don't send in more than 1 True value!!!
-    """
-    data = np.loadtxt(filename)
-
-    T         = data[:, 0]
-    E         = data[:, 1]
-    E_squared = data[:, 2]
-    M         = data[:, 3]
-    M_squared = data[:, 4]
-    M_absolut = data[:, 5]
-    
-    if properties[0]:
-        ax.plot(T, E)
-        ax.set_xlabel("Temperature")
-        ax.set_ylabel("Energy")
-        ax.set_title("Nice title here")
-    
-    if properties[1]:
-        ax.plot(T, E_squared)
-        ax.set_xlabel("Temperature")
-        ax.set_ylabel("Energy squared")
-        ax.set_title("Nice title here")
-    
-    if properties[2]:
-        ax.plot(T, M)
-        ax.set_xlabel("Temperature")
-        ax.set_ylabel("Magnetization")
-        ax.set_title("Nice title here")
-    
-    if properties[3]:
-        ax.plot(T, M_squared)
-        ax.set_xlabel("Temperature")
-        ax.set_ylabel("Magnetization squared")
-        ax.set_title("Nice title here")
-
-    if properties[4]:
-        ax.plot(T, M_absolut)
-        ax.set_xlabel("Temperature")
-        ax.set_ylabel("Absolute magnetization")
-        ax.set_title("Nice title here")
-    
-    if properties[5]:
-        scaling_factor = 1
-        heat_capacity  = (E_squared - E**2)/scaling_factor
-
-        ax.plot(T, heat_capacity)
-        ax.set_xlabel("Temperature")
-        ax.set_ylabel("Heat capacity")
-        ax.set_title("Nice title here")
-    
-    if properties[6]:
-        scaling_factor = 1
-        susceptibility = (M_squared - M**2)/scaling_factor
-
-        ax.plot(T, susceptibility)
-        ax.set_xlabel("Temperature")
-        ax.set_ylabel("Susceptibility")
-        ax.set_title("Nice title here")
 
 
 def quick_buizz():
@@ -358,17 +291,10 @@ def quick_hist_buizz():
 
 
 if __name__ == "__main__":
-    # compare_values_task_a_and_b()
+    compare_values_task_a_and_b()
 
     # quick_buizz()
-    quick_hist_buizz()
+    # quick_hist_buizz()
+    # task_c()
 
-    # # filename_magnet = "M_data.txt"
-    # analyse_energy_const_temp()
-    # analyse_magnet_const_temp(magnet)
-
-    # # fig, ax = plt.subplots()
-
-    # analayz_tampratar(ax, filename_props, [True, False, False, False, False, False, False])
-    # plt.show()
     pass
