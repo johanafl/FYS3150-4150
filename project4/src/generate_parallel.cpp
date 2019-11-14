@@ -105,8 +105,10 @@ public:
 
             // mc_iteration_convergence_parallel(temp,temp_iteration*mc_iterations);
             for (int j = 0; j < mc_iterations; j++)
-            {   // loops over n*n spin flips a given amount of times
-                // saves relevant data for each iteration
+            {   /*
+                Loops over n*n spin flips a given amount of times and
+                saves relevant data for each iteration.
+                */
                 iterate_spin_flip(temp);
                 energy_array[temp_iteration*mc_iterations + j] = total_energy;
                 magnet_array[temp_iteration*mc_iterations + j] = total_magnetization;
@@ -235,6 +237,7 @@ public:
         double diff_temp = (final_temp - initial_temp)/(world_size*temps_per_thread);
         double initial_temp_thread = initial_temp + diff_temp*temps_per_thread*world_rank;
         double temp;
+        int root = 0;   // Root thread.
 
         double* sum_total_energy_array = new double[temps_per_thread];
         double* sum_total_energy_squared_array = new double[temps_per_thread];
@@ -242,10 +245,25 @@ public:
         double* sum_total_magnetization_absolute_array = new double[temps_per_thread];
         double* sum_total_magnetization_squared_array = new double[temps_per_thread];
 
-        std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
+        std::chrono::steady_clock::time_point t_main_1 = std::chrono::steady_clock::now();
+
+
+        if (world_rank == root)
+        {   // Root thread prints progress info.
+
+            std::cout << "mc_iterations: " << mc_iterations
+            << ", matrix size: " << n << "x" << n << std::endl << std::endl;
+        }
 
         for (int temp_iteration = 0; temp_iteration < temps_per_thread; temp_iteration++)
         {   // looping over temperature values
+
+            if (world_rank == root)
+            {   // Root thread prints progress info.
+                std::cout << "temperature iteration: " << temp_iteration + 1
+                << " of: " << temps_per_thread << std::endl;
+            }
+
             if (ordered_spins)
             {   /*
                 Resetting the spin matrix for every temperature to the
@@ -261,6 +279,7 @@ public:
                 */
                 spin.initial_spin();
             }
+
             temp = initial_temp_thread + diff_temp*temp_iteration;
             // pre-calculated exponential values
             exp_delta_energy[0]  = std::exp(8*J/temp);
@@ -276,9 +295,18 @@ public:
             sum_total_magnetization_array[temp_iteration] = sum_total_magnetization;
             sum_total_magnetization_absolute_array[temp_iteration] = sum_total_magnetization_absolute;
             sum_total_magnetization_squared_array[temp_iteration] = sum_total_magnetization_squared;
+
+            if (world_rank == root)
+            {   // The root thread prints progress information.
+                std::chrono::steady_clock::time_point t_main_2 = std::chrono::steady_clock::now();
+                std::chrono::duration<double> main_comp_time  = std::chrono::duration_cast<std::chrono::duration<double> >(t_main_2 - t_main_1);
+                
+                std::cout << "time since beginning: " << main_comp_time.count()
+                << std::endl;
+            }
         }
 
-        if (world_rank == 0)
+        if (world_rank == root)
         {
             ising_model_data << "mc_iterations: " << mc_iterations;
             ising_model_data << " spin_matrix_dim: " << n;
@@ -291,14 +319,17 @@ public:
             ising_model_data << std::setw(20) << "<|M|>";
             ising_model_data << std::endl;
         }
-
+        
+        // Starting write timer.
+        std::chrono::steady_clock::time_point t_write_1 = std::chrono::steady_clock::now();
+        
         for (int rank = 0; rank < world_size; rank++)
-        {
+        {   // Writing data to file.
             if (rank == world_rank)
             {   
                 for (int i = 0; i < temps_per_thread; i++)
                 {   
-                    std::cout << initial_temp_thread << std::endl;
+                    // std::cout << initial_temp_thread << std::endl;
                     ising_model_data << std::setw(20) << std::setprecision(15) << initial_temp_thread + diff_temp*i;
                     ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_energy_array[i];
                     ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_energy_squared_array[i];
@@ -318,15 +349,18 @@ public:
         delete[] sum_total_magnetization_absolute_array;
         delete[] sum_total_magnetization_squared_array;
 
-        // ending timer
-        std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
-        std::chrono::duration<double> comp_time  = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1);
 
-        if (world_rank == 0)
-        {
-            // std::cout << "iterations: " << mc_iterations;
-            std::cout << " time: " << comp_time.count() << std::endl;
-        }
+
+            if (world_rank == root)
+            {   // Root thread prints progress info.
+
+                std::chrono::steady_clock::time_point t_write_2 = std::chrono::steady_clock::now();
+                std::chrono::steady_clock::time_point t_final = std::chrono::steady_clock::now();
+                std::chrono::duration<double> write_comp_time  = std::chrono::duration_cast<std::chrono::duration<double> >(t_write_2 - t_write_1);
+                std::chrono::duration<double> final_comp_time  = std::chrono::duration_cast<std::chrono::duration<double> >(t_final - t_main_1);
+                std::cout << "write completed in: " << write_comp_time.count() << std::endl;
+                std::cout << "\ntotal time: " << final_comp_time.count() << std::endl;
+            }
         
     }
 
@@ -475,14 +509,23 @@ public:
 
 int main()
 {   
+<<<<<<< HEAD
     int spin_matrix_dim = 40;
+=======
+    int spin_matrix_dim = 100;
+>>>>>>> 3b088fb7618b5a9464245cc6aeebcb02d3cf373d
     int mc_iterations = 1e4;
     int stable_iterations = 1e3;
     
     double initial_temp = 2;
     double final_temp = 2.6;
+<<<<<<< HEAD
     // double temps_per_thread = 5;
     double nr_temps = 5;
+=======
+    double temps_per_thread = 4;
+    // double nr_temps = 5;
+>>>>>>> 3b088fb7618b5a9464245cc6aeebcb02d3cf373d
 
     bool not_ordered_spins = false;
     bool ordered_spins = true;
