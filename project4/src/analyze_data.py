@@ -132,8 +132,6 @@ def compare_values_task_a_and_b():
     print()
 
 
-
-
 def analyse_energy_const_temp():
 
     # filename_energy = "data_files/E_convergence_data_20x20.txt"
@@ -153,6 +151,7 @@ def analyse_energy_const_temp():
     plt.ylabel("Magnet, [?]")
     plt.legend(loc="best")
     plt.show()
+
 
 def analyse_magnet_const_temp(magnet):
     try: 
@@ -202,12 +201,14 @@ def analyse_heat_capacity(temp, avg_energy, avg_energy_square):
     plt.legend(loc="best")
     plt.show()
 
+
 def analyse_magnet(temp, avg_magnet, avg_magnet_square):
     plt.plot(temp, avg_magnet_square - avg_magnet**2, label="?")
     plt.xlabel(r"Temperature, [$k_{b}T/J$]")
     plt.ylabel("Suceptibility, [?]")
     plt.legend(loc="best")
     plt.show()
+
 
 def analayz_tampratar(ax, filename, properties=[]):
     """
@@ -325,9 +326,12 @@ def quick_hist_buizz():
     with open(filename, "r") as infile:
         MC = float(infile.readline().split()[1])
 
-    data = np.loadtxt(filename, skiprows=1)
-    std1, std2 = np.std(data[:, 5001:], axis=1)
-    std1_scaled, std2_scaled = np.std(data[:, 5001:]/(20*20), axis=1)
+    data = np.loadtxt(filename, skiprows=1, unpack=False)
+    # std1, std2 = np.std(data[:, 5001:], axis=1)
+    std1 = np.std(data[5000:, 0])
+    std2 = np.std(data[5000:, 1])
+    std1_scaled = np.std(data[5000:, 0]/(20*20))
+    std2_scaled = np.std(data[5000:, 0]/(20*20))
 
     print("std1: ", std1)
     print("std2: ", std2)
@@ -339,7 +343,7 @@ def quick_hist_buizz():
 
     data /= 20*20
 
-    n, _, _ = plt.hist(data[1, 5001:], bins=bins)
+    n, _, _ = plt.hist(data[5000:, 0], bins=bins)
     plt.xlabel("E")
     plt.ylabel("occurrence")
     plt.show()
@@ -357,10 +361,10 @@ if __name__ == "__main__":
     # compare_values_task_a_and_b()
 
     # quick_buizz()
-    # quick_hist_buizz()
+    quick_hist_buizz()
 
     # # filename_magnet = "M_data.txt"
-    analyse_energy_const_temp()
+    # analyse_energy_const_temp()
     # analyse_magnet_const_temp(magnet)
 
     # # fig, ax = plt.subplots()
