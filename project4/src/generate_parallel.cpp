@@ -9,11 +9,13 @@ private:
     int world_rank;
     int world_size;
 
+    double seed;
+
     double* energy_array;
     double* magnet_array;
 
 public:
-    ParallelEnergySolver(int spin_mat_dim, int mc_iterations_input, long seed) 
+    ParallelEnergySolver(int spin_mat_dim, int mc_iterations_input, double seed) 
     : IsingModel(spin_mat_dim, mc_iterations_input, seed)
     {
         MPI_Init(NULL, NULL);
@@ -45,6 +47,13 @@ public:
         */
         
         // Temperature interval and initial temperature for each thread.
+
+        if (not is_conv_filename_set)
+        {
+            set_convergence_filenames();
+            is_conv_filename_set = true;
+        }
+        
         double diff_temp = (final_temp - initial_temp)/(world_size*temps_per_thread);
         double initial_temp_thread = initial_temp + diff_temp*temps_per_thread*world_rank;
         double temp;
@@ -66,6 +75,7 @@ public:
 
             std::cout << "mc_iterations: " << mc_iterations
             << ", matrix size: " << n << "x" << n << std::endl << std::endl;
+            std::cout << "ordered spins: " << ordered_spins << std::endl;
         }
 
         // Starting main timer.
@@ -74,6 +84,9 @@ public:
         for (int temp_iteration = 0; temp_iteration < temps_per_thread; temp_iteration++)
         {   // Looping over temperature values.
 
+            total_energy = 0;
+            total_magnetization = 0;
+            
             if (world_rank == root)
             {
                 std::cout << "temperature iteration: " << temp_iteration + 1
@@ -85,7 +98,8 @@ public:
                 Resetting the spin matrix for every temperature to the
                 initial ordered state.
                 */
-                spin.initial_spin(ordered_spins);
+                spin.ordered_spin();
+                total_energy_and_magnetization(spin, n, total_energy, total_magnetization);
             }
             
             else
@@ -94,6 +108,7 @@ public:
                 initial random state.
                 */
                 spin.initial_spin();
+                total_energy_and_magnetization(spin, n, total_energy, total_magnetization);
             }
 
             temp = initial_temp_thread + diff_temp*temp_iteration;
@@ -125,6 +140,7 @@ public:
             }
         }
 
+        MPI_Barrier(MPI_COMM_WORLD);
         // Starting gather timer.
         std::chrono::steady_clock::time_point t_gather_1 = std::chrono::steady_clock::now();
 
@@ -234,6 +250,12 @@ public:
         temps_per_thread : int
             Number of temperatures every thread will calculate.
         */
+
+        if (not is_ising_filename_set)
+        {
+            set_ising_filename();
+            is_ising_filename_set = true;
+        }
         
         double diff_temp = (final_temp - initial_temp)/(world_size*temps_per_thread);
         double initial_temp_thread = initial_temp + diff_temp*temps_per_thread*world_rank;
@@ -260,10 +282,17 @@ public:
         for (int temp_iteration = 0; temp_iteration < temps_per_thread; temp_iteration++)
         {   // looping over temperature values
 
+            time_t new_seed;
+            time(&new_seed);
+
+            total_energy = 0;
+            total_magnetization = 0;
+
             if (world_rank == root)
             {   // Root thread prints progress info.
                 std::cout << "temperature iteration: " << temp_iteration + 1
                 << " of: " << temps_per_thread << std::endl;
+                std::cout << "new seed: " << new_seed << std::endl;
             }
 
             if (ordered_spins)
@@ -271,7 +300,8 @@ public:
                 Resetting the spin matrix for every temperature to the
                 initial ordered state.
                 */
-                spin.initial_spin(ordered_spins);
+                // spin.initial_spin((double)(new_seed + world_rank), ordered_spins);
+                spin.ordered_spin();
             }
             
             else
@@ -279,9 +309,11 @@ public:
                 Resetting the spin matrix for every temperature to the
                 initial random state.
                 */
-                spin.initial_spin();
+                spin.initial_spin((double)(new_seed + world_rank));
+                // spin.initial_spin();
             }
-
+            
+            total_energy_and_magnetization(spin, n, total_energy, total_magnetization);
             temp = initial_temp_thread + diff_temp*temp_iteration;
             // pre-calculated exponential values
             exp_delta_energy[0]  = std::exp(8*J/temp);
@@ -353,175 +385,16 @@ public:
 
 
 
-            if (world_rank == root)
-            {   // Root thread prints progress info.
-
-                std::chrono::steady_clock::time_point t_write_2 = std::chrono::steady_clock::now();
-                std::chrono::steady_clock::time_point t_final = std::chrono::steady_clock::now();
-                std::chrono::duration<double> write_comp_time  = std::chrono::duration_cast<std::chrono::duration<double> >(t_write_2 - t_write_1);
-                std::chrono::duration<double> final_comp_time  = std::chrono::duration_cast<std::chrono::duration<double> >(t_final - t_main_1);
-                std::cout << "write completed in: " << write_comp_time.count() << std::endl;
-                std::cout << "\ntotal time: " << final_comp_time.count() << std::endl;
-            }
-        
-    }
-
-
-    void iterate_temperature_parallel_more_data(double initial_temp, double final_temp,
-        int nr_temps, bool ordered_spins)
-    {   /*
-        Run the calculation for several temperatures in parallel.
-        Calculate average values on the fly. Do not keep all raw data.
-
-        Parameters
-        ----------
-        initial_temp : double
-            Initial temperature.
-        
-        final_temp : double
-            Final temperature.
-
-        nr_temps : int
-            Number of temperatures.
-        */
-        
-        double diff_temp = (final_temp - initial_temp)/nr_temps;
-        double temp;
-
-        int root = 0;
-        double total_gather_time = 0;
-
-        double* sum_total_energy_array = new double[nr_temps];
-        double* sum_total_energy_squared_array = new double[nr_temps];
-        double* sum_total_magnetization_array = new double[nr_temps];
-        double* sum_total_magnetization_absolute_array = new double[nr_temps];
-        double* sum_total_magnetization_squared_array = new double[nr_temps];
-
-        double sum_total_energy_all_threads;
-        double sum_total_energy_squared_all_threads;
-        double sum_total_magnetization_all_threads;
-        double sum_total_magnetization_absolute_all_threads;
-        double sum_total_magnetization_squared_all_threads;
-
-        // Starting main timer.
-        std::chrono::steady_clock::time_point t_main_1 = std::chrono::steady_clock::now();
-
         if (world_rank == root)
         {   // Root thread prints progress info.
 
-            std::cout << "mc_iterations: " << mc_iterations
-            << ", matrix size: " << n << "x" << n << std::endl << std::endl;
-            std::cout << "number of threads: " << world_size << std::endl;
-        }
-
-        for (int temp_iteration = 0; temp_iteration < nr_temps; temp_iteration++)
-        {   // looping over temperature values
-
-            if (world_rank == root)
-            {   // Root thread prints progress info.
-                std::cout << "temperature iteration: " << temp_iteration + 1
-                << " of: " << nr_temps << std::endl;
-            }
-
-            if (ordered_spins)
-            {   /*
-                Resetting the spin matrix for every temperature to the
-                initial ordered state.
-                */
-                spin.initial_spin(ordered_spins);
-            }
-            else
-            {   /*
-                Resetting the spin matrix for every temperature to the
-                initial random state.
-                */
-                spin.initial_spin();
-            }
-
-            sum_total_energy_all_threads = 0;
-            sum_total_energy_squared_all_threads = 0;
-            sum_total_magnetization_all_threads = 0;
-            sum_total_magnetization_absolute_all_threads = 0;
-            sum_total_magnetization_squared_all_threads = 0;
-
-            temp = initial_temp + diff_temp*temp_iteration;
-            // pre-calculated exponential values
-            exp_delta_energy[0]  = std::exp(8*J/temp);
-            exp_delta_energy[4]  = std::exp(4*J/temp);
-            exp_delta_energy[8]  = 1;
-            exp_delta_energy[12] = std::exp(-4*J/temp);
-            exp_delta_energy[16] = std::exp(-8*J/temp);
-
-            mc_iteration_stable(temp);
-
-            // Starting gather timer.
-            std::chrono::steady_clock::time_point t_gather_1 = std::chrono::steady_clock::now();
-
-            MPI_Reduce(&sum_total_energy, &sum_total_energy_all_threads, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-            MPI_Reduce(&sum_total_energy_squared, &sum_total_energy_squared_all_threads, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-            MPI_Reduce(&sum_total_magnetization, &sum_total_magnetization_all_threads, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-            MPI_Reduce(&sum_total_magnetization_absolute, &sum_total_magnetization_absolute_all_threads, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-            MPI_Reduce(&sum_total_magnetization_squared, &sum_total_magnetization_squared_all_threads, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-
-            // Ending gather timer.
-            std::chrono::steady_clock::time_point t_gather_2 = std::chrono::steady_clock::now();
-            std::chrono::duration<double> gather_time = std::chrono::duration_cast<std::chrono::duration<double> >(t_gather_2 - t_gather_1);
-            total_gather_time += gather_time.count();
-
-
-            sum_total_energy_array[temp_iteration] = sum_total_energy_all_threads/world_size;
-            sum_total_energy_squared_array[temp_iteration] = sum_total_energy_squared_all_threads/world_size;
-            sum_total_magnetization_array[temp_iteration] = sum_total_magnetization_all_threads/world_size;
-            sum_total_magnetization_absolute_array[temp_iteration] = sum_total_magnetization_absolute_all_threads/world_size;
-            sum_total_magnetization_squared_array[temp_iteration] = sum_total_magnetization_squared_all_threads/world_size;
-
-            if (world_rank == root)
-            {   // The root thread prints progress information.
-                std::chrono::steady_clock::time_point t_main_2 = std::chrono::steady_clock::now();
-                std::chrono::duration<double> main_comp_time  = std::chrono::duration_cast<std::chrono::duration<double> >(t_main_2 - t_main_1);
-                
-                std::cout << "time since beginning: " << main_comp_time.count()
-                << std::endl;
-            }
-        }
-
-        if (world_rank == 0)
-        {
-            ising_model_data << "mc_iterations: " << mc_iterations;
-            ising_model_data << " spin_matrix_dim: " << n;
-            ising_model_data << std::endl;
-            ising_model_data << std::setw(20) << "T";
-            ising_model_data << std::setw(20) << "<E>";
-            ising_model_data << std::setw(20) << "<E**2>";
-            ising_model_data << std::setw(20) << "<M>";
-            ising_model_data << std::setw(20) << "<M**2>";
-            ising_model_data << std::setw(20) << "<|M|>";
-            ising_model_data << std::endl;
-
-            for (int i = 0; i < nr_temps; i++)
-            {   
-                // std::cout << initial_temp << std::endl;
-                ising_model_data << std::setw(20) << std::setprecision(15) << initial_temp + diff_temp*i;
-                ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_energy_array[i];
-                ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_energy_squared_array[i];
-                ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_magnetization_array[i];
-                ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_magnetization_squared_array[i];
-                ising_model_data << std::setw(20) << std::setprecision(15) << sum_total_magnetization_absolute_array[i];
-                ising_model_data << std::endl;
-            }
-
-            // ending timer
+            std::chrono::steady_clock::time_point t_write_2 = std::chrono::steady_clock::now();
             std::chrono::steady_clock::time_point t_final = std::chrono::steady_clock::now();
-            std::chrono::duration<double> comp_time  = std::chrono::duration_cast<std::chrono::duration<double> >(t_final - t_main_1);
-
-            std::cout << "\ntotal gather time: " << total_gather_time << std::endl;
-            std::cout << "total time: " << comp_time.count() << std::endl;
+            std::chrono::duration<double> write_comp_time  = std::chrono::duration_cast<std::chrono::duration<double> >(t_write_2 - t_write_1);
+            std::chrono::duration<double> final_comp_time  = std::chrono::duration_cast<std::chrono::duration<double> >(t_final - t_main_1);
+            std::cout << "write completed in: " << write_comp_time.count() << std::endl;
+            std::cout << "\ntotal time: " << final_comp_time.count() << std::endl;
         }
-            delete[] sum_total_energy_array;
-            delete[] sum_total_energy_squared_array;
-            delete[] sum_total_magnetization_array;
-            delete[] sum_total_magnetization_absolute_array;
-            delete[] sum_total_magnetization_squared_array;
         
     }
 
@@ -534,24 +407,16 @@ public:
 
 };
 
-
 int main()
 {   
-    // int spin_matrix_dim = 20;
-    int spin_matrix_dim = 100;
-
-    // int mc_iterations = 1e4;
-    int mc_iterations = 2e6;
-
-    // int stable_iterations = 1e3;
-    int stable_iterations = 1e6;
+    int spin_matrix_dim = 20;
+    int mc_iterations = 1e6;
+    int stable_iterations = 5000;
     
     double initial_temp = 2;
-    double final_temp = 2.6;
-    // double temps_per_thread = 5;
-    double nr_temps = 50;
+    double final_temp = 2.4;
+    double temps_per_thread = 1;
 
-    bool not_ordered_spins = false;
     bool ordered_spins = true;
 
     time_t seed;
@@ -559,12 +424,10 @@ int main()
     
     ParallelEnergySolver data_model(spin_matrix_dim, mc_iterations, seed);
     data_model.set_stable_iterations(stable_iterations);
-    // data_model.iterate_temperature_parallel(initial_temp, final_temp, temps_per_thread, ordered_spins);
-    data_model.iterate_temperature_parallel_more_data(initial_temp, final_temp, nr_temps, not_ordered_spins);
+    data_model.iterate_temperature_parallel(initial_temp, final_temp, temps_per_thread, ordered_spins);
 
     // ParallelEnergySolver convergence_model(spin_matrix_dim, mc_iterations, seed);
-    // convergence_model.iterate_temperature_convergence_parallel(initial_temp,
-    //     final_temp, temps_per_thread, ordered_spins);
+    // convergence_model.iterate_temperature_convergence_parallel(initial_temp, final_temp, temps_per_thread, ordered_spins);
 
     return 0;
 }
