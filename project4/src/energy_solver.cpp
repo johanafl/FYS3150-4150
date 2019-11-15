@@ -501,6 +501,7 @@ void IsingModel::set_convergence_filenames(std::string postfix)
     std::string filename2 = "data_files/M_convergence_data_" + postfix + ".txt";
     E_convergence_data.open(filename1, std::ios_base::app);
     M_convergence_data.open(filename2, std::ios_base::app);
+    is_conv_filename_set = true;
 }
 
 
@@ -525,6 +526,7 @@ void IsingModel::set_ising_filename(std::string postfix)
 
     std::string filename = "data_files/ising_model_data_" + postfix + ".txt";
     ising_model_data.open(filename, std::ios_base::app);
+    is_ising_filename_set = true;
 }
 
 
