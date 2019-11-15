@@ -1,7 +1,7 @@
 #include "energy_solver.h"
 
 
-IsingModel::IsingModel(int spin_mat_dim, int mc_iterations_input, long seed)
+IsingModel::IsingModel(int spin_mat_dim, int mc_iterations_input, double seed)
     : uniform_discrete(0, spin_mat_dim - 1), engine(seed),
     uniform_continuous(0, 1), spin(spin_mat_dim, seed)
 {   /*
@@ -22,9 +22,9 @@ IsingModel::IsingModel(int spin_mat_dim, int mc_iterations_input, long seed)
     total_energy_and_magnetization(spin, n, total_energy, total_magnetization);
     
     // initialising data files
-    E_convergence_data.open("data_files/E_convergence_data.txt", std::ios_base::app);
-    M_convergence_data.open("data_files/M_convergence_data.txt", std::ios_base::app);
-    ising_model_data.open("data_files/ising_model_data.txt", std::ios_base::app);
+    // E_convergence_data.open("data_files/E_convergence_data.txt", std::ios_base::app);
+    // M_convergence_data.open("data_files/M_convergence_data.txt", std::ios_base::app);
+    // ising_model_data.open("data_files/ising_model_data.txt", std::ios_base::app);
 }
 
 
@@ -173,6 +173,7 @@ void IsingModel::metropolis_flap(CircularMatrix& spin, double& total_energy,
     if (metropolis_random <= exp_delta_energy[(int) (delta_energy + 8)])
     {   // checks if energy difference is positive and the metropolis
         // condition true
+        accepted_config++;  // Count the number of accepted configurations.
         spin(row, col)      *= -1;
         total_energy        += delta_energy;
         total_magnetization += -2*spin_here;
@@ -201,8 +202,17 @@ void IsingModel::iterate_temperature(double initial_temp, double final_temp,
         for the stable phase. Convergence toggles this.
     */
 
+
+
     if (convergence)
     {   // title for the convergence files
+
+        if (not is_conv_filename_set)
+        {
+            set_convergence_filenames();
+            is_conv_filename_set = true;
+        }
+
         E_convergence_data << "mc_iterations: " << mc_iterations;
         E_convergence_data << " spin_matrix_dim: " << n;
         E_convergence_data << std::endl;
@@ -212,6 +222,13 @@ void IsingModel::iterate_temperature(double initial_temp, double final_temp,
     }
     else
     {   // title for the stable file
+
+        if (not is_ising_filename_set)
+        {
+            set_ising_filename();
+            is_ising_filename_set = true;
+        }
+
         ising_model_data << "mc_iterations: " << mc_iterations;
         ising_model_data << " spin_matrix_dim: " << n;
         ising_model_data << std::endl;
@@ -290,6 +307,12 @@ void IsingModel::iterate_monte_carlo_cycles(int initial_MC, int final_MC, int dM
         Monte Carlo iterations step length.
     */
 
+    if (not is_ising_filename_set)
+    {
+       set_ising_filename();
+       is_ising_filename_set = true;
+    }
+
     // File title.
     ising_model_data << "initial_MC: " << initial_MC;
     ising_model_data << " final_MC : " << final_MC;
@@ -364,7 +387,7 @@ void IsingModel::total_energy_and_magnetization(CircularMatrix& spin, int n,
 
 
 void IsingModel::set_new_input(int spin_mat_dim, int mc_iterations_input,
-    double J_input, long seed)
+    double J_input, double seed)
 {   /*
     Set all parameters to new input values.
 
@@ -387,7 +410,7 @@ void IsingModel::set_new_input(int spin_mat_dim, int mc_iterations_input,
     J = J_input;
 
     engine.seed(seed);
-    spin.new_dim_and_seed(spin_mat_dim, seed);
+    spin.set_new_dim_and_seed(spin_mat_dim, seed);
 }
 
 
@@ -418,10 +441,9 @@ void IsingModel::set_mc_iterations(int mc_iterations_input)
     mc_iterations = mc_iterations_input;
 }
 
+
 void IsingModel::set_stable_iterations(int stable_iterations_input)
 {   /*
-    Set the dimention of the spin matrix.
-
     Parameters
     ----------
     stable_iterations : int
@@ -430,6 +452,7 @@ void IsingModel::set_stable_iterations(int stable_iterations_input)
 
     stable_iterations = stable_iterations_input;
 }
+
 
 void IsingModel::set_spin_dim(int spin_mat_dim)
 {   /*
@@ -442,7 +465,7 @@ void IsingModel::set_spin_dim(int spin_mat_dim)
     */
 
     n = spin_mat_dim;
-    spin.new_dim(spin_mat_dim);
+    spin.set_new_dim(spin_mat_dim);
 }
 
 
@@ -451,6 +474,57 @@ void IsingModel::set_order_spins()
     Set the spin matrix to ordered initial configuration.
     */
     spin.ordered_spin();
+}
+
+
+void IsingModel::set_convergence_filenames()
+{   /*
+    Sets pre-defined filenames.
+    */
+
+    E_convergence_data.open("data_files/E_convergence_data.txt", std::ios_base::app);
+    M_convergence_data.open("data_files/M_convergence_data.txt", std::ios_base::app);
+}
+
+
+void IsingModel::set_convergence_filenames(std::string postfix)
+{   /*
+    Set the filenames of convergence files.
+
+    Parameters
+    ----------
+    postfix : std::string
+        Addition to end of filename of pre-set filenames.
+    */
+
+    std::string filename1 = "data_files/E_convergence_data_" + postfix + ".txt";
+    std::string filename2 = "data_files/M_convergence_data_" + postfix + ".txt";
+    E_convergence_data.open(filename1, std::ios_base::app);
+    M_convergence_data.open(filename2, std::ios_base::app);
+}
+
+
+void IsingModel::set_ising_filename()
+{   /*
+    Sets pre-defined filename.
+    */
+
+    ising_model_data.open("data_files/ising_model_data.txt", std::ios_base::app);
+}
+
+
+void IsingModel::set_ising_filename(std::string postfix)
+{   /*
+    Set the filenames of convergence files.
+
+    Parameters
+    ----------
+    postfix : std::string
+        Addition to end of filename of pre-set filenames.
+    */
+
+    std::string filename = "data_files/ising_model_data_" + postfix + ".txt";
+    ising_model_data.open(filename, std::ios_base::app);
 }
 
 
