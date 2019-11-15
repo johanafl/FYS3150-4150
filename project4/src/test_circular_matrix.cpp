@@ -72,25 +72,25 @@ TEST_CASE("test_indexing")
 }
 
 // TEST_CASE("test_indexing_boundary_check")
-TEST_CASE("test_indexing_boundary_check")
-{
-    // google how to require (test) EXIT_FAILURE.
-    int n    = 2;
-    int seed = 1337;
-    int row1 = -1;
-    int row2 = 3;
-    int col1 = -1;
-    int col2 = 3;
+// TEST_CASE("test_indexing_boundary_check")
+// {
+//     // google how to require (test) EXIT_FAILURE.
+//     int n    = 2;
+//     int seed = 1337;
+//     int row1 = -1;
+//     int row2 = 3;
+//     int col1 = -1;
+//     int col2 = 3;
 
-    double spin[4]  = {1, 1, 1, 1};
+//     double spin[4]  = {1, 1, 1, 1};
 
-    CircularMatrix mat(n, spin);
+//     CircularMatrix mat(n, spin);
 
-    REQUIRE(mat(row1, 0, true) == EXIT_FAILURE);
-    REQUIRE(mat(row2, 0, true) == EXIT_FAILURE);
-    REQUIRE(mat(0, col1, true) == EXIT_FAILURE);
-    REQUIRE(mat(0, col2, true) == EXIT_FAILURE);
-}
+//     REQUIRE(mat(row1, 0, true) == EXIT_FAILURE);
+//     REQUIRE(mat(row2, 0, true) == EXIT_FAILURE);
+//     REQUIRE(mat(0, col1, true) == EXIT_FAILURE);
+//     REQUIRE(mat(0, col2, true) == EXIT_FAILURE);
+// }
 
 // int main()
 // {
