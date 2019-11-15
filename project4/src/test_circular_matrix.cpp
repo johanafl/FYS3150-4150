@@ -15,7 +15,7 @@ void test_print()
     std::cout << std::endl;
     q2.print();
     std::cout << std::endl;
-    q1.new_dim(4);
+    q1.set_new_dim(4);
     q1.ordered_spin();
     q1.print();
     // std::cout << q1(0, 8, true) << std::endl;
@@ -46,7 +46,7 @@ TEST_CASE("test_that_new_dim_and_seed_produces_new_dimension_and_seed")
 
     CircularMatrix mat(n_old, old_seed);
 
-    mat.new_dim_and_seed(n_new, new_seed);
+    mat.set_new_dim_and_seed(n_new, new_seed);
 
     REQUIRE(mat.dim == n_new);
     REQUIRE(mat.seed == new_seed);
