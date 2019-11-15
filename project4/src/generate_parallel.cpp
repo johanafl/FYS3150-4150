@@ -407,24 +407,57 @@ public:
 
 };
 
-int main()
-{   
-    int spin_matrix_dim = 20;
-    int mc_iterations = 1e6;
-    int stable_iterations = 5000;
+void beehive(int spin_matrix_dim)
+{
+    int mc_iterations = 1e7;
+    int stable_iterations = 4e5;
+    bool ordered_spins = false;
     
-    double initial_temp = 2;
-    double final_temp = 2.4;
-    double temps_per_thread = 1;
-
-    bool ordered_spins = true;
+    std::string ising_postfix;
+    double initial_temp;
+    double final_temp;
+    double temps_per_thread;
 
     time_t seed;
     time(&seed);
+
+    ising_postfix = std::to_string(spin_matrix_dim) + "x" + std::to_string(spin_matrix_dim);
+    initial_temp = 2;
+    final_temp = 2.6;
+    temps_per_thread = 2;
     
     ParallelEnergySolver data_model(spin_matrix_dim, mc_iterations, seed);
     data_model.set_stable_iterations(stable_iterations);
+    data_model.set_ising_filename(ising_postfix);
     data_model.iterate_temperature_parallel(initial_temp, final_temp, temps_per_thread, ordered_spins);
+}
+
+
+int main()
+{   
+
+    beehive(100);
+    // beehive(80);
+    // beehive(60);
+    // beehive(40);
+    // beehive(20);
+    
+    // int spin_matrix_dim = 20;
+    // int mc_iterations = 1e6;
+    // int stable_iterations = 5000;
+    
+    // double initial_temp = 2;
+    // double final_temp = 2.4;
+    // double temps_per_thread = 1;
+
+    // bool ordered_spins = true;
+
+    // time_t seed;
+    // time(&seed);
+    
+    // ParallelEnergySolver data_model(spin_matrix_dim, mc_iterations, seed);
+    // data_model.set_stable_iterations(stable_iterations);
+    // data_model.iterate_temperature_parallel(initial_temp, final_temp, temps_per_thread, ordered_spins);
 
     // ParallelEnergySolver convergence_model(spin_matrix_dim, mc_iterations, seed);
     // convergence_model.iterate_temperature_convergence_parallel(initial_temp, final_temp, temps_per_thread, ordered_spins);
