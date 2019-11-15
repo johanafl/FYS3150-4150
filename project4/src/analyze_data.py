@@ -1,5 +1,8 @@
+import time
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib as mpl
+mpl.rcParams['agg.path.chunksize'] = 10000
 
 
 def compare_values_task_a_and_b():
@@ -121,56 +124,237 @@ def compare_values_task_a_and_b():
     E  = analytical_mean_energy_2x2(T)
     Cv = analytical_specific_heat_capacity_2x2(T)
     X  = analytical_susceptibility_2x2(T)
+
+    M_error  = np.abs(M - abs_M_n)
+    E_error  = np.abs(E - E_n)
+    Cv_error = np.abs(Cv - Cv_n)
+    X_error  = np.abs(X - X_n)
     
-    print("\nComparing results for a 2x2 spin matrix.")
-    print("-"*43)
-    print("       analytical   numerical")
-    print(f"<|M|>: {M:9.4f} {abs_M_n:9.4f}")
-    print(f"<E>:   {E:9.4f} {E_n:9.4f}")
-    print(f"Cv:    {Cv:9.4f} {Cv_n:9.4f}")
-    print(f"X:     {X:9.4f} {X_n:9.4f}")
+    print(f"\nComparing results for a 2x2 spin matrix. MC iterations: 1e9. T: {T}")
+    print("-"*67)
+    print("            analytical      numerical     error")
+    print(f"<|M|>: {M:15.8f} {abs_M_n:15.8f} {M_error:15e}")
+    print(f"<E>:   {E:15.8f} {E_n:15.8f} {E_error:15e}")
+    print(f"Cv:    {Cv:15.8f} {Cv_n:15.8f} {Cv_error:15e}")
+    print(f"X:     {X:15.8f} {X_n:15.8f} {X_error:15e}")
     print()
 
 
-def task_c():
+class TaskC:
     """
     Cheat sheet:
     Columns are temperatures. Rows are data points.
     data[:, 0]: all data points for temperature 0.
-    data[:, 0]: all data points for temperature 0.
-    data[5000:, 0]: all data points except the first 5000 for temperature 0.
+    data[5000:, 16]: all data points except the first 5000 for temperature 16.
     All .npy files are calculated with 1e7 MC iterations.
+
+    All plots are contained, with their specific parameters, inside
+    functions in this function.
     """
 
+    filename_energy_random = "/Users/Jon/Desktop/project4/E_convergence_data_20x20.npy"
+    filename_magnet_random = "/Users/Jon/Desktop/project4/E_convergence_data_20x20.npy"
+    filename_energy_ordered = "/Users/Jon/Desktop/project4/E_convergence_data_20x20_ordered.npy"
+    filename_magnet_ordered = "/Users/Jon/Desktop/project4/E_convergence_data_20x20_ordered.npy"
 
-    filename_energy = "/Users/Jon/Desktop/project4/E_convergence_data_20x20.npy"
-    filename_magnet = "/Users/Jon/Desktop/project4/E_convergence_data_20x20.npy"
+    MC_values = np.arange(1, 1e7+1, 1)  # x values for plot
+    y_scale = 20*20    # Number of spins.
 
-    energy = np.load(filename_energy)
-    magnet = np.load(filename_magnet)
+    E_random_data_loaded = False
+    M_random_data_loaded = False
+    E_ordered_data_loaded = False
+    M_ordered_data_loaded = False
 
-    temperatures = energy[0, :]
-    temp = 16
-    energy = energy[1:, :]
-    magnet = magnet[1:, :]
+    
+    def M_cumulative_average_T_24_ordered(self):
+        """
+        Specific parameters for showing the cumulative average
+        magnetization for T = 2.4 from ordered initial state.
 
-    selection = slice(3000000, -1, 1)
-    MC_values = np.arange(1, 1e7+1, 1)
-    E_cum_avg = np.cumsum(energy[selection, temp])/np.arange(1, len(energy[selection, temp]) + 1, 1)
-    M_cum_avg = np.cumsum(magnet[selection, temp])/np.arange(1, len(magnet[selection, temp]) + 1, 1)
+        The y axis is scaled with 1/(n*n) (divided by the number of spins)
+        such that the comparison of the burn-in time of the different
+        scenarios are more easily compared.
+        """
+
+        if not self.M_ordered_data_loaded:
+            load_time_1 = time.time()
+            # Loads the data if it is not already loaded.
+            self.magnet_ordered = np.load(self.filename_magnet_ordered)
+            self.temperatures_ordered = self.magnet_ordered[0, :]
+            self.magnet_ordered = self.magnet_ordered[1:, :]
+
+            load_time_2 = time.time()
+            
+            print(f"M ordered data loaded in: {load_time_2 - load_time_1:.3f} seconds.")
+            self.M_ordered_data_loaded = True
+        
+        
+        temp = 28   # Index for chosen temperature.
+        selection = slice(int(0), None, 1)
+        M_cum_avg = np.cumsum(self.magnet_ordered[selection, temp])/\
+            np.arange(1, len(self.magnet_ordered[selection, temp]) + 1, 1)
+
+        plot_time_1 = time.time()
+
+        fig, ax = plt.subplots(figsize=(10, 8))
+        ax.plot(self.MC_values[selection], M_cum_avg/\
+            self.y_scale, label=f"T: {self.temperatures_ordered[temp]:.1f}")
+        ax.set_ylim([2.60, 2.65])
+        ax.set_xlabel("MC iterations", fontsize=30)
+        ax.set_ylabel("Magnetization, [?]", fontsize=30)
+        ax.legend(loc="best", fontsize=20)
+        ax.tick_params(labelsize=25)
+        ax.grid()
+        
+        plt.tight_layout()
+
+        plot_time_2 = time.time()
+        print(f"E random data plotted and shown in: {plot_time_2 - plot_time_1:.3f} seconds.")
+
+        plt.show()
+    
+
+    def M_cumulative_average_T_24_random(self):
+        """
+        Specific parameters for showing the cumulative average
+        magnetization for T = 2.4 from random initial state.
+
+        The y axis is scaled with 1/(n*n) (divided by the number of spins)
+        such that the comparison of the burn-in time of the different
+        scenarios are more easily compared.
+        """
+
+        if not self.M_random_data_loaded:
+            load_time_1 = time.time()
+            # Loads the data if it is not already loaded.
+            self.magnet_random = np.load(self.filename_magnet_random)
+            self.temperatures_random = self.magnet_random[0, :]
+            self.magnet_random = self.magnet_random[1:, :]
+
+            load_time_2 = time.time()
+            
+            print(f"M random data loaded in: {load_time_2 - load_time_1:.3f} seconds.")
+            self.M_random_data_loaded = True
+
+        temp = 17
+        selection = slice(int(0), None, 1)
+        M_cum_avg = np.cumsum(self.magnet_random[selection, temp])/\
+            np.arange(1, len(self.magnet_random[selection, temp]) + 1, 1)
+
+        plot_time_1 = time.time()
+
+        fig, ax = plt.subplots(figsize=(10, 8))
+        ax.plot(self.MC_values[selection], M_cum_avg/self.y_scale,
+            label=f"T: {self.temperatures_random[temp]:.1f}") 
+        ax.set_ylim([-2.0-0.5, -2.0])
+        ax.set_xlabel("MC iterations", fontsize=30)
+        ax.set_ylabel("Magnetization, [?]", fontsize=30)
+        ax.legend(loc="best", fontsize=20)
+        ax.tick_params(labelsize=25)
+        ax.grid()
+        plt.tight_layout()
+
+        plot_time_2 = time.time()
+        print(f"E random data plotted and shown in: {plot_time_2 - plot_time_1:.3f} seconds.")
+        plt.show()
 
 
-    plt.plot(MC_values[selection], E_cum_avg, label=f"T: {temperatures[temp]:.1f}")    
-    plt.xlabel("MC iterations")
-    plt.ylabel("Energy, [?]")
-    plt.legend(loc="best")
-    plt.show()
+    def E_cumulative_average_T_24_random(self):
+        """
+        Specific parameters for showing the cumulative average energy
+        for T = 2.4 from random initial state.
 
-    # plt.plot(MC_values[selection], M_cum_avg, label=f"T: {temperatures[temp]:.1f}")    
-    # plt.xlabel("MC iterations")
-    # plt.ylabel("Magnet, [?]")
-    # plt.legend(loc="best")
-    # plt.show()
+        The y axis is scaled with 1/(n*n) (divided by the number of spins)
+        such that the comparison of the burn-in time of the different
+        scenarios are more easily compared.
+        """
+
+        if not self.E_random_data_loaded:
+            load_time_1 = time.time()
+            # Loads the data if it is not already loaded.
+            self.energy_random = np.load(self.filename_energy_random)
+            self.temperatures_random = self.energy_random[0, :]
+            self.energy_random = self.energy_random[1:, :]
+
+            load_time_2 = time.time()
+            
+            print(f"E random data loaded in: {load_time_2 - load_time_1:.3f} seconds.")
+            self.E_random_data_loaded = True
+
+        temp = 17
+        selection = slice(int(0), None, 1)
+        E_cum_avg = np.cumsum(self.energy_random[selection, temp])/\
+            np.arange(1, len(self.energy_random[selection, temp]) + 1, 1)
+
+        plot_time_1 = time.time()
+        fig, ax = plt.subplots(figsize=(10, 8))
+        
+        ax.plot(self.MC_values[selection], E_cum_avg/\
+            self.y_scale, label=f"T: {self.temperatures_random[temp]:.1f}")
+        
+        ax.set_ylim([-2.5, -2.5+0.5])
+        ax.set_xlabel("MC iterations", fontsize=30)
+        ax.set_ylabel("Energy, [?]", fontsize=30)
+        ax.legend(loc="best", fontsize=20)
+        ax.tick_params(labelsize=25)
+        ax.grid()
+        plt.tight_layout()
+        
+        plot_time_2 = time.time()
+        print(f"E random data plotted and shown in: {plot_time_2 - plot_time_1:.3f} seconds.")
+        
+        plt.show()
+
+
+    def E_raw_T_24_random(self):
+        """
+        Specific parameters for showing the raw energy data T = 2.4
+        from random initial state.
+
+        The y axis is scaled with 1/(n*n) (divided by the number of spins)
+        such that the comparison of the burn-in time of the different
+        scenarios are more easily compared.
+        """
+
+        if not self.E_random_data_loaded:
+            load_time_1 = time.time()
+            # Loads the data if it is not already loaded.
+            self.energy_random = np.load(self.filename_energy_random)
+            self.temperatures_random = self.energy_random[0, :]
+            self.energy_random = self.energy_random[1:, :]
+
+            load_time_2 = time.time()
+            
+            print(f"E random data loaded in: {load_time_2 - load_time_1:.3f} seconds.")
+            self.E_random_data_loaded = True
+
+        temp = 17
+        selection = slice(int(0), None, 20000)
+
+        plot_time_1 = time.time()
+        fig, ax = plt.subplots(figsize=(10, 8))
+        
+        ax.plot(self.MC_values[selection], self.energy_random[selection, temp]/\
+            self.y_scale, label=f"T: {self.temperatures_random[temp]:.1f}")
+        
+        ax.set_xlabel("MC iterations", fontsize=30)
+        ax.set_ylabel("Energy, [?]", fontsize=30)
+        ax.legend(loc="best", fontsize=20)
+        ax.tick_params(labelsize=25)
+        ax.grid()
+        
+        plt.tight_layout()
+
+        plot_time_2 = time.time()
+        print(f"E random data plotted and shown in: {plot_time_2 - plot_time_1:.3f} seconds.")
+
+        plt.show()
+
+
+
+
+    
+
 
 
 def analyse_magnet_const_temp(magnet):
@@ -291,10 +475,13 @@ def quick_hist_buizz():
 
 
 if __name__ == "__main__":
-    compare_values_task_a_and_b()
+    # compare_values_task_a_and_b()
+    q = TaskC()
+    # q.M_cumulative_average_T_24_random()
+    # q.E_cumulative_average_T_24_random()
+    q.E_raw_T_24_random()
 
     # quick_buizz()
     # quick_hist_buizz()
-    # task_c()
 
     pass
