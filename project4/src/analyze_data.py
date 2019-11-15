@@ -160,13 +160,15 @@ class TaskC:
     MC_values = np.arange(1, 1e7+1, 1)  # x values for plot
     y_scale = 20*20    # Number of spins.
 
+    tol = 0.02
+
     E_random_data_loaded = False
     M_random_data_loaded = False
     E_ordered_data_loaded = False
     M_ordered_data_loaded = False
 
     
-    def M_cumulative_average_T_24_ordered(self):
+    def M_cumulative_average_ordered(self, T=2.4):
         """
         Specific parameters for showing the cumulative average
         magnetization for T = 2.4 from ordered initial state.
@@ -187,19 +189,23 @@ class TaskC:
             
             print(f"M ordered data loaded in: {load_time_2 - load_time_1:.3f} seconds.")
             self.M_ordered_data_loaded = True
+
+        # Index for chosen temperature.
+        temp_idx = np.where(np.abs(self.temperatures_ordered - T) < self.tol)[0][0]
         
-        
-        temp = 28   # Index for chosen temperature.
         selection = slice(int(0), None, 1)
-        M_cum_avg = np.cumsum(self.magnet_ordered[selection, temp])/\
-            np.arange(1, len(self.magnet_ordered[selection, temp]) + 1, 1)
+        M_cum_avg = np.cumsum(self.magnet_ordered[selection, temp_idx])/\
+            np.arange(1, len(self.magnet_ordered[selection, temp_idx]) + 1, 1)
 
         plot_time_1 = time.time()
 
         fig, ax = plt.subplots(figsize=(10, 8))
         ax.plot(self.MC_values[selection], M_cum_avg/\
-            self.y_scale, label=f"T: {self.temperatures_ordered[temp]:.1f}")
-        ax.set_ylim([2.60, 2.65])
+            self.y_scale, label=f"T: {self.temperatures_ordered[temp_idx]:.1f}")
+        
+        if T == 2.4:
+            ax.set_ylim([2.60, 2.65])
+        
         ax.set_xlabel("MC iterations", fontsize=30)
         ax.set_ylabel("Magnetization, [?]", fontsize=30)
         ax.legend(loc="best", fontsize=20)
@@ -209,12 +215,12 @@ class TaskC:
         plt.tight_layout()
 
         plot_time_2 = time.time()
-        print(f"E random data plotted and shown in: {plot_time_2 - plot_time_1:.3f} seconds.")
+        print(f"M ordered data plotted in: {plot_time_2 - plot_time_1:.3f} seconds.")
 
         plt.show()
     
 
-    def M_cumulative_average_T_24_random(self):
+    def M_cumulative_average_random(self, T=2.4):
         """
         Specific parameters for showing the cumulative average
         magnetization for T = 2.4 from random initial state.
@@ -236,17 +242,22 @@ class TaskC:
             print(f"M random data loaded in: {load_time_2 - load_time_1:.3f} seconds.")
             self.M_random_data_loaded = True
 
-        temp = 17
+        # Index for chosen temperature.
+        temp_idx = np.where(np.abs(self.temperatures_random - T) < self.tol)[0][0]
+        
         selection = slice(int(0), None, 1)
-        M_cum_avg = np.cumsum(self.magnet_random[selection, temp])/\
-            np.arange(1, len(self.magnet_random[selection, temp]) + 1, 1)
+        M_cum_avg = np.cumsum(self.magnet_random[selection, temp_idx])/\
+            np.arange(1, len(self.magnet_random[selection, temp_idx]) + 1, 1)
 
         plot_time_1 = time.time()
 
         fig, ax = plt.subplots(figsize=(10, 8))
         ax.plot(self.MC_values[selection], M_cum_avg/self.y_scale,
-            label=f"T: {self.temperatures_random[temp]:.1f}") 
-        ax.set_ylim([-2.0-0.5, -2.0])
+            label=f"T: {self.temperatures_random[temp_idx]:.1f}") 
+        
+        if T == 2.4:
+            ax.set_ylim([-2.0-0.5, -2.0])
+        
         ax.set_xlabel("MC iterations", fontsize=30)
         ax.set_ylabel("Magnetization, [?]", fontsize=30)
         ax.legend(loc="best", fontsize=20)
@@ -255,11 +266,11 @@ class TaskC:
         plt.tight_layout()
 
         plot_time_2 = time.time()
-        print(f"E random data plotted and shown in: {plot_time_2 - plot_time_1:.3f} seconds.")
+        print(f"M random data plotted in: {plot_time_2 - plot_time_1:.3f} seconds.")
         plt.show()
 
 
-    def E_cumulative_average_T_24_random(self):
+    def E_cumulative_average_random(self, T=2.4):
         """
         Specific parameters for showing the cumulative average energy
         for T = 2.4 from random initial state.
@@ -281,18 +292,22 @@ class TaskC:
             print(f"E random data loaded in: {load_time_2 - load_time_1:.3f} seconds.")
             self.E_random_data_loaded = True
 
-        temp = 17
+        # Index for chosen temperature.
+        temp_idx = np.where(np.abs(self.temperatures_random - T) < self.tol)[0][0]
+
         selection = slice(int(0), None, 1)
-        E_cum_avg = np.cumsum(self.energy_random[selection, temp])/\
-            np.arange(1, len(self.energy_random[selection, temp]) + 1, 1)
+        E_cum_avg = np.cumsum(self.energy_random[selection, temp_idx])/\
+            np.arange(1, len(self.energy_random[selection, temp_idx]) + 1, 1)
 
         plot_time_1 = time.time()
         fig, ax = plt.subplots(figsize=(10, 8))
         
         ax.plot(self.MC_values[selection], E_cum_avg/\
-            self.y_scale, label=f"T: {self.temperatures_random[temp]:.1f}")
+            self.y_scale, label=f"T: {self.temperatures_random[temp_idx]:.1f}")
         
-        ax.set_ylim([-2.5, -2.5+0.5])
+        if T == 2.4:
+            ax.set_ylim([-2.5, -2.5+0.5])
+        
         ax.set_xlabel("MC iterations", fontsize=30)
         ax.set_ylabel("Energy, [?]", fontsize=30)
         ax.legend(loc="best", fontsize=20)
@@ -301,12 +316,12 @@ class TaskC:
         plt.tight_layout()
         
         plot_time_2 = time.time()
-        print(f"E random data plotted and shown in: {plot_time_2 - plot_time_1:.3f} seconds.")
+        print(f"E random data plotted in: {plot_time_2 - plot_time_1:.3f} seconds.")
         
         plt.show()
 
 
-    def E_raw_T_24_random(self):
+    def E_raw_random(self, T=2.4):
         """
         Specific parameters for showing the raw energy data T = 2.4
         from random initial state.
@@ -328,14 +343,16 @@ class TaskC:
             print(f"E random data loaded in: {load_time_2 - load_time_1:.3f} seconds.")
             self.E_random_data_loaded = True
 
-        temp = 17
+        # Index for chosen temperature.
+        temp_idx = np.where(np.abs(self.temperatures_random - T) < self.tol)[0][0]
+        
         selection = slice(int(0), None, 20000)
 
         plot_time_1 = time.time()
         fig, ax = plt.subplots(figsize=(10, 8))
         
-        ax.plot(self.MC_values[selection], self.energy_random[selection, temp]/\
-            self.y_scale, label=f"T: {self.temperatures_random[temp]:.1f}")
+        ax.plot(self.MC_values[selection], self.energy_random[selection, temp_idx]/\
+            self.y_scale, label=f"T: {self.temperatures_random[temp_idx]:.1f}")
         
         ax.set_xlabel("MC iterations", fontsize=30)
         ax.set_ylabel("Energy, [?]", fontsize=30)
@@ -346,7 +363,7 @@ class TaskC:
         plt.tight_layout()
 
         plot_time_2 = time.time()
-        print(f"E random data plotted and shown in: {plot_time_2 - plot_time_1:.3f} seconds.")
+        print(f"E random data plotted in: {plot_time_2 - plot_time_1:.3f} seconds.")
 
         plt.show()
 
@@ -477,9 +494,10 @@ def quick_hist_buizz():
 if __name__ == "__main__":
     # compare_values_task_a_and_b()
     q = TaskC()
-    # q.M_cumulative_average_T_24_random()
-    # q.E_cumulative_average_T_24_random()
-    q.E_raw_T_24_random()
+    q.M_cumulative_average_ordered(T=1)
+    q.M_cumulative_average_random()
+    q.E_cumulative_average_random()
+    q.E_raw_random()
 
     # quick_buizz()
     # quick_hist_buizz()
