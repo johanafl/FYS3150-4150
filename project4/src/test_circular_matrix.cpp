@@ -56,8 +56,8 @@ TEST_CASE("test_indexing")
 {
     int n    = 2;
     int seed = 1337;
-    int row  = 0;
-    int col  = 1;
+    int row  = 1;
+    int col  = 0;
 
     double spin1[4]  = {-1, -1, 1, -1};
     double spin2[4]  = {1, 1, -1, 1};
@@ -65,16 +65,31 @@ TEST_CASE("test_indexing")
     CircularMatrix mat1(n, spin1);
     CircularMatrix mat2(n, spin2);
 
-    REQUIRE(mat1(row, col, true));
-    REQUIRE(mat2(row, col, true));
-    REQUIRE(mat1(row, col));
-    REQUIRE(mat2(row, col));
+    REQUIRE(mat1(row, col, true) == 1);
+    REQUIRE(mat2(row, col, true) == -1);
+    REQUIRE(mat1(row, col) == 1);
+    REQUIRE(mat2(row, col) == -1);
 }
 
 // TEST_CASE("test_indexing_boundary_check")
-void test_indexing_boundary_check()
+TEST_CASE("test_indexing_boundary_check")
 {
     // google how to require (test) EXIT_FAILURE.
+    int n    = 2;
+    int seed = 1337;
+    int row1 = -1;
+    int row2 = 3;
+    int col1 = -1;
+    int col2 = 3;
+
+    double spin[4]  = {1, 1, 1, 1};
+
+    CircularMatrix mat(n, spin);
+
+    REQUIRE(mat(row1, 0, true) == EXIT_FAILURE);
+    REQUIRE(mat(row2, 0, true) == EXIT_FAILURE);
+    REQUIRE(mat(0, col1, true) == EXIT_FAILURE);
+    REQUIRE(mat(0, col2, true) == EXIT_FAILURE);
 }
 
 // int main()
