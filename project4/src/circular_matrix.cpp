@@ -96,21 +96,7 @@ void CircularMatrix::ordered_spin()
     for (int i = 0; i < dim*dim; i++) {matrix[i] = 1;}
 }
 
-void CircularMatrix::initial_spin(bool ordered)
-{   /*
-    Initialize the spin matrix ordered with all spin up.
-
-    Parameters
-    ----------
-    ordered : bool
-        Isn't directly used. Only used for overloading
-        initial_spin() to accept a bool for toggling ordered initial
-        spins on/off.
-    */
-    CircularMatrix::ordered_spin();
-}
-
-void CircularMatrix::new_dim_and_seed(int n, double new_seed)
+void CircularMatrix::set_new_dim_and_seed(int n, double new_seed)
 {   /*
     Reset the spin matrix with size nxn and initial spins randomly
     drawn with input seed.
@@ -131,7 +117,7 @@ void CircularMatrix::new_dim_and_seed(int n, double new_seed)
     initial_spin();
 }
 
-void CircularMatrix::new_dim(int n)
+void CircularMatrix::set_new_dim(int n)
 {   /*
     Reset the spin matrix with size nxn.
 
@@ -140,7 +126,7 @@ void CircularMatrix::new_dim(int n)
     n : int
         Matrix dimension (nxn).
     */
-    CircularMatrix::new_dim_and_seed(n, seed);
+    CircularMatrix::set_new_dim_and_seed(n, seed);
 }
 
 void CircularMatrix::print()

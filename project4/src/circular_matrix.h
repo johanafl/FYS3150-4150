@@ -4,12 +4,11 @@
 #include <random>
 #include <iostream>
 #include <iomanip>
-#include <stdlib.h>
 #include <fstream>
 #include <chrono>
 #include <cmath>
+#include <string>
 
-const double pi = 3.14159265358979323846;
 
 class CircularMatrix
 {
@@ -24,9 +23,8 @@ public:
     void initial_spin();
     void initial_spin(double seed_input);
     void ordered_spin();
-    void initial_spin(bool ordered);
-    void new_dim_and_seed(int n, double new_seed);
-    void new_dim(int n);
+    void set_new_dim_and_seed(int n, double new_seed);
+    void set_new_dim(int n);
     void print();
     double& operator() (int row, int col);
     double& operator() (int row, int col, bool safe);
