@@ -6,7 +6,6 @@
 class IsingModel
 {
 protected:
-// private:
     double* exp_delta_energy = new double[17];  // pre-calculated energy values
 
     int row;    // row index, will be randomly drawn
@@ -15,8 +14,13 @@ protected:
     double total_energy;
     double total_magnetization;
 
+    bool is_conv_filename_set = false;
+    bool is_ising_filename_set = false;
+
     double delta_energy;
     double spin_here;
+
+    int accepted_config = 0;    // Counter for accepted Metropolis flipflap.
 
     // values for the averages after convergence
     double sum_total_energy;
@@ -53,21 +57,27 @@ protected:
 
 public:
 
-    IsingModel(int spin_mat_dim, int mc_iterations_input, long seed);
+    IsingModel(int spin_mat_dim, int mc_iterations_input, double seed);
+    void metropolis_flap(CircularMatrix& spin, double& total_energy,
+        double& total_magnetization, int row, int col,
+        double metropolis_random, double temperature, double* exp_delta_energy);
     void iterate_temperature(double initial_temp, double final_temp,
         double dtemp, bool convergence);
+    void iterate_monte_carlo_cycles(int initial_MC, int final_MC, int dMC);
     void total_energy_and_magnetization(CircularMatrix& spin, int n,
         double& total_energy, double& total_magnetization);
-    void set_new_input(int spin_mat_dim, int mc_iterations_input, double inter_strenght_J, long seed);
+    void set_new_input(int spin_mat_dim, int mc_iterations_input,
+        double inter_strenght_J, double seed);
     void set_interactions_strength(double strength_J);
     void set_mc_iterations(int mc_iterations_input);
     void set_stable_iterations(int stable_iterations_input);
     void set_spin_dim(int spin_mat_dim);
     void set_order_spins();
-    void iterate_monte_carlo_cycles(int initial_MC, int final_MC, int dMC);
-    void metropolis_flap(CircularMatrix& spin, double& total_energy,
-        double& total_magnetization, int row, int col, double metropolis_random,
-        double temperature, double* exp_delta_energy);
+    void set_convergence_filenames();
+    void set_convergence_filenames(std::string postfix);
+    void set_ising_filename();
+    void set_ising_filename(std::string postfix);
+
     ~IsingModel();
 };
 
