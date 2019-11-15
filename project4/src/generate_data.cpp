@@ -6,14 +6,14 @@ int main()
     Interface for using the energy solver class in non-parallel mode.
     */
     int the_magic_seed = 1572032584;    // the holy seed
-    int spin_matrix_dim = 2;
-    int mc_iterations = 1e3;
-    bool convergence = true;
+    int spin_matrix_dim = 20;
+    int mc_iterations = 1e6;
+    bool convergence = false;
     int stable_iterations = 5000;
     
-    double initial_temp = 1;
-    double final_temp = 3;
-    double dtemp = 0.25;       // temperature step length
+    double initial_temp = 2;
+    double final_temp = 2.4;
+    double dtemp = 0.05;       // temperature step length
     
     int initial_MC = 1e4;
     int final_MC   = 1e5;
