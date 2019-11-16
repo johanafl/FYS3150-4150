@@ -663,11 +663,6 @@ def task_4e():
     data_80 = np.loadtxt("data_files/ising_model_data_80x80.txt", skiprows=2, unpack=True)
     data_100 = np.loadtxt("data_files/ising_model_data_100x100.txt", skiprows=2, unpack=True)
 
-    # data_20[1:] /= 20*20
-    # data_40[1:] /= 40*40
-    # data_60[1:] /= 60*60
-    # data_80[1:] /= 80*80
-    # data_100[1:] /= 100*100
 
     T_20, E_20, E_squared_20, M_20, M_squared_20, M_abs_20 = data_20
     T_40, E_40, E_squared_40, M_40, M_squared_40, M_abs_40 = data_40
@@ -676,12 +671,6 @@ def task_4e():
     T_100, E_100, E_squared_100, M_100, M_squared_100, M_abs_100 = data_100
     kb = 1
 
-    # E_20, E_squared_20, M_20, M_squared_20, M_abs_20 /= 20*20
-    # E_40, E_squared_40, M_40, M_squared_40, M_abs_40 /= 40*40
-    # E_60, E_squared_60, M_60, M_squared_60, M_abs_60 /= 60*60
-    # E_80, E_squared_80, M_80, M_squared_80, M_abs_80 /= 80*80
-    # E_100, E_squared_100, M_100, M_squared_100, M_abs_100 /= 100*100
-    
     Cv_20 = (E_squared_20 - E_20**2)/(kb*T_20**2)     # Numerical heat capacity.
     X_20  = (M_squared_20 - M_abs_20**2)/(kb*T_20) # Numerical susceptibility.
 
