@@ -538,7 +538,7 @@ def analyse_heat_capacity(temp, avg_energy, avg_energy_square):
 
 
 def quick_buizz():
-    data = np.loadtxt("data_files/ising_model_data.txt", skiprows=2, unpack=True)
+    data = np.loadtxt("data_files/ising_model_data_11x11.txt", skiprows=2, unpack=True)
 
     T, E, E_squared, M, M_squared, M_abs = data
     kb = 1
