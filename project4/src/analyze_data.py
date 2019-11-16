@@ -656,7 +656,84 @@ def quicker_buizz():
 
     plt.show()
 
+def task_4e():
+    data_20 = np.loadtxt("data_files/ising_model_data_20x20.txt", skiprows=2, unpack=True)
+    data_40 = np.loadtxt("data_files/ising_model_data_40x40.txt", skiprows=2, unpack=True)
+    data_60 = np.loadtxt("data_files/ising_model_data_60x60.txt", skiprows=2, unpack=True)
+    data_80 = np.loadtxt("data_files/ising_model_data_80x80.txt", skiprows=2, unpack=True)
+    data_100 = np.loadtxt("data_files/ising_model_data_100x100.txt", skiprows=2, unpack=True)
 
+    # data_20[1:] /= 20*20
+    # data_40[1:] /= 40*40
+    # data_60[1:] /= 60*60
+    # data_80[1:] /= 80*80
+    # data_100[1:] /= 100*100
+
+    T_20, E_20, E_squared_20, M_20, M_squared_20, M_abs_20 = data_20
+    T_40, E_40, E_squared_40, M_40, M_squared_40, M_abs_40 = data_40
+    T_60, E_60, E_squared_60, M_60, M_squared_60, M_abs_60 = data_60
+    T_80, E_80, E_squared_80, M_80, M_squared_80, M_abs_80 = data_80
+    T_100, E_100, E_squared_100, M_100, M_squared_100, M_abs_100 = data_100
+    kb = 1
+
+    # E_20, E_squared_20, M_20, M_squared_20, M_abs_20 /= 20*20
+    # E_40, E_squared_40, M_40, M_squared_40, M_abs_40 /= 40*40
+    # E_60, E_squared_60, M_60, M_squared_60, M_abs_60 /= 60*60
+    # E_80, E_squared_80, M_80, M_squared_80, M_abs_80 /= 80*80
+    # E_100, E_squared_100, M_100, M_squared_100, M_abs_100 /= 100*100
+    
+    Cv_20 = (E_squared_20 - E_20**2)/(kb*T_20**2)     # Numerical heat capacity.
+    X_20  = (M_squared_20 - M_abs_20**2)/(kb*T_20) # Numerical susceptibility.
+
+    Cv_40 = (E_squared_40 - E_40**2)/(kb*T_40**2)     # Numerical heat capacity.
+    X_40  = (M_squared_40 - M_abs_40**2)/(kb*T_40) # Numerical susceptibility.
+
+    Cv_60 = (E_squared_60 - E_60**2)/(kb*T_60**2)     # Numerical heat capacity.
+    X_60  = (M_squared_60 - M_abs_60**2)/(kb*T_60) # Numerical susceptibility.
+
+    Cv_80 = (E_squared_80 - E_80**2)/(kb*T_80**2)     # Numerical heat capacity.
+    X_80  = (M_squared_80 - M_abs_80**2)/(kb*T_80) # Numerical susceptibility.
+
+    Cv_100 = (E_squared_100 - E_100**2)/(kb*T_100**2)     # Numerical heat capacity.
+    X_100  = (M_squared_100 - M_abs_100**2)/(kb*T_100) # Numerical susceptibility.
+
+    fig, ax = plt.subplots(ncols=2, nrows=2)
+    fig.text(x=0.455, y=0.035, s=r"$Temperature, [k_bT]$", fontsize=25)
+
+    ax[0, 0].plot(T_20, E_20/(20*20), "--.", label="20x20")
+    ax[0, 0].plot(T_40, E_40/(40*40), "--.", label="40x40")
+    ax[0, 0].plot(T_60, E_60/(60*60), "--.", label="60x60")
+    ax[0, 0].plot(T_80, E_80/(80*80), "--.", label="80x80")
+    ax[0, 0].plot(T_100, E_100/(100*100), "--.", label="100x100")
+    ax[0, 0].set_title(r"$\langle E \rangle$", fontsize=25)
+    ax[0, 0].legend(fontsize=20)
+    ax[0, 0].tick_params(labelsize=25)
+
+    ax[0, 1].plot(T_20, M_abs_20/(20*20), "--.", label="20x20")
+    ax[0, 1].plot(T_40, M_abs_40/(40*40), "--.", label="40x40")
+    ax[0, 1].plot(T_60, M_abs_60/(60*60), "--.", label="60x60")
+    ax[0, 1].plot(T_80, M_abs_80/(80*80), "--.", label="80x80")
+    ax[0, 1].plot(T_100, M_abs_100/(100*100), "--.", label="100x100")
+    ax[0, 1].set_title(r"$\langle|M|\rangle$", fontsize=25)
+    ax[0, 1].tick_params(labelsize=25)
+
+    ax[1, 0].plot(T_20, Cv_20/(20*20), "--.", label="20x20")
+    ax[1, 0].plot(T_40, Cv_40/(40*40), "--.", label="40x40")
+    ax[1, 0].plot(T_60, Cv_60/(60*60), "--.", label="60x60")
+    ax[1, 0].plot(T_80, Cv_80/(80*80), "--.", label="80x80")
+    ax[1, 0].plot(T_100, Cv_100/(100*100), "--.", label="100x100")
+    ax[1, 0].set_title(r"$C_v$", fontsize=25)
+    ax[1, 0].tick_params(labelsize=25)
+
+    ax[1, 1].plot(T_20, X_20/(20*20), "--.", label="20x20")
+    ax[1, 1].plot(T_40, X_40/(40*40), "--.", label="40x40")
+    ax[1, 1].plot(T_60, X_60/(60*60), "--.", label="60x60")
+    ax[1, 1].plot(T_80, X_80/(80*80), "--.", label="80x80")
+    ax[1, 1].plot(T_100, X_100/(100*100), "--.", label="100x100")
+    ax[1, 1].set_title(r"$\chi$", fontsize=25)
+    ax[1, 1].tick_params(labelsize=25)
+
+    plt.show()
 
 
 
@@ -670,7 +747,8 @@ if __name__ == "__main__":
     # q.E_raw_random(T=2.4)
     # q.check_averages()
 
-    quick_buizz()
+    # quick_buizz()
+    task_4e()
     # quick_hist_buizz()
 
     # quicker_buizz()
