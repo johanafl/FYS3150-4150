@@ -2,6 +2,7 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+from matplotlib.ticker import FormatStrFormatter
 mpl.rcParams['agg.path.chunksize'] = 10000
 
 
@@ -154,12 +155,12 @@ class TaskC:
     [Cv] = kb
     """
 
-    filename_energy_random = "/Users/Jon/Desktop/project4/E_convergence_data_20x20.npy"
-    filename_magnet_random = "/Users/Jon/Desktop/project4/M_convergence_data_20x20.npy"
-    filename_energy_ordered = "/Users/Jon/Desktop/project4/E_convergence_data_20x20_ordered.npy"
-    filename_magnet_ordered = "/Users/Jon/Desktop/project4/M_convergence_data_20x20_ordered.npy"
+    filename_energy_random = "data_files/E_convergence_data_20x20_random.txt"
+    filename_magnet_random = "data_files/M_convergence_data_20x20_random.txt"
+    filename_energy_ordered = "data_files/E_convergence_data_20x20_ordered.txt"
+    filename_magnet_ordered = "data_files/M_convergence_data_20x20_ordered.txt"
 
-    MC_values = np.arange(1, 1e7+1, 1)  # x values for plot
+    MC_values = np.arange(1, 1e6+1, 1)/1e6  # x values for plot
     y_scale = 20*20    # Number of spins.
 
     tol = 0.02
@@ -183,7 +184,7 @@ class TaskC:
         if not self.M_ordered_data_loaded:
             load_time_1 = time.time()
             # Loads the data if it is not already loaded.
-            self.magnet_ordered = np.load(self.filename_magnet_ordered)
+            self.magnet_ordered = np.loadtxt(self.filename_magnet_ordered, skiprows=2)
             self.temperatures_ordered = self.magnet_ordered[0, :]
             self.magnet_ordered = self.magnet_ordered[1:, :]
 
@@ -205,11 +206,14 @@ class TaskC:
 
         fig, ax = plt.subplots(figsize=(10, 8))
         ax.plot(self.MC_values[selection], M_cum_avg/\
-            1, label=f"T: {self.temperatures_ordered[temp_idx]:.1f}")
+            self.y_scale, label=f"T: {self.temperatures_ordered[temp_idx]:.1f}")
         
         if T == 2.4:
             pass
-            # ax.set_ylim([-5.2, -5])
+            ax.set_ylim([0.120, 0.120+0.04])
+
+        if T == 1:
+            ax.set_ylim([0.9982, 0.9982+0.002])
         
         ax.set_xlabel("MC iterations", fontsize=30)
         ax.set_ylabel("Magnetization", fontsize=30)
@@ -217,6 +221,7 @@ class TaskC:
         ax.tick_params(labelsize=25)
         # ax.set_title("ordered")
         ax.grid()
+        # ax.xaxis.set_major_formatter(FormatStrFormatter('%.2e'))
         
         plt.tight_layout()
 
@@ -240,7 +245,7 @@ class TaskC:
         if not self.M_random_data_loaded:
             load_time_1 = time.time()
             # Loads the data if it is not already loaded.
-            self.magnet_random = np.load(self.filename_magnet_random)
+            self.magnet_random = np.loadtxt(self.filename_magnet_random, skiprows=2)
             self.temperatures_random = self.magnet_random[0, :]
             self.magnet_random = self.magnet_random[1:, :]
 
@@ -262,11 +267,15 @@ class TaskC:
 
         fig, ax = plt.subplots(figsize=(10, 8))
         ax.plot(self.MC_values[selection], M_cum_avg/\
-            1, label=f"T: {self.temperatures_random[temp_idx]:.1f}") 
+            self.y_scale, label=f"T: {self.temperatures_random[temp_idx]:.1f}") 
         
         if T == 2.4:
             pass
             # ax.set_ylim([0.08, 0.28])
+
+        if T == 1:
+            pass
+            ax.set_ylim([0.998, 1])
         
         ax.set_xlabel("MC iterations", fontsize=30)
         ax.set_ylabel("Magnetization", fontsize=30)
@@ -294,7 +303,7 @@ class TaskC:
         if not self.E_ordered_data_loaded:
             load_time_1 = time.time()
             # Loads the data if it is not already loaded.
-            self.energy_ordered = np.load(self.filename_energy_ordered)
+            self.energy_ordered = np.loadtxt(self.filename_energy_ordered, skiprows=2)
             self.temperatures_ordered = self.energy_ordered[0, :]
             self.energy_ordered = self.energy_ordered[1:, :]
 
@@ -317,7 +326,12 @@ class TaskC:
             self.y_scale, label=f"T: {self.temperatures_ordered[temp_idx]:.1f}")
         
         if T == 2.4:
-            ax.set_ylim([2.5, 2.7])
+            pass
+            # ax.set_ylim([2.5, 2.7])
+
+        if T == 1:
+            pass
+            ax.set_ylim([-1.998, -1.998+0.002])
         
         ax.set_xlabel("MC iterations", fontsize=30)
         # ax.set_ylabel("Energy, [E/J]", fontsize=30)
@@ -347,7 +361,7 @@ class TaskC:
         if not self.E_random_data_loaded:
             load_time_1 = time.time()
             # Loads the data if it is not already loaded.
-            self.energy_random = np.load(self.filename_energy_random)
+            self.energy_random = np.loadtxt(self.filename_energy_random, skiprows=2)
             self.temperatures_random = self.energy_random[0, :]
             self.energy_random = self.energy_random[1:, :]
 
@@ -370,7 +384,12 @@ class TaskC:
             self.y_scale, label=f"T: {self.temperatures_random[temp_idx]:.1f}")
         
         if T == 2.4:
-            ax.set_ylim([-2.4, -2.2])
+            pass
+            # ax.set_ylim([-2.4, -2.2])
+
+        if T == 1:
+            pass
+            ax.set_ylim([-1.99725, -1.99725+0.002])
         
         ax.set_xlabel("MC iterations", fontsize=30)
         ax.set_ylabel("Energy", fontsize=30)
@@ -399,7 +418,7 @@ class TaskC:
         if not self.E_random_data_loaded:
             load_time_1 = time.time()
             # Loads the data if it is not already loaded.
-            self.energy_random = np.load(self.filename_energy_random)
+            self.energy_random = np.loadtxt(self.filename_energy_random, skiprows=2)
             self.temperatures_random = self.energy_random[0, :]
             self.energy_random = self.energy_random[1:, :]
 
@@ -438,7 +457,7 @@ class TaskC:
         if not self.E_random_data_loaded:
             load_time_1 = time.time()
             # Loads the data if it is not already loaded.
-            self.energy_random = np.load(self.filename_energy_random)
+            self.energy_random = np.loadtxt(self.filename_energy_random, skiprows=2)
             self.temperatures_random = self.energy_random[0, :]
             self.energy_random = self.energy_random[1:, :]
 
@@ -484,46 +503,6 @@ class TaskC:
         plt.show()
 
 
-    
-def analyse_magnet_const_temp(magnet):
-    try: 
-        temps = magnet[:,0]
-        magnet = magnet[:,1:]
-        # magnet /= 20**2
-        print(np.min(magnet))
-
-        for i in range(np.shape(magnet)[0]): 
-            plt.plot(np.cumsum(magnet[i])/np.arange(1, len(magnet[i]) + 1, 1), label=f"T: {temps[i]}")
-
-    except IndexError:
-        temps = magnet[0]
-        magnet = magnet[1:]
-        # magnet /= 20**2
-        magnet = np.abs(magnet)
-        print(np.min(magnet))
-        plt.plot(np.cumsum(magnet)/np.arange(1, len(magnet) + 1, 1), label=f"T: {temps}")
-        # plt.plot(magnet, label=f"T: {temps}")
-    
-    plt.xlabel("MC iterations")
-    plt.ylabel("Magnetization, [?]")
-    plt.legend(loc="best")
-    plt.show()
-
-
-def analyse_energy(temp, avg_energy):
-    plt.plot(temp, avg_energy, label="avgage energy, [?]")
-    plt.xlabel(r"Temperature, [$k_{b}T/J$]")
-    plt.ylabel("Energy, [?]")
-    plt.legend(loc="best")
-    plt.show()
-
-
-def analyse_magnet(temp, avg_magnet):
-    plt.plot(temp, avg_magnet, label="avgage magnetization, [?]")
-    plt.xlabel(r"Temperature, [$k_{b}T/J$]")
-    plt.ylabel("Magnetization, [?]")
-    plt.legend(loc="best")
-    plt.show()
 
 
 def analyse_heat_capacity(temp, avg_energy, avg_energy_square):
@@ -728,16 +707,16 @@ def task_4e():
 
 if __name__ == "__main__":
     # compare_values_task_a_and_b()
-    # q = TaskC()
-    # q.M_cumulative_average_ordered(T=2.4)
+    q = TaskC()
+    q.M_cumulative_average_ordered(T=2.4)
     # q.M_cumulative_average_random(T=2.4)
     # q.E_cumulative_average_ordered(T=2.4)
     # q.E_cumulative_average_random(T=2.4)
-    # q.E_raw_random(T=2.4)
+    # q.E_raw_random(T=1)
     # q.check_averages()
 
     # quick_buizz()
-    task_4e()
+    # task_4e()
     # quick_hist_buizz()
 
     # quicker_buizz()
