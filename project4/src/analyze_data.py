@@ -141,8 +141,126 @@ def compare_values_task_a_and_b():
     print()
 
 
+def task_2c():
+    """
+    Cheat sheet:
+    Columns are temperatures. Rows are data points.
+    data[:, 0]: all data points for temperature 0.
+    data[5000:, 16]: all data points except the first 5000 for temperature 16.
+    All .npy files are calculated with 1e7 MC iterations.
+
+    All plots are contained, with their specific parameters, inside
+    functions in this function.
+
+    [Cv] = kb
+    """
+
+    MC_values = np.arange(1, 1e6+1, 1)/1e6  # x values for plot
+
+    filename_energy_random  = "data_files/E_convergence_data_20x20_random.txt"
+    filename_energy_ordered = "data_files/E_convergence_data_20x20_ordered.txt"
+    filename_magnet_random  = "data_files/M_convergence_data_20x20_random.txt"
+    filename_magnet_ordered = "data_files/M_convergence_data_20x20_ordered.txt"
+
+    E_random  = np.loadtxt(filename_energy_random, skiprows=2, unpack=False)
+    E_ordered = np.loadtxt(filename_energy_ordered, skiprows=2, unpack=False)
+    M_random  = np.loadtxt(filename_magnet_random, skiprows=2, unpack=False)
+    M_ordered = np.loadtxt(filename_magnet_ordered, skiprows=2, unpack=False)
+
+    temperatures = E_random[0, :]
+
+    E_random  = np.cumsum(E_random[1:], axis=0)
+    E_random /= 20*20
+    E_random[:, 0] /= np.arange(1, len(E_random) + 1, 1)
+    E_random[:, 1] /= np.arange(1, len(E_random) + 1, 1)
+
+    E_ordered  = np.cumsum(E_ordered[1:], axis=0)
+    E_ordered /= 20*20
+    E_ordered[:, 0] /= np.arange(1, len(E_ordered) + 1, 1)
+    E_ordered[:, 1] /= np.arange(1, len(E_ordered) + 1, 1)
+
+    M_random  = np.cumsum(M_random[1:], axis=0)
+    M_random /= 20*20
+    M_random[:, 0] /= np.arange(1, len(M_random) + 1, 1)
+    M_random[:, 1] /= np.arange(1, len(M_random) + 1, 1)
+
+    M_ordered  = np.cumsum(M_ordered[1:], axis=0)
+    M_ordered /= 20*20
+    M_ordered[:, 0] /= np.arange(1, len(M_ordered) + 1, 1)
+    M_ordered[:, 1] /= np.arange(1, len(M_ordered) + 1, 1)
+
+    
+    fig, ax = plt.subplots(nrows=2, ncols=2)
+    fig.text(x=0.455, y=0.035, s=r"MC iterations, $10^6$", fontsize=25)
+    fig.text(x=0.035, y=0.65, s=r"$\tilde{E}, [k_bT/J]$", fontsize=25, rotation="vertical")
+    fig.text(x=0.035, y=0.28, s=r"$\tilde{M}, []$", fontsize=25, rotation="vertical")
+
+    ax[0, 0].plot(MC_values, E_random[:, 0], label=r"$\tilde{T}: 1 k_bT$")
+    ax[0, 0].set_title(r"$\langle E \rangle$ random", fontsize=25)
+    ax[0, 0].legend(fontsize=20)
+    ax[0, 0].tick_params(labelsize=25)
+    ax[0, 0].set_ylim([-1.99725, -1.99725+0.002])
+    ax[0, 0].grid()
+
+    ax[0, 1].plot(MC_values, E_ordered[:, 0])
+    ax[0, 1].set_title(r"$\langle E \rangle$ ordered", fontsize=25)
+    ax[0, 1].tick_params(labelsize=25)
+    ax[0, 1].set_ylim([-1.998, -1.998+0.002])
+    ax[0, 1].grid()
+
+    ax[1, 0].plot(MC_values, M_random[:, 0])
+    ax[1, 0].set_title(r"$\langle M \rangle$ random", fontsize=25)
+    ax[1, 0].tick_params(labelsize=25)
+    ax[1, 0].set_ylim([0.998, 1])
+    ax[1, 0].grid()
+
+    ax[1, 1].plot(MC_values, M_ordered[:, 0])
+    ax[1, 1].set_title(r"$\langle M \rangle$ ordered", fontsize=25)
+    ax[1, 1].tick_params(labelsize=25)
+    ax[1, 1].set_ylim([0.9982, 0.9982+0.002])
+    ax[1, 1].grid()
+
+
+    plt.show()
+
+    fig, ax = plt.subplots(nrows=2, ncols=2)
+    fig.text(x=0.455, y=0.035, s=r"MC iterations, $10^6$", fontsize=25)
+    fig.text(x=0.035, y=0.65, s=r"$\tilde{E}, [k_bT/J]$", fontsize=25, rotation="vertical")
+    fig.text(x=0.035, y=0.28, s=r"$\tilde{M}, []$", fontsize=25, rotation="vertical")
+
+    ax[0, 0].plot(MC_values, E_random[:, 1], label=r"$\tilde{T}: 2.4 k_bT$")
+    ax[0, 0].set_title(r"$\langle E \rangle$ random", fontsize=25)
+    ax[0, 0].legend(fontsize=20)
+    ax[0, 0].tick_params(labelsize=25)
+    ax[0, 0].set_ylim([-1.35, -1.35+0.3])
+    ax[0, 0].grid()
+
+    ax[0, 1].plot(MC_values, E_ordered[:, 1])
+    ax[0, 1].set_title(r"$\langle E \rangle$ ordered", fontsize=25)
+    ax[0, 1].tick_params(labelsize=25)
+    ax[0, 1].set_ylim([-1.35, -1.35+0.3])
+    ax[0, 1].grid()
+
+    ax[1, 0].plot(MC_values, M_random[:, 1])
+    ax[1, 0].set_title(r"$\langle M \rangle$ random", fontsize=25)
+    ax[1, 0].tick_params(labelsize=25)
+    ax[1, 0].set_ylim([-0.15, -0.15+0.3])
+    ax[1, 0].grid()
+
+    ax[1, 1].plot(MC_values, M_ordered[:, 1])
+    ax[1, 1].set_title(r"$\langle M \rangle$ ordered", fontsize=25)
+    ax[1, 1].tick_params(labelsize=25)
+    ax[1, 1].set_ylim([-0.15, -0.15+0.3])
+    ax[1, 1].grid()
+
+    plt.show()
+
+
+
+
 class TaskC:
     """
+    UNUSED, WILL BE DELETED SOON.
     Cheat sheet:
     Columns are temperatures. Rows are data points.
     data[:, 0]: all data points for temperature 0.
@@ -315,10 +433,7 @@ class TaskC:
         # Index for chosen temperature.
         temp_idx = np.where(np.abs(self.temperatures_ordered - T) < self.tol)[0][0]
 
-        selection = slice(int(0), None, 1)
-        E_cum_avg = np.cumsum(self.energy_ordered[selection, temp_idx])/\
-            np.arange(1, len(self.energy_ordered[selection, temp_idx]) + 1, 1)
-
+        selection =[2.5, 2.7]
         plot_time_1 = time.time()
         fig, ax = plt.subplots(figsize=(10, 8))
         
@@ -362,7 +477,7 @@ class TaskC:
             load_time_1 = time.time()
             # Loads the data if it is not already loaded.
             self.energy_random = np.loadtxt(self.filename_energy_random, skiprows=2)
-            self.temperatures_random = self.energy_random[0, :]
+            self.temperatures_random[-2.4, -2.2] = self.energy_random[0, :]
             self.energy_random = self.energy_random[1:, :]
 
             load_time_2 = time.time()
@@ -707,8 +822,8 @@ def task_4e():
 
 if __name__ == "__main__":
     # compare_values_task_a_and_b()
-    q = TaskC()
-    q.M_cumulative_average_ordered(T=2.4)
+    task_2c()
+    # q.M_cumulative_average_ordered(T=2.4)
     # q.M_cumulative_average_random(T=2.4)
     # q.E_cumulative_average_ordered(T=2.4)
     # q.E_cumulative_average_random(T=2.4)
