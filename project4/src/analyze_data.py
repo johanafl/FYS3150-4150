@@ -269,7 +269,7 @@ class Task4C:
         fig.text(x=0.455, y=0.035, s=r"MC cycles, $10^6$", fontsize=25)
         fig.text(x=0.47, y=1-0.075, s=r"$\tilde{T} = 1 k_bT/J$", fontsize=25)
         fig.text(x=0.035, y=0.65, s=r"$\tilde{E}, [E/J]$", fontsize=25, rotation="vertical")
-        fig.text(x=0.035, y=0.28, s=r"$\tilde{M}, []$", fontsize=25, rotation="vertical")
+        fig.text(x=0.035, y=0.28, s=r"$\tilde{M}, [M/a]$", fontsize=25, rotation="vertical")
         
 
         # ----------------
@@ -359,9 +359,9 @@ class Task4C:
         
         fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(10, 8))
         fig.text(x=0.455, y=0.035, s=r"MC cycles, $10^6$", fontsize=25)
-        fig.text(x=0.47, y=1-0.075, s=r"$\tilde{T} = 1 k_bT/J$", fontsize=25)
+        fig.text(x=0.47, y=1-0.075, s=r"$\tilde{T} = 2.4 k_bT/J$", fontsize=25)
         fig.text(x=0.035, y=0.65, s=r"$\tilde{E}, [k_bT/J]$", fontsize=25, rotation="vertical")
-        fig.text(x=0.035, y=0.28, s=r"$\tilde{M}, []$", fontsize=25, rotation="vertical")
+        fig.text(x=0.035, y=0.28, s=r"$\tilde{M}, [M/a]$", fontsize=25, rotation="vertical")
         # ----------------
         # E random.
 
@@ -440,55 +440,78 @@ class Task4C:
         plt.show()
 
     def accepted_configurations(self):
+        """
+        Plot the number of accepted configurations as a function of
+        temperature. Display one plot for initial ordered state and one
+        for initial random state. Average over 5 runs for each case.
+        """
 
+        # Arrays for average values.
+        random_config_avg  = np.zeros(24)
+        ordered_config_avg = np.zeros(24)
+        
+        fig0, ax0 = plt.subplots(figsize=(10, 9))
+        fig1, ax1 = plt.subplots(figsize=(10, 9))
+        axins0 = ax0.inset_axes([0.2, 0.4, 0.4, 0.4])
+        axins1 = ax1.inset_axes([0.2, 0.4, 0.4, 0.4])
 
         N = 5
-
-        random_config_avg = np.zeros(24)
-        ordered_config_avg = np.zeros(24)
-        fig, ax = plt.subplots(figsize=(10, 8))
-        axins = ax.inset_axes([0.2, 0.4, 0.4, 0.4])
-
-
         for i in range(N):
+            # Looping over N files of data.
             random_config, temp = np.loadtxt(f"data_files/E_convergence_data_20x20_random_accepted_configs_{i}.txt",
                 skiprows=1, max_rows=2, unpack=False)
 
             ordered_config, temp = np.loadtxt(f"data_files/E_convergence_data_20x20_ordered_accepted_configs_{i}.txt",
                 skiprows=1, max_rows=2, unpack=False)
 
+            # Summing the values for averages.
             random_config_avg += random_config
             ordered_config_avg += ordered_config
 
-            ax.plot(temp, random_config/1e7, alpha=0.2, color="black")
-            axins.plot(temp, random_config/1e7, alpha=0.2, color="black")
-            # ax.plot(temp, ordered_config)
+            # Plots the non-averaged data and scaling the y axis.
+            ax0.plot(temp, random_config/1e7, alpha=0.2, color="black")
+            axins0.plot(temp, random_config/1e7, alpha=0.2, color="black")
+            ax1.plot(temp, ordered_config/1e7, alpha=0.2, color="black")
+            axins1.plot(temp, ordered_config/1e7, alpha=0.2, color="black")
         
         
+        # Averaging and scaling the y axis.
         random_config_avg  /= N
         random_config_avg  /= 1e7
         ordered_config_avg /= N
         ordered_config_avg /= 1e7
 
-        ax.plot(temp, random_config_avg, color="black")
-        axins.plot(temp, random_config_avg, color="black")
+        # Plots the averaged data.
+        ax0.plot(temp, random_config_avg, color="black")
+        axins0.plot(temp, random_config_avg, color="black")
+        ax1.plot(temp, ordered_config_avg, color="black")
+        axins1.plot(temp, ordered_config_avg, color="black")
         
-        ax.set_title(r"MC cycles: $10^6$")
-        ax.set_xlabel(r"$\tilde{T}, [k_bT/J]$", fontsize=25)
-        ax.set_ylabel(r"Accepted configurations", fontsize=25)
+        ax0.set_title(r"Initial random state", fontsize=25)
+        ax0.set_xlabel(r"$\tilde{T}, [k_bT/J]$", fontsize=25)
+        ax0.set_ylabel(r"Accepted configurations, $10^7$", fontsize=25)
+        ax1.set_title(r"Initial ordered state", fontsize=25)
+        ax1.set_xlabel(r"$\tilde{T}, [k_bT/J]$", fontsize=25)
+        ax1.set_ylabel(r"Accepted configurations, $10^7$", fontsize=25)
 
-        # ax.legend(fontsize=20)
-        ax.tick_params(labelsize=25)
-        ax.grid()
+        ax0.tick_params(labelsize=25)
+        ax0.grid()
+        ax1.tick_params(labelsize=25)
+        ax1.grid()
 
         # sub region of the original image
         x1, x2, y1, y2 = 2.20329, 2.2042, 6.09273, 6.0991
-        axins.set_xlim(x1, x2)
-        axins.set_ylim(y1, y2)
-        # axins.set_xticklabels('')
-        # axins.set_yticklabels('')
+        axins0.set_xlim(x1, x2)
+        axins0.set_ylim(y1, y2)
+        axins0.tick_params(labelsize=19)
+        axins0.set_xticklabels(["" ,2.2035, 2.204])
+        axins1.set_xlim(x1, x2)
+        axins1.set_ylim(y1, y2)
+        axins1.tick_params(labelsize=19)
+        axins1.set_xticklabels(["" ,2.2035, 2.204])
 
-        ax.indicate_inset_zoom(axins)
+        ax0.indicate_inset_zoom(axins0)
+        ax1.indicate_inset_zoom(axins1)
         plt.show()
 
 
@@ -531,53 +554,75 @@ def quick_buizz():
     plt.show()
 
 
-def quick_hist_buizz():
+def task_4d():
 
-    filename = "/Users/Jon/Desktop/project4/E_convergence_data_20x20.npy"
-    # filename = "data_files/E_convergence_data.npy"
+    filename = "data_files/E_convergence_data_20x20_random_0.npy"
     data = np.load(filename)
-    # filename = "data_files/E_convergence_data.txt"
-    # with open(filename, "r") as infile:
-    #     MC = float(infile.readline().split()[1])
 
-    # data = np.loadtxt(filename, skiprows=1, unpack=False)
     temperatures = data[0, :]
     data = data[1:, :]
 
-    temp = 11
-    print(temperatures[temp])
+    t0_convergence = int(5e3)
+    t0_selection = slice(t0_convergence, None, 1)
+    t1_convergence = int(4e5)
+    t1_selection = slice(t1_convergence, None, 1)
 
-    selection = slice(int(1e6), None, 1)
-    # std1, std2 = np.std(data[:, 5001:], axis=1)
-    # std1 = np.std(data[selection, 0])
-    # std2 = np.std(data[selection, temp])
-    # std1_scaled = np.std(data[selection, 0]/(20*20))
-    # std2_scaled = np.std(data[selection, temp]/(20*20))
+    std1 = np.std(data[t0_selection, 0])
+    std2 = np.std(data[t1_selection, 1])
+    std1_scaled = np.std(data[t0_selection, 0]/(20*20))
+    std2_scaled = np.std(data[t1_selection, 1]/(20*20))
 
 
-    # print("std1: ", std1)
-    # print("std2: ", std2)
+    print("std1: ", std1)
+    print("std2: ", std2)
 
-    # print("std1: ", std1_scaled)
-    # print("std2: ", std2_scaled)
+    print("std1: ", std1_scaled)
+    print("std2: ", std2_scaled)
 
     bins = np.arange(-802, 802+1, 4)/(20*20)
-    # bins = np.arange(-4e4-2, 4e4+2+1, 4)/(100*100)
-
     data /= 20*20
-    # data /= 100*100
 
-    n, _, _ = plt.hist(data[selection, temp])#, bins=bins)
-    plt.xlabel("E")
-    plt.ylabel("occurrence")
+    fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(12, 8))
+
+    # ----------------------
+    # T = 1
+    n, _, _ = ax[0, 0].hist(data[t0_selection, 0], color="grey", ec="k", bins=bins)
+    ax[0, 0].grid()
+    ax[0, 0].tick_params(labelsize=20)
+    ax[0, 0].set_xlabel("E", fontsize=25)
+    ax[0, 0].set_ylabel("occurrence", fontsize=25)
+
+    energy_array = np.arange(-800, 800+1, 4)/(20*20)
+    MC = 1e6
+
+    ax[1, 0].plot(energy_array, n/(MC - t0_convergence), color="black")
+    ax[1, 0].grid()
+    ax[1, 0].tick_params(labelsize=20)
+    ax[1, 0].set_xlabel("E", fontsize=25)
+    ax[1, 0].set_ylabel("P(E)", fontsize=25)
+    # T = 1
+    # ----------------------
+
+    # ----------------------
+    # T = 2
+    n, _, _ = ax[0, 1].hist(data[t1_selection, 1], color="grey", ec="k", bins=bins)
+    ax[0, 1].grid()
+    ax[0, 1].tick_params(labelsize=20)
+    ax[0, 1].set_xlabel("E", fontsize=25)
+    ax[0, 1].set_ylabel("occurrence", fontsize=25)
+
+    energy_array = np.arange(-800, 800+1, 4)/(20*20)
+    MC = 1e6
+
+    ax[1, 1].plot(energy_array, n/(MC - t1_convergence), color="black")
+    ax[1, 1].grid()
+    ax[1, 1].tick_params(labelsize=20)
+    ax[1, 1].set_xlabel("E", fontsize=25)
+    ax[1, 1].set_ylabel("P(E)", fontsize=25)
+    # T = 1
+    # ----------------------
+
     plt.show()
-
-    # energy_array = np.arange(-800, 800+1, 4)
-
-    # plt.plot(energy_array, n/(MC - 5000))
-    # plt.xlabel("E")
-    # plt.ylabel("P(E)")
-    # plt.show()
 
 
 def quicker_buizz():
@@ -696,13 +741,13 @@ def task_4e():
 
 if __name__ == "__main__":
     # compare_values_task_a_and_b()
-    q = Task4C()
+    # q = Task4C()
     # q.E_and_M_as_a_function_of_MC()
-    q.accepted_configurations()
+    # q.accepted_configurations()
 
     # quick_buizz()
     # task_4e()
-    # quick_hist_buizz()
+    task_4d()
 
     # quicker_buizz()
 
