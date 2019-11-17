@@ -202,11 +202,6 @@ class Task4C:
 
         MC_values = np.arange(1, 1e6+1, 1)/1e6  # x values for plot
 
-        filename_energy_random  = "data_files/E_convergence_data_20x20_random.txt"
-        filename_energy_ordered = "data_files/E_convergence_data_20x20_ordered.txt"
-        filename_magnet_random  = "data_files/M_convergence_data_20x20_random.txt"
-        filename_magnet_ordered = "data_files/M_convergence_data_20x20_ordered.txt"
-
         E_data_random  = []
         E_data_ordered = []
         M_data_random  = []
@@ -265,55 +260,29 @@ class Task4C:
         E_data_ordered_avg /= N
         M_data_ordered_avg /= N
 
-        E_random  = np.loadtxt(filename_energy_random, skiprows=2, unpack=False)
-        E_ordered = np.loadtxt(filename_energy_ordered, skiprows=2, unpack=False)
-        M_random  = np.loadtxt(filename_magnet_random, skiprows=2, unpack=False)
-        M_ordered = np.loadtxt(filename_magnet_ordered, skiprows=2, unpack=False)
-
-        temperatures = E_random[0, :]
-
-        # Averaging cumulatively.
-        E_random  = np.cumsum(E_random[1:], axis=0)
-        E_random /= 20*20
-        E_random[:, 0] /= np.arange(1, len(E_random) + 1, 1)
-        E_random[:, 1] /= np.arange(1, len(E_random) + 1, 1)
-
-        E_ordered  = np.cumsum(E_ordered[1:], axis=0)
-        E_ordered /= 20*20
-        E_ordered[:, 0] /= np.arange(1, len(E_ordered) + 1, 1)
-        E_ordered[:, 1] /= np.arange(1, len(E_ordered) + 1, 1)
-
-        M_random  = np.cumsum(np.abs(M_random[1:]), axis=0)
-        M_random /= 20*20
-        M_random[:, 0] /= np.arange(1, len(M_random) + 1, 1)
-        M_random[:, 1] /= np.arange(1, len(M_random) + 1, 1)
-
-        M_ordered  = np.cumsum(np.abs(M_ordered[1:]), axis=0)
-        M_ordered /= 20*20
-        M_ordered[:, 0] /= np.arange(1, len(M_ordered) + 1, 1)
-        M_ordered[:, 1] /= np.arange(1, len(M_ordered) + 1, 1)
 
         # T = 1
         t_fig_1 = time.time()
         print("Generating figure and plotting data...")
         
         fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(10, 8))
-        fig.text(x=0.455, y=0.035, s=r"MC iterations, $10^6$", fontsize=25)
-        fig.text(x=0.035, y=0.65, s=r"$\tilde{E}, [k_bT/J]$", fontsize=25, rotation="vertical")
+        fig.text(x=0.455, y=0.035, s=r"MC cycles, $10^6$", fontsize=25)
+        fig.text(x=0.47, y=1-0.075, s=r"$\tilde{T} = 1 k_bT/J$", fontsize=25)
+        fig.text(x=0.035, y=0.65, s=r"$\tilde{E}, [E/J]$", fontsize=25, rotation="vertical")
         fig.text(x=0.035, y=0.28, s=r"$\tilde{M}, []$", fontsize=25, rotation="vertical")
+        
 
         # ----------------
         # E random.
         
         # Plotting the averaged data as solid black.
-        ax[0, 0].plot(MC_values[::4], E_data_random_avg[::4, 0], color="black", label=r"$\tilde{T}: 1 k_bT$")
+        ax[0, 0].plot(MC_values[::4], E_data_random_avg[::4, 0], color="black")
 
         for i in range(N):
             # Plotting the individual random data sets with alpha=0.1.
             ax[0, 0].plot(MC_values[::4], E_data_random[i][::4, 0], color="black", linestyle="dashed", alpha=0.1)
         
         ax[0, 0].set_title(r"$\langle E \rangle$ random", fontsize=25)
-        ax[0, 0].legend(fontsize=20)
         ax[0, 0].tick_params(labelsize=25)
         ax[0, 0].set_ylim([-1.99725, -1.99725+0.006])
         ax[0, 0].grid()
@@ -389,7 +358,8 @@ class Task4C:
         print("Generating figure and plotting data...")
         
         fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(10, 8))
-        fig.text(x=0.455, y=0.035, s=r"MC iterations, $10^6$", fontsize=25)
+        fig.text(x=0.455, y=0.035, s=r"MC cycles, $10^6$", fontsize=25)
+        fig.text(x=0.47, y=1-0.075, s=r"$\tilde{T} = 1 k_bT/J$", fontsize=25)
         fig.text(x=0.035, y=0.65, s=r"$\tilde{E}, [k_bT/J]$", fontsize=25, rotation="vertical")
         fig.text(x=0.035, y=0.28, s=r"$\tilde{M}, []$", fontsize=25, rotation="vertical")
         # ----------------
@@ -403,7 +373,6 @@ class Task4C:
             ax[0, 0].plot(MC_values[::4], E_data_random[i][::4, 1], color="black", linestyle="dashed", alpha=0.1)
         
         ax[0, 0].set_title(r"$\langle E \rangle$ random", fontsize=25)
-        ax[0, 0].legend(fontsize=20)
         ax[0, 0].tick_params(labelsize=25)
         ax[0, 0].set_ylim([-1.3, -1.3+0.1])
         ax[0, 0].grid()
@@ -475,21 +444,16 @@ class Task4C:
 
         filename_energy_random  = "data_files/E_convergence_data_20x20_random_accepted_configs.txt"
         filename_energy_ordered = "data_files/E_convergence_data_20x20_ordered_accepted_configs.txt"
-        filename_magnet_random  = "data_files/M_convergence_data_20x20_random_accepted_configs.txt"
-        filename_magnet_ordered = "data_files/M_convergence_data_20x20_ordered_accepted_configs.txt"
 
         E_random  = np.loadtxt(filename_energy_random, skiprows=1, max_rows=2, unpack=False)
         E_ordered = np.loadtxt(filename_energy_ordered, skiprows=1, max_rows=2, unpack=False)
-        M_random  = np.loadtxt(filename_magnet_random, skiprows=1, max_rows=2, unpack=False)
-        M_ordered = np.loadtxt(filename_magnet_ordered, skiprows=1, max_rows=2, unpack=False)
 
         fig, ax = plt.subplots()
 
-        ax.plot(E_random[1], E_random[0], label="E random")
-        ax.plot(E_ordered[1], E_ordered[0], label="E ordered")
-        ax.plot(M_random[1], M_random[0], label="M random")
-        ax.plot(M_ordered[1], M_ordered[0], label="M ordered")
-        ax.set_xlabel(r"Temperature, $[k_bT]$", fontsize=25)
+        ax.set_title(r"MC cycles: $10^6$")
+        ax.plot(E_random[1], E_random[0], label="random")
+        ax.plot(E_ordered[1], E_ordered[0], label="ordered")
+        ax.set_xlabel(r"$\tilde{T}, [k_bT/J]$", fontsize=25)
         ax.set_ylabel(r"Accepted configurations", fontsize=25)
 
         ax.legend(fontsize=20)
@@ -703,8 +667,8 @@ def task_4e():
 if __name__ == "__main__":
     # compare_values_task_a_and_b()
     q = Task4C()
-    q.E_and_M_as_a_function_of_MC()
-    # q.accepted_configurations()
+    # q.E_and_M_as_a_function_of_MC()
+    q.accepted_configurations()
 
     # quick_buizz()
     # task_4e()
