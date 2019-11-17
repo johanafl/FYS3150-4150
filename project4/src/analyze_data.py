@@ -1,9 +1,49 @@
 import time
+import sys  # For testing. Can prob. be removed.
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.ticker import FormatStrFormatter
-mpl.rcParams['agg.path.chunksize'] = 10000
+mpl.rcParams['agg.path.chunksize'] = 10000  # To plot large amounts of data.
+
+
+def convert_to_npy():
+    """
+    Converts a bunch of text files to Numpy binary files
+    """
+
+    N = 10
+    t_load_1 = time.time()
+    print("Loading data...")
+    for i in range(N):
+        # Loads several runs of both initial state systems.
+        E_data_random = np.loadtxt(f"data_files/E_convergence_data_20x20_random_{i}.txt",
+            skiprows=2, unpack=False)
+
+        np.save(f"data_files/E_convergence_data_20x20_random_{i}.npy",
+            E_data_random)
+
+        E_data_ordered = np.loadtxt(f"data_files/E_convergence_data_20x20_ordered_{i}.txt",
+            skiprows=2, unpack=False)
+
+        np.save(f"data_files/E_convergence_data_20x20_ordered_{i}.npy",
+            E_data_ordered)
+
+        M_data_random = np.loadtxt(f"data_files/M_convergence_data_20x20_random_{i}.txt",
+            skiprows=2, unpack=False)
+
+        np.save(f"data_files/M_convergence_data_20x20_random_{i}.npy",
+            M_data_random)
+
+        M_data_ordered = np.loadtxt(f"data_files/M_convergence_data_20x20_ordered_{i}.txt",
+            skiprows=2, unpack=False)
+
+        np.save(f"data_files/M_convergence_data_20x20_ordered_{i}.npy",
+            M_data_ordered)
+
+        t_load_2 = time.time()
+        print(f"Data set {i} loaded and saved.")
+        print(f"Time since beginning: {t_load_2 - t_load_1:.3f} seconds.\n")
 
 
 def compare_values_task_a_and_b():
@@ -141,483 +181,321 @@ def compare_values_task_a_and_b():
     print()
 
 
-def task_2c():
+class Task4C:
     """
-    Cheat sheet:
-    Columns are temperatures. Rows are data points.
-    data[:, 0]: all data points for temperature 0.
-    data[5000:, 16]: all data points except the first 5000 for temperature 16.
-    All .npy files are calculated with 1e7 MC iterations.
-
-    All plots are contained, with their specific parameters, inside
-    functions in this function.
-
-    [Cv] = kb
+    Implemented as a class just to group task 4c specifics together.
     """
-
-    MC_values = np.arange(1, 1e6+1, 1)/1e6  # x values for plot
-
-    filename_energy_random  = "data_files/E_convergence_data_20x20_random.txt"
-    filename_energy_ordered = "data_files/E_convergence_data_20x20_ordered.txt"
-    filename_magnet_random  = "data_files/M_convergence_data_20x20_random.txt"
-    filename_magnet_ordered = "data_files/M_convergence_data_20x20_ordered.txt"
-
-    E_random  = np.loadtxt(filename_energy_random, skiprows=2, unpack=False)
-    E_ordered = np.loadtxt(filename_energy_ordered, skiprows=2, unpack=False)
-    M_random  = np.loadtxt(filename_magnet_random, skiprows=2, unpack=False)
-    M_ordered = np.loadtxt(filename_magnet_ordered, skiprows=2, unpack=False)
-
-    temperatures = E_random[0, :]
-
-    E_random  = np.cumsum(E_random[1:], axis=0)
-    E_random /= 20*20
-    E_random[:, 0] /= np.arange(1, len(E_random) + 1, 1)
-    E_random[:, 1] /= np.arange(1, len(E_random) + 1, 1)
-
-    E_ordered  = np.cumsum(E_ordered[1:], axis=0)
-    E_ordered /= 20*20
-    E_ordered[:, 0] /= np.arange(1, len(E_ordered) + 1, 1)
-    E_ordered[:, 1] /= np.arange(1, len(E_ordered) + 1, 1)
-
-    M_random  = np.cumsum(M_random[1:], axis=0)
-    M_random /= 20*20
-    M_random[:, 0] /= np.arange(1, len(M_random) + 1, 1)
-    M_random[:, 1] /= np.arange(1, len(M_random) + 1, 1)
-
-    M_ordered  = np.cumsum(M_ordered[1:], axis=0)
-    M_ordered /= 20*20
-    M_ordered[:, 0] /= np.arange(1, len(M_ordered) + 1, 1)
-    M_ordered[:, 1] /= np.arange(1, len(M_ordered) + 1, 1)
-
-    
-    fig, ax = plt.subplots(nrows=2, ncols=2)
-    fig.text(x=0.455, y=0.035, s=r"MC iterations, $10^6$", fontsize=25)
-    fig.text(x=0.035, y=0.65, s=r"$\tilde{E}, [k_bT/J]$", fontsize=25, rotation="vertical")
-    fig.text(x=0.035, y=0.28, s=r"$\tilde{M}, []$", fontsize=25, rotation="vertical")
-
-    ax[0, 0].plot(MC_values, E_random[:, 0], label=r"$\tilde{T}: 1 k_bT$")
-    ax[0, 0].set_title(r"$\langle E \rangle$ random", fontsize=25)
-    ax[0, 0].legend(fontsize=20)
-    ax[0, 0].tick_params(labelsize=25)
-    ax[0, 0].set_ylim([-1.99725, -1.99725+0.002])
-    ax[0, 0].grid()
-
-    ax[0, 1].plot(MC_values, E_ordered[:, 0])
-    ax[0, 1].set_title(r"$\langle E \rangle$ ordered", fontsize=25)
-    ax[0, 1].tick_params(labelsize=25)
-    ax[0, 1].set_ylim([-1.998, -1.998+0.002])
-    ax[0, 1].grid()
-
-    ax[1, 0].plot(MC_values, M_random[:, 0])
-    ax[1, 0].set_title(r"$\langle M \rangle$ random", fontsize=25)
-    ax[1, 0].tick_params(labelsize=25)
-    ax[1, 0].set_ylim([0.998, 1])
-    ax[1, 0].grid()
-
-    ax[1, 1].plot(MC_values, M_ordered[:, 0])
-    ax[1, 1].set_title(r"$\langle M \rangle$ ordered", fontsize=25)
-    ax[1, 1].tick_params(labelsize=25)
-    ax[1, 1].set_ylim([0.9982, 0.9982+0.002])
-    ax[1, 1].grid()
-
-
-    plt.show()
-
-    fig, ax = plt.subplots(nrows=2, ncols=2)
-    fig.text(x=0.455, y=0.035, s=r"MC iterations, $10^6$", fontsize=25)
-    fig.text(x=0.035, y=0.65, s=r"$\tilde{E}, [k_bT/J]$", fontsize=25, rotation="vertical")
-    fig.text(x=0.035, y=0.28, s=r"$\tilde{M}, []$", fontsize=25, rotation="vertical")
-
-    ax[0, 0].plot(MC_values, E_random[:, 1], label=r"$\tilde{T}: 2.4 k_bT$")
-    ax[0, 0].set_title(r"$\langle E \rangle$ random", fontsize=25)
-    ax[0, 0].legend(fontsize=20)
-    ax[0, 0].tick_params(labelsize=25)
-    ax[0, 0].set_ylim([-1.35, -1.35+0.3])
-    ax[0, 0].grid()
-
-    ax[0, 1].plot(MC_values, E_ordered[:, 1])
-    ax[0, 1].set_title(r"$\langle E \rangle$ ordered", fontsize=25)
-    ax[0, 1].tick_params(labelsize=25)
-    ax[0, 1].set_ylim([-1.35, -1.35+0.3])
-    ax[0, 1].grid()
-
-    ax[1, 0].plot(MC_values, M_random[:, 1])
-    ax[1, 0].set_title(r"$\langle M \rangle$ random", fontsize=25)
-    ax[1, 0].tick_params(labelsize=25)
-    ax[1, 0].set_ylim([-0.15, -0.15+0.3])
-    ax[1, 0].grid()
-
-    ax[1, 1].plot(MC_values, M_ordered[:, 1])
-    ax[1, 1].set_title(r"$\langle M \rangle$ ordered", fontsize=25)
-    ax[1, 1].tick_params(labelsize=25)
-    ax[1, 1].set_ylim([-0.15, -0.15+0.3])
-    ax[1, 1].grid()
-
-    plt.show()
-
-
-
-
-class TaskC:
-    """
-    UNUSED, WILL BE DELETED SOON.
-    Cheat sheet:
-    Columns are temperatures. Rows are data points.
-    data[:, 0]: all data points for temperature 0.
-    data[5000:, 16]: all data points except the first 5000 for temperature 16.
-    All .npy files are calculated with 1e7 MC iterations.
-
-    All plots are contained, with their specific parameters, inside
-    functions in this function.
-
-    [Cv] = kb
-    """
-
-    filename_energy_random = "data_files/E_convergence_data_20x20_random.txt"
-    filename_magnet_random = "data_files/M_convergence_data_20x20_random.txt"
-    filename_energy_ordered = "data_files/E_convergence_data_20x20_ordered.txt"
-    filename_magnet_ordered = "data_files/M_convergence_data_20x20_ordered.txt"
-
-    MC_values = np.arange(1, 1e6+1, 1)/1e6  # x values for plot
-    y_scale = 20*20    # Number of spins.
-
-    tol = 0.02
-
-    E_random_data_loaded = False
-    M_random_data_loaded = False
-    E_ordered_data_loaded = False
-    M_ordered_data_loaded = False
-
-    
-    def M_cumulative_average_ordered(self, T=2.4):
+    def E_and_M_as_a_function_of_MC(self):
         """
-        Specific parameters for showing the cumulative average
-        magnetization for T = 2.4 from ordered initial state.
+        Cheat sheet:
+        Columns are temperatures. Rows are data points.
+        data[:, 0]: all data points for temperature 0.
+        data[5000:, 16]: all data points except the first 5000 for temperature 16.
+        All .npy files are calculated with 1e7 MC iterations.
 
-        The y axis is scaled with 1/(n*n) (divided by the number of spins)
-        such that the comparison of the burn-in time of the different
-        scenarios are more easily compared.
+        All plots are contained, with their specific parameters, inside
+        functions in this function.
+
+        [Cv] = kb
         """
+        t_main_1 = time.time()
 
-        if not self.M_ordered_data_loaded:
-            load_time_1 = time.time()
-            # Loads the data if it is not already loaded.
-            self.magnet_ordered = np.loadtxt(self.filename_magnet_ordered, skiprows=2)
-            self.temperatures_ordered = self.magnet_ordered[0, :]
-            self.magnet_ordered = self.magnet_ordered[1:, :]
+        MC_values = np.arange(1, 1e6+1, 1)/1e6  # x values for plot
 
-            load_time_2 = time.time()
-            
-            print(f"M ordered data loaded in: {load_time_2 - load_time_1:.3f} seconds.")
-            self.M_ordered_data_loaded = True
+        filename_energy_random  = "data_files/E_convergence_data_20x20_random.txt"
+        filename_energy_ordered = "data_files/E_convergence_data_20x20_ordered.txt"
+        filename_magnet_random  = "data_files/M_convergence_data_20x20_random.txt"
+        filename_magnet_ordered = "data_files/M_convergence_data_20x20_ordered.txt"
 
-        # Index for chosen temperature.
-        temp_idx = np.where(np.abs(self.temperatures_ordered - T) < self.tol)[0][0]
-
-        print(self.temperatures_ordered[temp_idx])
+        E_data_random  = []
+        E_data_ordered = []
+        M_data_random  = []
+        M_data_ordered = []
+        E_data_random_avg  = np.zeros((int(1e6), 2))
+        E_data_ordered_avg = np.zeros((int(1e6), 2))
+        M_data_random_avg  = np.zeros((int(1e6), 2))
+        M_data_ordered_avg = np.zeros((int(1e6), 2))
         
-        selection = slice(int(0), None, 1)
-        M_cum_avg = np.cumsum(self.magnet_ordered[selection, temp_idx])/\
-            np.arange(1, len(self.magnet_ordered[selection, temp_idx]) + 1, 1)
+        N = 10
+        t_load_1 = time.time()
+        print("Loading data...")
+        for i in range(N):
+            # Loads several runs of both initial state systems.
+            E_data_random.append(np.load(f"data_files/E_convergence_data_20x20_random_{i}.npy"))
+            E_data_random[i] = np.cumsum(E_data_random[i][1:], axis=0)
+            E_data_random[i] /= 20*20
+            E_data_random[i][:, 0] /= np.arange(1, len(E_data_random[i]) + 1, 1)
+            E_data_random[i][:, 1] /= np.arange(1, len(E_data_random[i]) + 1, 1)
 
-        plot_time_1 = time.time()
+            E_data_ordered.append(np.load(f"data_files/E_convergence_data_20x20_ordered_{i}.npy"))
+            E_data_ordered[i] = np.cumsum(E_data_ordered[i][1:], axis=0)
+            E_data_ordered[i] /= 20*20
+            E_data_ordered[i][:, 0] /= np.arange(1, len(E_data_ordered[i]) + 1, 1)
+            E_data_ordered[i][:, 1] /= np.arange(1, len(E_data_ordered[i]) + 1, 1)
 
-        fig, ax = plt.subplots(figsize=(10, 8))
-        ax.plot(self.MC_values[selection], M_cum_avg/\
-            self.y_scale, label=f"T: {self.temperatures_ordered[temp_idx]:.1f}")
+            M_data_random.append(np.load(f"data_files/M_convergence_data_20x20_random_{i}.npy"))
+            M_data_random[i] = np.cumsum(np.abs(M_data_random[i][1:]), axis=0)
+            M_data_random[i] /= 20*20
+            M_data_random[i][:, 0] /= np.arange(1, len(M_data_random[i]) + 1, 1)
+            M_data_random[i][:, 1] /= np.arange(1, len(M_data_random[i]) + 1, 1)
+
+            M_data_ordered.append(np.load(f"data_files/M_convergence_data_20x20_ordered_{i}.npy"))
+            M_data_ordered[i] = np.cumsum(np.abs(M_data_ordered[i][1:]), axis=0)
+            M_data_ordered[i] /= 20*20
+            M_data_ordered[i][:, 0] /= np.arange(1, len(M_data_ordered[i]) + 1, 1)
+            M_data_ordered[i][:, 1] /= np.arange(1, len(M_data_ordered[i]) + 1, 1)
+
+            # Summing the random initial state data.
+            E_data_random_avg += E_data_random[i]
+            M_data_random_avg += M_data_random[i]
+
+            # Summing the ordered initial state data.
+            E_data_ordered_avg += E_data_ordered[i]
+            M_data_ordered_avg += M_data_ordered[i]
+
+            t_load_2 = time.time()
+            print(f"Data set {i+1} of {N} loaded.")
+            print(f"Time since beginning: {t_load_2 - t_load_1:.3f} seconds.\n")
+
+        # Averaging the random initial state data.
+        E_data_random_avg /= N
+        M_data_random_avg /= N
+
+        # Averaging the ordered initial state data.
+        E_data_ordered_avg /= N
+        M_data_ordered_avg /= N
+
+        E_random  = np.loadtxt(filename_energy_random, skiprows=2, unpack=False)
+        E_ordered = np.loadtxt(filename_energy_ordered, skiprows=2, unpack=False)
+        M_random  = np.loadtxt(filename_magnet_random, skiprows=2, unpack=False)
+        M_ordered = np.loadtxt(filename_magnet_ordered, skiprows=2, unpack=False)
+
+        temperatures = E_random[0, :]
+
+        # Averaging cumulatively.
+        E_random  = np.cumsum(E_random[1:], axis=0)
+        E_random /= 20*20
+        E_random[:, 0] /= np.arange(1, len(E_random) + 1, 1)
+        E_random[:, 1] /= np.arange(1, len(E_random) + 1, 1)
+
+        E_ordered  = np.cumsum(E_ordered[1:], axis=0)
+        E_ordered /= 20*20
+        E_ordered[:, 0] /= np.arange(1, len(E_ordered) + 1, 1)
+        E_ordered[:, 1] /= np.arange(1, len(E_ordered) + 1, 1)
+
+        M_random  = np.cumsum(np.abs(M_random[1:]), axis=0)
+        M_random /= 20*20
+        M_random[:, 0] /= np.arange(1, len(M_random) + 1, 1)
+        M_random[:, 1] /= np.arange(1, len(M_random) + 1, 1)
+
+        M_ordered  = np.cumsum(np.abs(M_ordered[1:]), axis=0)
+        M_ordered /= 20*20
+        M_ordered[:, 0] /= np.arange(1, len(M_ordered) + 1, 1)
+        M_ordered[:, 1] /= np.arange(1, len(M_ordered) + 1, 1)
+
+        # T = 1
+        t_fig_1 = time.time()
+        print("Generating figure and plotting data...")
         
-        if T == 2.4:
-            pass
-            ax.set_ylim([0.120, 0.120+0.04])
+        fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(10, 8))
+        fig.text(x=0.455, y=0.035, s=r"MC iterations, $10^6$", fontsize=25)
+        fig.text(x=0.035, y=0.65, s=r"$\tilde{E}, [k_bT/J]$", fontsize=25, rotation="vertical")
+        fig.text(x=0.035, y=0.28, s=r"$\tilde{M}, []$", fontsize=25, rotation="vertical")
 
-        if T == 1:
-            ax.set_ylim([0.9982, 0.9982+0.002])
+        # ----------------
+        # E random.
         
-        ax.set_xlabel("MC iterations", fontsize=30)
-        ax.set_ylabel("Magnetization", fontsize=30)
-        ax.legend(loc="best", fontsize=20)
-        ax.tick_params(labelsize=25)
-        # ax.set_title("ordered")
-        ax.grid()
-        # ax.xaxis.set_major_formatter(FormatStrFormatter('%.2e'))
+        # Plotting the averaged data as solid black.
+        ax[0, 0].plot(MC_values[::4], E_data_random_avg[::4, 0], color="black", label=r"$\tilde{T}: 1 k_bT$")
+
+        for i in range(N):
+            # Plotting the individual random data sets with alpha=0.1.
+            ax[0, 0].plot(MC_values[::4], E_data_random[i][::4, 0], color="black", linestyle="dashed", alpha=0.1)
         
-        plt.tight_layout()
-
-        plot_time_2 = time.time()
-        print(f"M ordered data plotted in: {plot_time_2 - plot_time_1:.3f} seconds.")
-
-        plt.show()
-    
-
-    def M_cumulative_average_random(self, T=2.4):
-        """
-        Specific parameters for showing the cumulative average
-        magnetization for T = 2.4, [T] = kbT/J, from random initial
-        state.
-
-        The y axis is scaled with 1/(n*n) (divided by the number of spins)
-        such that the comparison of the burn-in time of the different
-        scenarios are more easily compared.
-        """
-
-        if not self.M_random_data_loaded:
-            load_time_1 = time.time()
-            # Loads the data if it is not already loaded.
-            self.magnet_random = np.loadtxt(self.filename_magnet_random, skiprows=2)
-            self.temperatures_random = self.magnet_random[0, :]
-            self.magnet_random = self.magnet_random[1:, :]
-
-            load_time_2 = time.time()
-            
-            print(f"M random data loaded in: {load_time_2 - load_time_1:.3f} seconds.")
-            self.M_random_data_loaded = True
-
-        # Index for chosen temperature.
-        temp_idx = np.where(np.abs(self.temperatures_random - T) < self.tol)[0][0]
-
-        print(self.temperatures_random[temp_idx])
+        ax[0, 0].set_title(r"$\langle E \rangle$ random", fontsize=25)
+        ax[0, 0].legend(fontsize=20)
+        ax[0, 0].tick_params(labelsize=25)
+        ax[0, 0].set_ylim([-1.99725, -1.99725+0.006])
+        ax[0, 0].grid()
         
-        selection = slice(int(0), None, 1)
-        M_cum_avg = np.cumsum(self.magnet_random[selection, temp_idx])/\
-            np.arange(1, len(self.magnet_random[selection, temp_idx]) + 1, 1)
+        # E random.
+        # ----------------
 
-        plot_time_1 = time.time()
+        # ----------------
+        # E ordered.
 
-        fig, ax = plt.subplots(figsize=(10, 8))
-        ax.plot(self.MC_values[selection], M_cum_avg/\
-            self.y_scale, label=f"T: {self.temperatures_random[temp_idx]:.1f}") 
+        # Plotting the averaged data as solid black.
+        ax[0, 1].plot(MC_values[::4], E_data_ordered_avg[::4, 0], color="black")
+
+        for i in range(N):
+            # Plotting the individual random data sets with alpha=0.1.
+            ax[0, 1].plot(MC_values[::4], E_data_ordered[i][::4, 0], color="black", linestyle="dashed", alpha=0.1)
         
-        if T == 2.4:
-            pass
-            # ax.set_ylim([0.08, 0.28])
-
-        if T == 1:
-            pass
-            ax.set_ylim([0.998, 1])
+        ax[0, 1].set_title(r"$\langle E \rangle$ ordered", fontsize=25)
+        ax[0, 1].tick_params(labelsize=25)
+        ax[0, 1].set_ylim([-2, -2 + 0.006])
+        # ax[0, 1].set_ylim([-1.9982, -1.9982+0.006])
+        ax[0, 1].grid()
         
-        ax.set_xlabel("MC iterations", fontsize=30)
-        ax.set_ylabel("Magnetization", fontsize=30)
-        ax.legend(loc="best", fontsize=20)
-        ax.tick_params(labelsize=25)
-        ax.grid()
-        # ax.set_title("random")
-        plt.tight_layout()
+        # E ordered.
+        # ----------------
 
-        plot_time_2 = time.time()
-        print(f"M random data plotted in: {plot_time_2 - plot_time_1:.3f} seconds.")
-        plt.show()
+        # ----------------
+        # M random.
 
+        # Plotting the averaged data as solid black.
+        ax[1, 0].plot(MC_values[::4], M_data_random_avg[::4, 0], color="black")
 
-    def E_cumulative_average_ordered(self, T=2.4):
-        """
-        Specific parameters for showing the cumulative average energy
-        for T = 2.4 from ordered initial state.
-
-        The y axis is scaled with 1/(n*n) (divided by the number of spins)
-        such that the comparison of the burn-in time of the different
-        scenarios are more easily compared.
-        """
-
-        if not self.E_ordered_data_loaded:
-            load_time_1 = time.time()
-            # Loads the data if it is not already loaded.
-            self.energy_ordered = np.loadtxt(self.filename_energy_ordered, skiprows=2)
-            self.temperatures_ordered = self.energy_ordered[0, :]
-            self.energy_ordered = self.energy_ordered[1:, :]
-
-            load_time_2 = time.time()
-            
-            print(f"E ordered data loaded in: {load_time_2 - load_time_1:.3f} seconds.")
-            self.E_ordered_data_loaded = True
-
-        # Index for chosen temperature.
-        temp_idx = np.where(np.abs(self.temperatures_ordered - T) < self.tol)[0][0]
-
-        selection =[2.5, 2.7]
-        plot_time_1 = time.time()
-        fig, ax = plt.subplots(figsize=(10, 8))
+        for i in range(N):
+            # Plotting the individual random data sets with alpha=0.1.
+            ax[1, 0].plot(MC_values[::4], M_data_random[i][::4, 0], color="black", linestyle="dashed", alpha=0.1)
         
-        ax.plot(self.MC_values[selection], E_cum_avg/\
-            self.y_scale, label=f"T: {self.temperatures_ordered[temp_idx]:.1f}")
+        ax[1, 0].set_title(r"$\langle |M| \rangle$ random", fontsize=25)
+        ax[1, 0].tick_params(labelsize=25)
+        ax[1, 0].set_ylim([0.9995 - 0.006, 0.9995])
+        ax[1, 0].grid()
         
-        if T == 2.4:
-            pass
-            # ax.set_ylim([2.5, 2.7])
+        # M random.
+        # ----------------
+        
+        # ----------------
+        # M ordered.
 
-        if T == 1:
-            pass
-            ax.set_ylim([-1.998, -1.998+0.002])
+        # Plotting the averaged data as solid black.
+        ax[1, 1].plot(MC_values[::4], M_data_ordered_avg[::4, 0], color="black")
+
+        for i in range(N):
+            # Plotting the individual random data sets with alpha=0.1.
+            ax[1, 1].plot(MC_values[::4], M_data_ordered[i][::4, 0], color="black", linestyle="dashed", alpha=0.1)
         
-        ax.set_xlabel("MC iterations", fontsize=30)
-        # ax.set_ylabel("Energy, [E/J]", fontsize=30)
-        ax.set_ylabel("Energy", fontsize=30)
-        ax.legend(loc="best", fontsize=20)
-        ax.tick_params(labelsize=25)
-        ax.grid()
-        # ax.set_title("ordered")
-        plt.tight_layout()
-        
-        plot_time_2 = time.time()
-        print(f"E ordered data plotted in: {plot_time_2 - plot_time_1:.3f} seconds.")
+        ax[1, 1].set_title(r"$\langle |M| \rangle$ ordered", fontsize=25)
+        ax[1, 1].tick_params(labelsize=25)
+        ax[1, 1].set_ylim([0.996, 0.996+0.006])
+        ax[1, 1].grid()
+
+        # M ordered.
+        # ----------------
+
+        t_fig_2 = time.time()
+        t_main_2 = time.time()
+        print(f"Total time: {t_main_2 - t_main_1:.3f} seconds.\n")
+        print(f"Plot T = 1 generated in {t_fig_2 - t_fig_1:.3f} seconds.")
         
         plt.show()
 
+        # T = 2.4
 
-    def E_cumulative_average_random(self, T=2.4):
-        """
-        Specific parameters for showing the cumulative average energy
-        for T = 2.4 from random initial state.
-
-        The y axis is scaled with 1/(n*n) (divided by the number of spins)
-        such that the comparison of the burn-in time of the different
-        scenarios are more easily compared.
-        """
-
-        if not self.E_random_data_loaded:
-            load_time_1 = time.time()
-            # Loads the data if it is not already loaded.
-            self.energy_random = np.loadtxt(self.filename_energy_random, skiprows=2)
-            self.temperatures_random[-2.4, -2.2] = self.energy_random[0, :]
-            self.energy_random = self.energy_random[1:, :]
-
-            load_time_2 = time.time()
-            
-            print(f"E random data loaded in: {load_time_2 - load_time_1:.3f} seconds.")
-            self.E_random_data_loaded = True
-
-        # Index for chosen temperature.
-        temp_idx = np.where(np.abs(self.temperatures_random - T) < self.tol)[0][0]
-
-        selection = slice(int(0), None, 1)
-        E_cum_avg = np.cumsum(self.energy_random[selection, temp_idx])/\
-            np.arange(1, len(self.energy_random[selection, temp_idx]) + 1, 1)
-
-        plot_time_1 = time.time()
-        fig, ax = plt.subplots(figsize=(10, 8))
+        t_fig_1 = time.time()
+        print("Generating figure and plotting data...")
         
-        ax.plot(self.MC_values[selection], E_cum_avg/\
-            self.y_scale, label=f"T: {self.temperatures_random[temp_idx]:.1f}")
-        
-        if T == 2.4:
-            pass
-            # ax.set_ylim([-2.4, -2.2])
+        fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(10, 8))
+        fig.text(x=0.455, y=0.035, s=r"MC iterations, $10^6$", fontsize=25)
+        fig.text(x=0.035, y=0.65, s=r"$\tilde{E}, [k_bT/J]$", fontsize=25, rotation="vertical")
+        fig.text(x=0.035, y=0.28, s=r"$\tilde{M}, []$", fontsize=25, rotation="vertical")
+        # ----------------
+        # E random.
 
-        if T == 1:
-            pass
-            ax.set_ylim([-1.99725, -1.99725+0.002])
+        # Plotting the averaged data as solid black.
+        ax[0, 0].plot(MC_values[::4], E_data_random_avg[::4, 1], color="black", label=r"$\tilde{T}: 2.4 k_bT$")
+
+        for i in range(N):
+            # Plotting the individual random data sets with alpha=0.1.
+            ax[0, 0].plot(MC_values[::4], E_data_random[i][::4, 1], color="black", linestyle="dashed", alpha=0.1)
         
-        ax.set_xlabel("MC iterations", fontsize=30)
-        ax.set_ylabel("Energy", fontsize=30)
-        ax.legend(loc="best", fontsize=20)
+        ax[0, 0].set_title(r"$\langle E \rangle$ random", fontsize=25)
+        ax[0, 0].legend(fontsize=20)
+        ax[0, 0].tick_params(labelsize=25)
+        ax[0, 0].set_ylim([-1.3, -1.3+0.1])
+        ax[0, 0].grid()
+        
+        # E random.
+        # ----------------
+
+        # E ordered.
+        # ----------------
+
+        # Plotting the averaged data as solid black.
+        ax[0, 1].plot(MC_values[::4], E_data_ordered_avg[::4, 1], color="black")
+
+        for i in range(N):
+            # Plotting the individual ordered data sets with alpha=0.1.
+            ax[0, 1].plot(MC_values[::4], E_data_ordered[i][::4, 1], color="black", linestyle="dashed", alpha=0.1)
+        
+        ax[0, 1].set_title(r"$\langle E \rangle$ ordered", fontsize=25)
+        ax[0, 1].tick_params(labelsize=25)
+        ax[0, 1].set_ylim([-1.3, -1.3+0.1])
+        ax[0, 1].grid()
+        
+        # ----------------
+        # E ordered.
+
+        # M random.
+        # ----------------
+
+        # Plotting the averaged data as solid black.
+        ax[1, 0].plot(MC_values[::4], M_data_random_avg[::4, 1], color="black")
+
+        for i in range(N):
+            # Plotting the individual random data sets with alpha=0.1.
+            ax[1, 0].plot(MC_values[::4], M_data_random[i][::4, 1], color="black", linestyle="dashed", alpha=0.1)
+
+        ax[1, 0].set_title(r"$\langle |M| \rangle$ random", fontsize=25)
+        ax[1, 0].tick_params(labelsize=25)
+        ax[1, 0].set_ylim([0.4, 0.4+0.1])
+        ax[1, 0].grid()
+
+        # ----------------
+        # M random.
+
+        # M ordered.
+        # ----------------
+
+        # Plotting the averaged data as solid black.
+        ax[1, 1].plot(MC_values[::4], M_data_ordered_avg[::4, 1], color="black")
+
+        for i in range(N):
+            # Plotting the individual ordered data sets with alpha=0.1.
+            ax[1, 1].plot(MC_values[::4], M_data_ordered[i][::4, 1], color="black", linestyle="dashed", alpha=0.1)
+
+        ax[1, 1].set_title(r"$\langle |M| \rangle$ ordered", fontsize=25)
+        ax[1, 1].tick_params(labelsize=25)
+        ax[1, 1].set_ylim([0.4, 0.4+0.1])
+        ax[1, 1].grid()
+
+        # ----------------
+        # M ordered.
+
+        t_fig_2 = time.time()
+        print(f"Plot T = 1 generated in {t_fig_2 - t_fig_1:.3f} seconds.")
+        
+        plt.show()
+
+    def accepted_configurations(self):
+        "data_files/E_convergence_data_20x20_ordered_accepted_configs.txt"
+
+        filename_energy_random  = "data_files/E_convergence_data_20x20_random_accepted_configs.txt"
+        filename_energy_ordered = "data_files/E_convergence_data_20x20_ordered_accepted_configs.txt"
+        filename_magnet_random  = "data_files/M_convergence_data_20x20_random_accepted_configs.txt"
+        filename_magnet_ordered = "data_files/M_convergence_data_20x20_ordered_accepted_configs.txt"
+
+        E_random  = np.loadtxt(filename_energy_random, skiprows=1, max_rows=2, unpack=False)
+        E_ordered = np.loadtxt(filename_energy_ordered, skiprows=1, max_rows=2, unpack=False)
+        M_random  = np.loadtxt(filename_magnet_random, skiprows=1, max_rows=2, unpack=False)
+        M_ordered = np.loadtxt(filename_magnet_ordered, skiprows=1, max_rows=2, unpack=False)
+
+        fig, ax = plt.subplots()
+
+        ax.plot(E_random[1], E_random[0], label="E random")
+        ax.plot(E_ordered[1], E_ordered[0], label="E ordered")
+        ax.plot(M_random[1], M_random[0], label="M random")
+        ax.plot(M_ordered[1], M_ordered[0], label="M ordered")
+        ax.set_xlabel(r"Temperature, $[k_bT]$", fontsize=25)
+        ax.set_ylabel(r"Accepted configurations", fontsize=25)
+
+        ax.legend(fontsize=20)
         ax.tick_params(labelsize=25)
         ax.grid()
-        # ax.set_title("random")
-        plt.tight_layout()
-        
-        plot_time_2 = time.time()
-        print(f"E random data plotted in: {plot_time_2 - plot_time_1:.3f} seconds.")
-        
         plt.show()
-
-
-    def E_raw_random(self, T=2.4):
-        """
-        Specific parameters for showing the raw energy data T = 2.4
-        from random initial state.
-
-        The y axis is scaled with 1/(n*n) (divided by the number of spins)
-        such that the comparison of the burn-in time of the different
-        scenarios are more easily compared.
-        """
-
-        if not self.E_random_data_loaded:
-            load_time_1 = time.time()
-            # Loads the data if it is not already loaded.
-            self.energy_random = np.loadtxt(self.filename_energy_random, skiprows=2)
-            self.temperatures_random = self.energy_random[0, :]
-            self.energy_random = self.energy_random[1:, :]
-
-            load_time_2 = time.time()
-            
-            print(f"E random data loaded in: {load_time_2 - load_time_1:.3f} seconds.")
-            self.E_random_data_loaded = True
-
-        # Index for chosen temperature.
-        temp_idx = np.where(np.abs(self.temperatures_random - T) < self.tol)[0][0]
-        
-        selection = slice(int(0), None, 20000)
-
-        plot_time_1 = time.time()
-        fig, ax = plt.subplots(figsize=(10, 8))
-        
-        ax.plot(self.MC_values[selection], self.energy_random[selection, temp_idx]/\
-            self.y_scale, label=f"T: {self.temperatures_random[temp_idx]:.1f}")
-        
-        ax.set_xlabel("MC iterations", fontsize=30)
-        ax.set_ylabel("Energy, [E/J]", fontsize=30)
-        ax.legend(loc="best", fontsize=20)
-        ax.tick_params(labelsize=25)
-        ax.set_title("random")
-        ax.grid()
-        
-        plt.tight_layout()
-
-        plot_time_2 = time.time()
-        print(f"E random data plotted in: {plot_time_2 - plot_time_1:.3f} seconds.")
-
-        plt.show()
-
-
-    def check_averages(self):
-        if not self.E_random_data_loaded:
-            load_time_1 = time.time()
-            # Loads the data if it is not already loaded.
-            self.energy_random = np.loadtxt(self.filename_energy_random, skiprows=2)
-            self.temperatures_random = self.energy_random[0, :]
-            self.energy_random = self.energy_random[1:, :]
-
-            load_time_2 = time.time()
-            
-            print(f"E random data loaded in: {load_time_2 - load_time_1:.3f} seconds.")
-            self.E_random_data_loaded = True
-
-        
-
-        plt.plot(self.temperatures_random, np.mean(self.energy_random[600000:, :], axis=0))
-        plt.legend()
-        plt.title("<E>")
-        plt.show()
-
-        Cv = (np.mean(self.energy_random[600000:, :]**2, axis=0) - np.mean(self.energy_random[600000:, :], axis=0)**2)/self.temperatures_random**2
-        plt.plot(self.temperatures_random, Cv, label="Cv")
-        plt.legend()
-        plt.title("Cv")
-        plt.show()
-
-        if not self.M_random_data_loaded:
-            load_time_1 = time.time()
-            # Loads the data if it is not already loaded.
-            self.magnet_random = np.load(self.filename_magnet_random)
-            self.temperatures_random = self.magnet_random[0, :]
-            self.magnet_random = self.magnet_random[1:, :]
-
-            load_time_2 = time.time()
-            
-            print(f"M random data loaded in: {load_time_2 - load_time_1:.3f} seconds.")
-            self.M_random_data_loaded = True
-
-        
-        plt.plot(self.temperatures_random, np.mean(np.abs(self.magnet_random[600000:, :]), axis=0))
-        plt.legend()
-        plt.title("<M>")
-        plt.show()
-        
-        X = (np.mean(self.magnet_random[600000:, :]**2, axis=0) - np.mean(np.abs(self.magnet_random[600000:, :]), axis=0)**2)/self.temperatures_random
-        plt.plot(self.temperatures_random, X, label="X")
-        plt.legend()
-        plt.show()
-
-
 
 
 def analyse_heat_capacity(temp, avg_energy, avg_energy_square):
@@ -820,20 +698,20 @@ def task_4e():
 
 
 
+
+
 if __name__ == "__main__":
     # compare_values_task_a_and_b()
-    task_2c()
-    # q.M_cumulative_average_ordered(T=2.4)
-    # q.M_cumulative_average_random(T=2.4)
-    # q.E_cumulative_average_ordered(T=2.4)
-    # q.E_cumulative_average_random(T=2.4)
-    # q.E_raw_random(T=1)
-    # q.check_averages()
+    q = Task4C()
+    q.E_and_M_as_a_function_of_MC()
+    # q.accepted_configurations()
 
     # quick_buizz()
     # task_4e()
     # quick_hist_buizz()
 
     # quicker_buizz()
+
+    # quick_n_dirty()
 
     pass

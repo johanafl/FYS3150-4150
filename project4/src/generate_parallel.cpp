@@ -50,8 +50,7 @@ public:
         // Temperature interval and initial temperature for each thread.
 
         if (not is_conv_filename_set)
-        {   
-            std::cout << "lol" << std::endl;
+        {   // Set default filename if no filename is set.
             set_convergence_filenames();
             is_conv_filename_set = true;
         }
@@ -64,9 +63,9 @@ public:
         magnet_array = new double[temps_per_thread*mc_iterations];
         accepted_config_array = new int[temps_per_thread];
 
-        int root = 0;   // Main thread.
-        double* energy_buffer;  // Buffer for MPI_Gather.
-        double* magnet_buffer;  // Buffer for MPI_Gather.
+        int root = 0;                   // Main thread.
+        double* energy_buffer;          // Buffer for MPI_Gather.
+        double* magnet_buffer;          // Buffer for MPI_Gather.
         int* accepted_config_buffer;    // Buffer for MPI_Gather.
 
         if (world_rank == root)
@@ -89,6 +88,7 @@ public:
         for (int temp_iteration = 0; temp_iteration < temps_per_thread; temp_iteration++)
         {   // Looping over temperature values.
 
+            // Resetting temperature specific values.
             total_energy = 0;
             total_magnetization = 0;
             accepted_config = 0;
@@ -188,19 +188,7 @@ public:
             << " grid: " << n << std::endl;
             M_convergence_data << "mc_iterations: " << mc_iterations << std::endl;
             
-            for (int i = 0; i < temps_per_thread*world_size; i++)
-            {   /*
-                Header with temperature values.
-                */
-                E_convergence_data << std::setw(20) << std::setprecision(15);
-                E_convergence_data << initial_temp_thread + diff_temp*i;
-                M_convergence_data << std::setw(20) << std::setprecision(15);
-                M_convergence_data << initial_temp_thread + diff_temp*i;
-            }
             
-            E_convergence_data << std::endl;
-            M_convergence_data << std::endl;
-
             for (int i = 0; i < temps_per_thread*world_size; i++)
             {   /*
                 Header with accepted configuration values.
@@ -209,6 +197,18 @@ public:
                 E_convergence_data << accepted_config_buffer[i];
                 M_convergence_data << std::setw(20) << std::setprecision(15);
                 M_convergence_data << accepted_config_buffer[i];
+            }
+            E_convergence_data << std::endl;
+            M_convergence_data << std::endl;
+
+            for (int i = 0; i < temps_per_thread*world_size; i++)
+            {   /*
+                Header with temperature values.
+                */
+                E_convergence_data << std::setw(20) << std::setprecision(15);
+                E_convergence_data << initial_temp_thread + diff_temp*i;
+                M_convergence_data << std::setw(20) << std::setprecision(15);
+                M_convergence_data << initial_temp_thread + diff_temp*i;
             }
 
             E_convergence_data << std::endl;
@@ -461,6 +461,7 @@ void beehive(int spin_matrix_dim)
 }
 
 
+
 int main()
 {   
 
@@ -469,17 +470,18 @@ int main()
     // beehive(60);
     // beehive(40);
     // beehive(20);
+
+
     
     int spin_matrix_dim = 20;
-    std::string conv_postfix = std::to_string(spin_matrix_dim) + "x" + std::to_string(spin_matrix_dim);
-    int mc_iterations = 1e4;
-    int stable_iterations = 5000;
+    std::string conv_postfix = std::to_string(spin_matrix_dim) + "x" + std::to_string(spin_matrix_dim) + "_random_3";
+    int mc_iterations = 1e6;
     
-    double initial_temp = 2;
-    double final_temp = 2.4;
+    double initial_temp = 1;
+    double final_temp = 2.4+1.4;
     double temps_per_thread = 1;
 
-    bool ordered_spins = true;
+    bool ordered_spins = false;
 
     time_t seed;
     time(&seed);
