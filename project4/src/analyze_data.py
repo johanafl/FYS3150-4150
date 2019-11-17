@@ -440,25 +440,55 @@ class Task4C:
         plt.show()
 
     def accepted_configurations(self):
-        "data_files/E_convergence_data_20x20_ordered_accepted_configs.txt"
 
-        filename_energy_random  = "data_files/E_convergence_data_20x20_random_accepted_configs.txt"
-        filename_energy_ordered = "data_files/E_convergence_data_20x20_ordered_accepted_configs.txt"
 
-        E_random  = np.loadtxt(filename_energy_random, skiprows=1, max_rows=2, unpack=False)
-        E_ordered = np.loadtxt(filename_energy_ordered, skiprows=1, max_rows=2, unpack=False)
+        N = 5
 
-        fig, ax = plt.subplots()
+        random_config_avg = np.zeros(24)
+        ordered_config_avg = np.zeros(24)
+        fig, ax = plt.subplots(figsize=(10, 8))
+        axins = ax.inset_axes([0.2, 0.4, 0.4, 0.4])
 
+
+        for i in range(N):
+            random_config, temp = np.loadtxt(f"data_files/E_convergence_data_20x20_random_accepted_configs_{i}.txt",
+                skiprows=1, max_rows=2, unpack=False)
+
+            ordered_config, temp = np.loadtxt(f"data_files/E_convergence_data_20x20_ordered_accepted_configs_{i}.txt",
+                skiprows=1, max_rows=2, unpack=False)
+
+            random_config_avg += random_config
+            ordered_config_avg += ordered_config
+
+            ax.plot(temp, random_config/1e7, alpha=0.2, color="black")
+            axins.plot(temp, random_config/1e7, alpha=0.2, color="black")
+            # ax.plot(temp, ordered_config)
+        
+        
+        random_config_avg  /= N
+        random_config_avg  /= 1e7
+        ordered_config_avg /= N
+        ordered_config_avg /= 1e7
+
+        ax.plot(temp, random_config_avg, color="black")
+        axins.plot(temp, random_config_avg, color="black")
+        
         ax.set_title(r"MC cycles: $10^6$")
-        ax.plot(E_random[1], E_random[0], label="random")
-        ax.plot(E_ordered[1], E_ordered[0], label="ordered")
         ax.set_xlabel(r"$\tilde{T}, [k_bT/J]$", fontsize=25)
         ax.set_ylabel(r"Accepted configurations", fontsize=25)
 
-        ax.legend(fontsize=20)
+        # ax.legend(fontsize=20)
         ax.tick_params(labelsize=25)
         ax.grid()
+
+        # sub region of the original image
+        x1, x2, y1, y2 = 2.20329, 2.2042, 6.09273, 6.0991
+        axins.set_xlim(x1, x2)
+        axins.set_ylim(y1, y2)
+        # axins.set_xticklabels('')
+        # axins.set_yticklabels('')
+
+        ax.indicate_inset_zoom(axins)
         plt.show()
 
 
