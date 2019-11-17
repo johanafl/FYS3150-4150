@@ -474,14 +474,15 @@ int main()
 
     
     int spin_matrix_dim = 20;
-    std::string conv_postfix = std::to_string(spin_matrix_dim) + "x" + std::to_string(spin_matrix_dim) + "_ordered_9";
+    std::string conv_postfix = std::to_string(spin_matrix_dim) + "x" + std::to_string(spin_matrix_dim) + "_random_accepted_configs_4";
     int mc_iterations = 1e6;
     
     double initial_temp = 1;
-    double final_temp = 2.4+1.4;
-    double temps_per_thread = 1;
+    // double final_temp = 2.4+1.4;
+    double final_temp = 2.4;
+    double temps_per_thread = 2;
 
-    bool ordered_spins = true;
+    bool ordered_spins = false;
 
     time_t seed;
     time(&seed);
