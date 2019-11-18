@@ -509,44 +509,6 @@ class Task4C:
         plt.show()
 
 
-def analyse_heat_capacity(temp, avg_energy, avg_energy_square):
-    plt.plot(temp, avg_energy_square - avg_energy**2, label="?")
-    plt.xlabel(r"Temperature, [$k_{b}T/J$]")
-    plt.ylabel("Heat capacity, [?]")
-    plt.legend(loc="best")
-    plt.show()
-
-
-
-
-
-def quick_buizz():
-    data = np.loadtxt("data_files/ising_model_data_11x11.txt", skiprows=2, unpack=True)
-
-    T, E, E_squared, M, M_squared, M_abs = data
-    kb = 1
-    
-    Cv = (E_squared - E**2)/(kb*T**2)     # Numerical heat capacity.
-    X  = (M_squared - M_abs**2)/(kb*T) # Numerical susceptibility.
-
-    fig, ax = plt.subplots(ncols=2, nrows=2)
-
-    ax[0, 0].plot(T, E)
-    ax[0, 0].set_title("E")
-
-    ax[0, 1].plot(T, M_abs)
-    ax[0, 1].set_title("M abs")
-
-    ax[1, 0].plot(T, Cv)
-    ax[1, 0].set_title("Cv")
-
-    ax[1, 1].plot(T, X)
-    ax[1, 1].set_title("X")
-
-
-
-    plt.show()
-
 
 def task_4d():
 
@@ -616,6 +578,111 @@ def task_4d():
     plt.show()
 
 
+def task_4e():
+    data_20 = np.loadtxt("data_files/ising_model_data_20x20.txt", skiprows=2, unpack=True)
+    data_40 = np.loadtxt("data_files/ising_model_data_40x40.txt", skiprows=2, unpack=True)
+    data_60 = np.loadtxt("data_files/ising_model_data_60x60.txt", skiprows=2, unpack=True)
+    data_80 = np.loadtxt("data_files/ising_model_data_80x80.txt", skiprows=2, unpack=True)
+    data_100 = np.loadtxt("data_files/ising_model_data_100x100.txt", skiprows=2, unpack=True)
+
+
+    T_20, E_20, E_squared_20, M_20, M_squared_20, M_abs_20 = data_20
+    T_40, E_40, E_squared_40, M_40, M_squared_40, M_abs_40 = data_40
+    T_60, E_60, E_squared_60, M_60, M_squared_60, M_abs_60 = data_60
+    T_80, E_80, E_squared_80, M_80, M_squared_80, M_abs_80 = data_80
+    T_100, E_100, E_squared_100, M_100, M_squared_100, M_abs_100 = data_100
+    kb = 1
+
+    Cv_20 = (E_squared_20 - E_20**2)/(kb*T_20**2)     # Numerical heat capacity.
+    X_20  = (M_squared_20 - M_abs_20**2)/(kb*T_20) # Numerical susceptibility.
+
+    Cv_40 = (E_squared_40 - E_40**2)/(kb*T_40**2)     # Numerical heat capacity.
+    X_40  = (M_squared_40 - M_abs_40**2)/(kb*T_40) # Numerical susceptibility.
+
+    Cv_60 = (E_squared_60 - E_60**2)/(kb*T_60**2)     # Numerical heat capacity.
+    X_60  = (M_squared_60 - M_abs_60**2)/(kb*T_60) # Numerical susceptibility.
+
+    Cv_80 = (E_squared_80 - E_80**2)/(kb*T_80**2)     # Numerical heat capacity.
+    X_80  = (M_squared_80 - M_abs_80**2)/(kb*T_80) # Numerical susceptibility.
+
+    Cv_100 = (E_squared_100 - E_100**2)/(kb*T_100**2)     # Numerical heat capacity.
+    X_100  = (M_squared_100 - M_abs_100**2)/(kb*T_100) # Numerical susceptibility.
+
+    fig, ax = plt.subplots(ncols=2, nrows=2, figsize=(10, 8))
+    fig.text(x=0.48, y=0.035, s=r"$\tilde{T}, [k_bT/J]$", fontsize=25)
+
+    ax[0, 0].plot(T_20, E_20/(20*20), "--.", label="20x20")
+    ax[0, 0].plot(T_40, E_40/(40*40), "--.", label="40x40")
+    ax[0, 0].plot(T_60, E_60/(60*60), "--.", label="60x60")
+    ax[0, 0].plot(T_80, E_80/(80*80), "--.", label="80x80")
+    ax[0, 0].plot(T_100, E_100/(100*100), "--.", label="100x100")
+    ax[0, 0].set_title(r"$\langle \tilde{E} \rangle$", fontsize=25)
+    ax[0, 0].set_ylabel(r"$\tilde{E}/(spins), [E/J]$", fontsize=25)
+    ax[0, 0].legend(fontsize=20)
+    ax[0, 0].tick_params(labelsize=25)
+    ax[0, 0].grid()
+
+    ax[0, 1].plot(T_20, M_abs_20/(20*20), "--.", label="20x20")
+    ax[0, 1].plot(T_40, M_abs_40/(40*40), "--.", label="40x40")
+    ax[0, 1].plot(T_60, M_abs_60/(60*60), "--.", label="60x60")
+    ax[0, 1].plot(T_80, M_abs_80/(80*80), "--.", label="80x80")
+    ax[0, 1].plot(T_100, M_abs_100/(100*100), "--.", label="100x100")
+    ax[0, 1].set_title(r"$\langle|\tilde{M}|\rangle$", fontsize=25)
+    ax[0, 1].set_ylabel(r"$\tilde{M}/(spins), [M/a]$", fontsize=25)
+    ax[0, 1].tick_params(labelsize=25)
+    ax[0, 1].grid()
+
+    ax[1, 0].plot(T_20, Cv_20/(20*20), "--.", label="20x20")
+    ax[1, 0].plot(T_40, Cv_40/(40*40), "--.", label="40x40")
+    ax[1, 0].plot(T_60, Cv_60/(60*60), "--.", label="60x60")
+    ax[1, 0].plot(T_80, Cv_80/(80*80), "--.", label="80x80")
+    ax[1, 0].plot(T_100, Cv_100/(100*100), "--.", label="100x100")
+    ax[1, 0].set_title(r"$C_v$", fontsize=25)
+    ax[1, 0].set_ylabel(r"$C_v, [k_B \sigma^2_{\tilde{E}}/ \tilde{T}^{2}]$", fontsize=25)
+    ax[1, 0].tick_params(labelsize=25)
+    ax[1, 0].grid()
+
+    ax[1, 1].plot(T_20, X_20/(20*20), "--.", label="20x20")
+    ax[1, 1].plot(T_40, X_40/(40*40), "--.", label="40x40")
+    ax[1, 1].plot(T_60, X_60/(60*60), "--.", label="60x60")
+    ax[1, 1].plot(T_80, X_80/(80*80), "--.", label="80x80")
+    ax[1, 1].plot(T_100, X_100/(100*100), "--.", label="100x100")
+    ax[1, 1].set_title(r"$\chi$", fontsize=25)
+    ax[1, 1].set_ylabel(r"$\chi, [a^2 \sigma^2_{\tilde{M}}/(J \tilde{T})]$", fontsize=25)
+    ax[1, 1].tick_params(labelsize=25)
+    ax[1, 1].grid()
+
+    plt.show()
+
+
+def quick_buizz():
+    data = np.loadtxt("data_files/ising_model_data_11x11.txt", skiprows=2, unpack=True)
+
+    T, E, E_squared, M, M_squared, M_abs = data
+    kb = 1
+    
+    Cv = (E_squared - E**2)/(kb*T**2)     # Numerical heat capacity.
+    X  = (M_squared - M_abs**2)/(kb*T) # Numerical susceptibility.
+
+    fig, ax = plt.subplots(ncols=2, nrows=2)
+
+    ax[0, 0].plot(T, E)
+    ax[0, 0].set_title("E")
+
+    ax[0, 1].plot(T, M_abs)
+    ax[0, 1].set_title("M abs")
+
+    ax[1, 0].plot(T, Cv)
+    ax[1, 0].set_title("Cv")
+
+    ax[1, 1].plot(T, X)
+    ax[1, 1].set_title("X")
+
+
+
+    plt.show()
+
+
 def quicker_buizz():
     MC_values = np.arange(1, 1e6+1, 1)  # x values for plot
 
@@ -658,88 +725,18 @@ def quicker_buizz():
 
     plt.show()
 
-def task_4e():
-    data_20 = np.loadtxt("data_files/ising_model_data_20x20.txt", skiprows=2, unpack=True)
-    data_40 = np.loadtxt("data_files/ising_model_data_40x40.txt", skiprows=2, unpack=True)
-    data_60 = np.loadtxt("data_files/ising_model_data_60x60.txt", skiprows=2, unpack=True)
-    data_80 = np.loadtxt("data_files/ising_model_data_80x80.txt", skiprows=2, unpack=True)
-    data_100 = np.loadtxt("data_files/ising_model_data_100x100.txt", skiprows=2, unpack=True)
-
-
-    T_20, E_20, E_squared_20, M_20, M_squared_20, M_abs_20 = data_20
-    T_40, E_40, E_squared_40, M_40, M_squared_40, M_abs_40 = data_40
-    T_60, E_60, E_squared_60, M_60, M_squared_60, M_abs_60 = data_60
-    T_80, E_80, E_squared_80, M_80, M_squared_80, M_abs_80 = data_80
-    T_100, E_100, E_squared_100, M_100, M_squared_100, M_abs_100 = data_100
-    kb = 1
-
-    Cv_20 = (E_squared_20 - E_20**2)/(kb*T_20**2)     # Numerical heat capacity.
-    X_20  = (M_squared_20 - M_abs_20**2)/(kb*T_20) # Numerical susceptibility.
-
-    Cv_40 = (E_squared_40 - E_40**2)/(kb*T_40**2)     # Numerical heat capacity.
-    X_40  = (M_squared_40 - M_abs_40**2)/(kb*T_40) # Numerical susceptibility.
-
-    Cv_60 = (E_squared_60 - E_60**2)/(kb*T_60**2)     # Numerical heat capacity.
-    X_60  = (M_squared_60 - M_abs_60**2)/(kb*T_60) # Numerical susceptibility.
-
-    Cv_80 = (E_squared_80 - E_80**2)/(kb*T_80**2)     # Numerical heat capacity.
-    X_80  = (M_squared_80 - M_abs_80**2)/(kb*T_80) # Numerical susceptibility.
-
-    Cv_100 = (E_squared_100 - E_100**2)/(kb*T_100**2)     # Numerical heat capacity.
-    X_100  = (M_squared_100 - M_abs_100**2)/(kb*T_100) # Numerical susceptibility.
-
-    fig, ax = plt.subplots(ncols=2, nrows=2)
-    fig.text(x=0.455, y=0.035, s=r"$Temperature, [k_bT]$", fontsize=25)
-
-    ax[0, 0].plot(T_20, E_20/(20*20), "--.", label="20x20")
-    ax[0, 0].plot(T_40, E_40/(40*40), "--.", label="40x40")
-    ax[0, 0].plot(T_60, E_60/(60*60), "--.", label="60x60")
-    ax[0, 0].plot(T_80, E_80/(80*80), "--.", label="80x80")
-    ax[0, 0].plot(T_100, E_100/(100*100), "--.", label="100x100")
-    ax[0, 0].set_title(r"$\langle E \rangle$", fontsize=25)
-    ax[0, 0].legend(fontsize=20)
-    ax[0, 0].tick_params(labelsize=25)
-
-    ax[0, 1].plot(T_20, M_abs_20/(20*20), "--.", label="20x20")
-    ax[0, 1].plot(T_40, M_abs_40/(40*40), "--.", label="40x40")
-    ax[0, 1].plot(T_60, M_abs_60/(60*60), "--.", label="60x60")
-    ax[0, 1].plot(T_80, M_abs_80/(80*80), "--.", label="80x80")
-    ax[0, 1].plot(T_100, M_abs_100/(100*100), "--.", label="100x100")
-    ax[0, 1].set_title(r"$\langle|M|\rangle$", fontsize=25)
-    ax[0, 1].tick_params(labelsize=25)
-
-    ax[1, 0].plot(T_20, Cv_20/(20*20), "--.", label="20x20")
-    ax[1, 0].plot(T_40, Cv_40/(40*40), "--.", label="40x40")
-    ax[1, 0].plot(T_60, Cv_60/(60*60), "--.", label="60x60")
-    ax[1, 0].plot(T_80, Cv_80/(80*80), "--.", label="80x80")
-    ax[1, 0].plot(T_100, Cv_100/(100*100), "--.", label="100x100")
-    ax[1, 0].set_title(r"$C_v$", fontsize=25)
-    ax[1, 0].tick_params(labelsize=25)
-
-    ax[1, 1].plot(T_20, X_20/(20*20), "--.", label="20x20")
-    ax[1, 1].plot(T_40, X_40/(40*40), "--.", label="40x40")
-    ax[1, 1].plot(T_60, X_60/(60*60), "--.", label="60x60")
-    ax[1, 1].plot(T_80, X_80/(80*80), "--.", label="80x80")
-    ax[1, 1].plot(T_100, X_100/(100*100), "--.", label="100x100")
-    ax[1, 1].set_title(r"$\chi$", fontsize=25)
-    ax[1, 1].tick_params(labelsize=25)
-
-    plt.show()
-
-
-
 
 
 if __name__ == "__main__":
     # compare_values_task_a_and_b()
     
-    q = Task4C()
-    q.E_and_M_as_a_function_of_MC()
+    # q = Task4C()
+    # q.E_and_M_as_a_function_of_MC()
     # q.accepted_configurations()
     # q.accepted_configurations_longer_interval()
 
     # task_4d()
-    # task_4e()
+    task_4e()
 
     # quick_buizz()
     # quicker_buizz()
