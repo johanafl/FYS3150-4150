@@ -272,8 +272,8 @@ class Task4C:
         fig.text(x=0.035, y=0.28, s=r"$\tilde{M}, [M/a]$", fontsize=25, rotation="vertical")
         
 
-        # ----------------
         # E random.
+        # ----------------
         
         # Plotting the averaged data as solid black.
         ax[0, 0].plot(MC_values[::4], E_data_random_avg[::4, 0], color="black")
@@ -282,16 +282,13 @@ class Task4C:
             # Plotting the individual random data sets with alpha=0.1.
             ax[0, 0].plot(MC_values[::4], E_data_random[i][::4, 0], color="black", linestyle="dashed", alpha=0.1)
         
-        ax[0, 0].set_title(r"$\langle E \rangle$ random", fontsize=25)
+        ax[0, 0].set_title(r"$\langle \tilde{E} \rangle$ random", fontsize=25)
         ax[0, 0].tick_params(labelsize=25)
         ax[0, 0].set_ylim([-1.99725, -1.99725+0.006])
         ax[0, 0].grid()
         
-        # E random.
-        # ----------------
-
-        # ----------------
         # E ordered.
+        # ----------------
 
         # Plotting the averaged data as solid black.
         ax[0, 1].plot(MC_values[::4], E_data_ordered_avg[::4, 0], color="black")
@@ -300,17 +297,14 @@ class Task4C:
             # Plotting the individual random data sets with alpha=0.1.
             ax[0, 1].plot(MC_values[::4], E_data_ordered[i][::4, 0], color="black", linestyle="dashed", alpha=0.1)
         
-        ax[0, 1].set_title(r"$\langle E \rangle$ ordered", fontsize=25)
+        ax[0, 1].set_title(r"$\langle \tilde{E} \rangle$ ordered", fontsize=25)
         ax[0, 1].tick_params(labelsize=25)
         ax[0, 1].set_ylim([-2, -2 + 0.006])
         # ax[0, 1].set_ylim([-1.9982, -1.9982+0.006])
         ax[0, 1].grid()
         
-        # E ordered.
-        # ----------------
-
-        # ----------------
         # M random.
+        # ----------------
 
         # Plotting the averaged data as solid black.
         ax[1, 0].plot(MC_values[::4], M_data_random_avg[::4, 0], color="black")
@@ -319,16 +313,13 @@ class Task4C:
             # Plotting the individual random data sets with alpha=0.1.
             ax[1, 0].plot(MC_values[::4], M_data_random[i][::4, 0], color="black", linestyle="dashed", alpha=0.1)
         
-        ax[1, 0].set_title(r"$\langle |M| \rangle$ random", fontsize=25)
+        ax[1, 0].set_title(r"$\langle |\tilde{M}| \rangle$ random", fontsize=25)
         ax[1, 0].tick_params(labelsize=25)
         ax[1, 0].set_ylim([0.9995 - 0.006, 0.9995])
         ax[1, 0].grid()
         
-        # M random.
-        # ----------------
-        
-        # ----------------
         # M ordered.
+        # ----------------
 
         # Plotting the averaged data as solid black.
         ax[1, 1].plot(MC_values[::4], M_data_ordered_avg[::4, 0], color="black")
@@ -337,13 +328,10 @@ class Task4C:
             # Plotting the individual random data sets with alpha=0.1.
             ax[1, 1].plot(MC_values[::4], M_data_ordered[i][::4, 0], color="black", linestyle="dashed", alpha=0.1)
         
-        ax[1, 1].set_title(r"$\langle |M| \rangle$ ordered", fontsize=25)
+        ax[1, 1].set_title(r"$\langle |\tilde{M}| \rangle$ ordered", fontsize=25)
         ax[1, 1].tick_params(labelsize=25)
         ax[1, 1].set_ylim([0.996, 0.996+0.006])
         ax[1, 1].grid()
-
-        # M ordered.
-        # ----------------
 
         t_fig_2 = time.time()
         t_main_2 = time.time()
@@ -360,10 +348,11 @@ class Task4C:
         fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(10, 8))
         fig.text(x=0.455, y=0.035, s=r"MC cycles, $10^6$", fontsize=25)
         fig.text(x=0.47, y=1-0.075, s=r"$\tilde{T} = 2.4 k_bT/J$", fontsize=25)
-        fig.text(x=0.035, y=0.65, s=r"$\tilde{E}, [k_bT/J]$", fontsize=25, rotation="vertical")
+        fig.text(x=0.035, y=0.65, s=r"$\tilde{E}, [E/J]$", fontsize=25, rotation="vertical")
         fig.text(x=0.035, y=0.28, s=r"$\tilde{M}, [M/a]$", fontsize=25, rotation="vertical")
-        # ----------------
+        
         # E random.
+        # ----------------
 
         # Plotting the averaged data as solid black.
         ax[0, 0].plot(MC_values[::4], E_data_random_avg[::4, 1], color="black", label=r"$\tilde{T}: 2.4 k_bT$")
@@ -372,14 +361,11 @@ class Task4C:
             # Plotting the individual random data sets with alpha=0.1.
             ax[0, 0].plot(MC_values[::4], E_data_random[i][::4, 1], color="black", linestyle="dashed", alpha=0.1)
         
-        ax[0, 0].set_title(r"$\langle E \rangle$ random", fontsize=25)
+        ax[0, 0].set_title(r"$\langle \tilde{E} \rangle$ random", fontsize=25)
         ax[0, 0].tick_params(labelsize=25)
         ax[0, 0].set_ylim([-1.3, -1.3+0.1])
         ax[0, 0].grid()
         
-        # E random.
-        # ----------------
-
         # E ordered.
         # ----------------
 
@@ -390,14 +376,11 @@ class Task4C:
             # Plotting the individual ordered data sets with alpha=0.1.
             ax[0, 1].plot(MC_values[::4], E_data_ordered[i][::4, 1], color="black", linestyle="dashed", alpha=0.1)
         
-        ax[0, 1].set_title(r"$\langle E \rangle$ ordered", fontsize=25)
+        ax[0, 1].set_title(r"$\langle \tilde{E} \rangle$ ordered", fontsize=25)
         ax[0, 1].tick_params(labelsize=25)
         ax[0, 1].set_ylim([-1.3, -1.3+0.1])
         ax[0, 1].grid()
         
-        # ----------------
-        # E ordered.
-
         # M random.
         # ----------------
 
@@ -408,13 +391,10 @@ class Task4C:
             # Plotting the individual random data sets with alpha=0.1.
             ax[1, 0].plot(MC_values[::4], M_data_random[i][::4, 1], color="black", linestyle="dashed", alpha=0.1)
 
-        ax[1, 0].set_title(r"$\langle |M| \rangle$ random", fontsize=25)
+        ax[1, 0].set_title(r"$\langle |\tilde{M}| \rangle$ random", fontsize=25)
         ax[1, 0].tick_params(labelsize=25)
         ax[1, 0].set_ylim([0.4, 0.4+0.1])
         ax[1, 0].grid()
-
-        # ----------------
-        # M random.
 
         # M ordered.
         # ----------------
@@ -426,18 +406,17 @@ class Task4C:
             # Plotting the individual ordered data sets with alpha=0.1.
             ax[1, 1].plot(MC_values[::4], M_data_ordered[i][::4, 1], color="black", linestyle="dashed", alpha=0.1)
 
-        ax[1, 1].set_title(r"$\langle |M| \rangle$ ordered", fontsize=25)
+        ax[1, 1].set_title(r"$\langle |\tilde{M}| \rangle$ ordered", fontsize=25)
         ax[1, 1].tick_params(labelsize=25)
         ax[1, 1].set_ylim([0.4, 0.4+0.1])
         ax[1, 1].grid()
 
-        # ----------------
-        # M ordered.
 
         t_fig_2 = time.time()
         print(f"Plot T = 1 generated in {t_fig_2 - t_fig_1:.3f} seconds.")
         
         plt.show()
+
 
     def accepted_configurations(self):
         """
@@ -515,6 +494,21 @@ class Task4C:
         plt.show()
 
 
+    def accepted_configurations_longer_interval(self):
+        """
+        Quick check of a larger data set with more temperatures.
+        Update after checking the data: no longer exponential change
+        for temperatures over 2.4, but all runs behave almost identically.
+        """
+        N = 6
+        for i in range(N):
+            random_config, temp = np.loadtxt(f"data_files/E_convergence_data_20x20_random_accepted_configs_longer_{i}.txt",
+                skiprows=1, max_rows=2, unpack=False)
+
+            plt.plot(temp, random_config)
+        plt.show()
+
+
 def analyse_heat_capacity(temp, avg_energy, avg_energy_square):
     plt.plot(temp, avg_energy_square - avg_energy**2, label="?")
     plt.xlabel(r"Temperature, [$k_{b}T/J$]")
@@ -557,14 +551,15 @@ def quick_buizz():
 def task_4d():
 
     filename = "data_files/E_convergence_data_20x20_random_0.npy"
+    state = filename[36:43]
     data = np.load(filename)
 
     temperatures = data[0, :]
     data = data[1:, :]
 
-    t0_convergence = int(5e3)
+    t0_convergence = int(5e3)   # Number of MC cycles before convergence.
     t0_selection = slice(t0_convergence, None, 1)
-    t1_convergence = int(4e5)
+    t1_convergence = int(4e5)   # Number of MC cycles before convergence.
     t1_selection = slice(t1_convergence, None, 1)
 
     std1 = np.std(data[t0_selection, 0])
@@ -572,7 +567,8 @@ def task_4d():
     std1_scaled = np.std(data[t0_selection, 0]/(20*20))
     std2_scaled = np.std(data[t1_selection, 1]/(20*20))
 
-
+    print(f"Initial state: {state}.")
+    print("-"*22)
     print("std1: ", std1)
     print("std2: ", std2)
 
@@ -589,7 +585,7 @@ def task_4d():
     n, _, _ = ax[0, 0].hist(data[t0_selection, 0], color="grey", ec="k", bins=bins)
     ax[0, 0].grid()
     ax[0, 0].tick_params(labelsize=20)
-    ax[0, 0].set_xlabel("E", fontsize=25)
+    ax[0, 0].set_title(r"$\tilde{T} = 1 k_bT/J$", fontsize=25)
     ax[0, 0].set_ylabel("occurrence", fontsize=25)
 
     energy_array = np.arange(-800, 800+1, 4)/(20*20)
@@ -598,18 +594,15 @@ def task_4d():
     ax[1, 0].plot(energy_array, n/(MC - t0_convergence), color="black")
     ax[1, 0].grid()
     ax[1, 0].tick_params(labelsize=20)
-    ax[1, 0].set_xlabel("E", fontsize=25)
-    ax[1, 0].set_ylabel("P(E)", fontsize=25)
-    # T = 1
-    # ----------------------
+    ax[1, 0].set_xlabel(r"$\tilde{E}/(spins), [E/J]$", fontsize=25)
+    ax[1, 0].set_ylabel(r"$P(\tilde{E})$", fontsize=25)
 
     # ----------------------
     # T = 2
     n, _, _ = ax[0, 1].hist(data[t1_selection, 1], color="grey", ec="k", bins=bins)
     ax[0, 1].grid()
     ax[0, 1].tick_params(labelsize=20)
-    ax[0, 1].set_xlabel("E", fontsize=25)
-    ax[0, 1].set_ylabel("occurrence", fontsize=25)
+    ax[0, 1].set_title(r"$\tilde{T} = 2.4 k_bT/J$", fontsize=25)
 
     energy_array = np.arange(-800, 800+1, 4)/(20*20)
     MC = 1e6
@@ -617,10 +610,8 @@ def task_4d():
     ax[1, 1].plot(energy_array, n/(MC - t1_convergence), color="black")
     ax[1, 1].grid()
     ax[1, 1].tick_params(labelsize=20)
-    ax[1, 1].set_xlabel("E", fontsize=25)
-    ax[1, 1].set_ylabel("P(E)", fontsize=25)
-    # T = 1
-    # ----------------------
+    ax[1, 1].set_xlabel(r"$\tilde{E}/(spins), [E/J]$", fontsize=25)
+    # ax[1, 1].set_ylabel("P(E)", fontsize=25)
 
     plt.show()
 
@@ -741,16 +732,17 @@ def task_4e():
 
 if __name__ == "__main__":
     # compare_values_task_a_and_b()
-    # q = Task4C()
-    # q.E_and_M_as_a_function_of_MC()
+    
+    q = Task4C()
+    q.E_and_M_as_a_function_of_MC()
     # q.accepted_configurations()
+    # q.accepted_configurations_longer_interval()
+
+    # task_4d()
+    # task_4e()
 
     # quick_buizz()
-    # task_4e()
-    task_4d()
-
     # quicker_buizz()
-
     # quick_n_dirty()
 
     pass
