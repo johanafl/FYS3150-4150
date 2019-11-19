@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.ticker import FormatStrFormatter
+from scipy.interpolate import UnivariateSpline
 mpl.rcParams['agg.path.chunksize'] = 10000  # To plot large amounts of data.
 
 
@@ -578,152 +579,239 @@ def task_4d():
     plt.show()
 
 
-def task_4e():
-    data_20 = np.loadtxt("data_files/ising_model_data_20x20.txt", skiprows=2, unpack=True)
-    data_40 = np.loadtxt("data_files/ising_model_data_40x40.txt", skiprows=2, unpack=True)
-    data_60 = np.loadtxt("data_files/ising_model_data_60x60.txt", skiprows=2, unpack=True)
-    data_80 = np.loadtxt("data_files/ising_model_data_80x80.txt", skiprows=2, unpack=True)
-    data_100 = np.loadtxt("data_files/ising_model_data_100x100.txt", skiprows=2, unpack=True)
+class Task4E:
+    def __init__(self):
+        """
+        Plot <E>, <|M|>, Cv, X for grids 2x2, 20x20, 40x40, 60x60, 80x80,
+        100x100.
+        """
+        data_2   = np.loadtxt("data_files/ising_model_data_2x2.txt", skiprows=2, unpack=True)
+        data_20  = np.loadtxt("data_files/ising_model_data_20x20.txt", skiprows=2, unpack=True)
+        data_40  = np.loadtxt("data_files/ising_model_data_40x40.txt", skiprows=2, unpack=True)
+        data_60  = np.loadtxt("data_files/ising_model_data_60x60.txt", skiprows=2, unpack=True)
+        data_80  = np.loadtxt("data_files/ising_model_data_80x80.txt", skiprows=2, unpack=True)
+        data_100 = np.loadtxt("data_files/ising_model_data_100x100.txt", skiprows=2, unpack=True)
+
+        self.T_2, self.E_2, self.E_squared_2, self.M_2, self.M_squared_2, self.M_abs_2 = data_2
+        self.T_20, self.E_20, self.E_squared_20, self.M_20, self.M_squared_20, self.M_abs_20 = data_20
+        self.T_40, self.E_40, self.E_squared_40, self.M_40, self.M_squared_40, self.M_abs_40 = data_40
+        self.T_60, self.E_60, self.E_squared_60, self.M_60, self.M_squared_60, self.M_abs_60 = data_60
+        self.T_80, self.E_80, self.E_squared_80, self.M_80, self.M_squared_80, self.M_abs_80 = data_80
+        self.T_100, self.E_100, self.E_squared_100, self.M_100, self.M_squared_100, self.M_abs_100 = data_100
+        
+        kb = 1
+        self.kb = kb
+        self.J = 1
+
+        self.Cv_2 = (self.E_squared_2 - self.E_2**2)/(kb*self.T_2**2)     # Numerical heat capacity.
+        self.X_abs_2  = (self.M_squared_2 - self.M_abs_2**2)/(kb*self.T_2) # Numerical susceptibility.
+        self.X_2  = (self.M_squared_2 - self.M_2**2)/(kb*self.T_2) # Numerical susceptibility.
+
+        self.Cv_20 = (self.E_squared_20 - self.E_20**2)/(kb*self.T_20**2)     # Numerical heat capacity.
+        self.X_abs_20  = (self.M_squared_20 - self.M_abs_20**2)/(kb*self.T_20) # Numerical susceptibility.
+        self.X_20  = (self.M_squared_20 - self.M_20**2)/(kb*self.T_20) # Numerical susceptibility.
+
+        self.Cv_40 = (self.E_squared_40 - self.E_40**2)/(kb*self.T_40**2)     # Numerical heat capacity.
+        self.X_abs_40  = (self.M_squared_40 - self.M_abs_40**2)/(kb*self.T_40) # Numerical susceptibility.
+        self.X_40  = (self.M_squared_40 - self.M_40**2)/(kb*self.T_40) # Numerical susceptibility.
+
+        self.Cv_60 = (self.E_squared_60 - self.E_60**2)/(kb*self.T_60**2)     # Numerical heat capacity.
+        self.X_abs_60  = (self.M_squared_60 - self.M_abs_60**2)/(kb*self.T_60) # Numerical susceptibility.
+        self.X_60  = (self.M_squared_60 - self.M_60**2)/(kb*self.T_60) # Numerical susceptibility.
+
+        self.Cv_80 = (self.E_squared_80 - self.E_80**2)/(kb*self.T_80**2)     # Numerical heat capacity.
+        self.X_abs_80  = (self.M_squared_80 - self.M_abs_80**2)/(kb*self.T_80) # Numerical susceptibility.
+        self.X_80  = (self.M_squared_80 - self.M_80**2)/(kb*self.T_80) # Numerical susceptibility.
+
+        self.Cv_100 = (self.E_squared_100 - self.E_100**2)/(kb*self.T_100**2)     # Numerical heat capacity.
+        self.X_abs_100  = (self.M_squared_100 - self.M_abs_100**2)/(kb*self.T_100) # Numerical susceptibility.
+        self.X_100  = (self.M_squared_100 - self.M_100**2)/(kb*self.T_100) # Numerical susceptibility.
+
+        self.Cv_2_spl   = UnivariateSpline(self.T_2, self.Cv_2)
+        self.Cv_20_spl  = UnivariateSpline(self.T_20, self.Cv_20)
+        self.Cv_40_spl  = UnivariateSpline(self.T_40, self.Cv_40)
+        self.Cv_60_spl  = UnivariateSpline(self.T_60, self.Cv_60)
+        self.Cv_80_spl  = UnivariateSpline(self.T_80, self.Cv_80)
+        self.Cv_100_spl = UnivariateSpline(self.T_100, self.Cv_100)
+        
+        # self.Tc_2   = self.T_2[np.argmax(self.Cv_2)]
+        # self.Tc_20  = self.T_20[np.argmax(self.Cv_20)]
+        # self.Tc_40  = self.T_40[np.argmax(self.Cv_40)]
+        # self.Tc_60  = self.T_60[np.argmax(self.Cv_60)]
+        # self.Tc_80  = self.T_80[np.argmax(self.Cv_80)]
+        # self.Tc_100 = self.T_100[np.argmax(self.Cv_100)]
+
+    def visualize_data(self, show_plot=True, show_spline_plot=False):
+        
+        fine_temp = np.linspace(2, 2.6, 10000)
+
+        if show_spline_plot:
+
+            fig, ax = plt.subplots(figsize=(10, 8))
+
+            line, = ax.plot(fine_temp, self.Cv_2_spl(fine_temp)/(2*2), label="2x2")
+            ax.plot(self.T_2, self.Cv_2/(2*2), ".", label="2x2", color=line.get_color())
+            
+            line, = ax.plot(fine_temp, self.Cv_20_spl(fine_temp)/(20*20), label="20x20")
+            ax.plot(self.T_20, self.Cv_20/(20*20), ".", label="20x20", color=line.get_color())
+            
+            line, = ax.plot(fine_temp, self.Cv_40_spl(fine_temp)/(40*40), label="40x40")
+            ax.plot(self.T_40, self.Cv_40/(40*40), ".", label="40x40", color=line.get_color())
+            
+            line, = ax.plot(fine_temp, self.Cv_60_spl(fine_temp)/(60*60), label="60x60")
+            ax.plot(self.T_60, self.Cv_60/(60*60), ".", label="60x60", color=line.get_color())
+            
+            line, = ax.plot(fine_temp, self.Cv_80_spl(fine_temp)/(80*80), label="80x80")
+            ax.plot(self.T_80, self.Cv_80/(80*80), ".", label="80x80", color=line.get_color())
+            
+            line, = ax.plot(fine_temp, self.Cv_100_spl(fine_temp)/(100*100), label="100x100")
+            ax.plot(self.T_100, self.Cv_100/(100*100), ".", label="100x100", color=line.get_color())
+
+            ax.set_title(r"$\tilde{C}_v$", fontsize=25)
+            ax.set_ylabel(r"$\tilde{C}_v/(spins), [k_B\sigma^2_{\tilde{E}}/ \tilde{T}^{2}]$", fontsize=25)
+            ax.tick_params(labelsize=25)
+            ax.grid()
+
+            plt.show()
 
 
-    T_20, E_20, E_squared_20, M_20, M_squared_20, M_abs_20 = data_20
-    T_40, E_40, E_squared_40, M_40, M_squared_40, M_abs_40 = data_40
-    T_60, E_60, E_squared_60, M_60, M_squared_60, M_abs_60 = data_60
-    T_80, E_80, E_squared_80, M_80, M_squared_80, M_abs_80 = data_80
-    T_100, E_100, E_squared_100, M_100, M_squared_100, M_abs_100 = data_100
-    kb = 1
+        if show_plot:
 
-    Cv_20 = (E_squared_20 - E_20**2)/(kb*T_20**2)     # Numerical heat capacity.
-    X_20  = (M_squared_20 - M_abs_20**2)/(kb*T_20) # Numerical susceptibility.
+            fig, ax = plt.subplots(ncols=2, nrows=2, figsize=(10, 8))
+            fig.text(x=0.48, y=0.035, s=r"$\tilde{T}, [k_BT/J]$", fontsize=25)
 
-    Cv_40 = (E_squared_40 - E_40**2)/(kb*T_40**2)     # Numerical heat capacity.
-    X_40  = (M_squared_40 - M_abs_40**2)/(kb*T_40) # Numerical susceptibility.
+            ax[0, 0].plot(self.T_2, self.E_2/(2*2), "--.", label="2x2")
+            ax[0, 0].plot(self.T_20, self.E_20/(20*20), "--.", label="20x20")
+            ax[0, 0].plot(self.T_40, self.E_40/(40*40), "--.", label="40x40")
+            ax[0, 0].plot(self.T_60, self.E_60/(60*60), "--.", label="60x60")
+            ax[0, 0].plot(self.T_80, self.E_80/(80*80), "--.", label="80x80")
+            ax[0, 0].plot(self.T_100, self.E_100/(100*100), "--.", label="100x100")
+            ax[0, 0].set_title(r"$\langle \tilde{E} \rangle$", fontsize=25)
+            ax[0, 0].set_ylabel(r"$\tilde{E}/(spins), [E/J]$", fontsize=25)
+            ax[0, 0].legend(fontsize=20)
+            ax[0, 0].tick_params(labelsize=25)
+            ax[0, 0].grid()
 
-    Cv_60 = (E_squared_60 - E_60**2)/(kb*T_60**2)     # Numerical heat capacity.
-    X_60  = (M_squared_60 - M_abs_60**2)/(kb*T_60) # Numerical susceptibility.
+            ax[0, 1].plot(self.T_2, self.M_abs_2/(2*2), "--.", label="2x2")
+            ax[0, 1].plot(self.T_20, self.M_abs_20/(20*20), "--.", label="20x20")
+            ax[0, 1].plot(self.T_40, self.M_abs_40/(40*40), "--.", label="40x40")
+            ax[0, 1].plot(self.T_60, self.M_abs_60/(60*60), "--.", label="60x60")
+            ax[0, 1].plot(self.T_80, self.M_abs_80/(80*80), "--.", label="80x80")
+            ax[0, 1].plot(self.T_100, self.M_abs_100/(100*100), "--.", label="100x100")
+            ax[0, 1].set_title(r"$\langle|\tilde{M}|\rangle$", fontsize=25)
+            ax[0, 1].set_ylabel(r"$\tilde{M}/(spins), [M/a]$", fontsize=25)
+            ax[0, 1].tick_params(labelsize=25)
+            ax[0, 1].grid()
 
-    Cv_80 = (E_squared_80 - E_80**2)/(kb*T_80**2)     # Numerical heat capacity.
-    X_80  = (M_squared_80 - M_abs_80**2)/(kb*T_80) # Numerical susceptibility.
+            line, = ax[1, 0].plot(fine_temp, self.Cv_2_spl(fine_temp)/(2*2), label="fitted")
+            ax[1, 0].plot(self.T_2, self.Cv_2/(2*2), ".", color=line.get_color(), label="data points")
+            
+            line, = ax[1, 0].plot(fine_temp, self.Cv_20_spl(fine_temp)/(20*20))
+            ax[1, 0].plot(self.T_20, self.Cv_20/(20*20), ".", color=line.get_color())
+            
+            line, = ax[1, 0].plot(fine_temp, self.Cv_40_spl(fine_temp)/(40*40))
+            ax[1, 0].plot(self.T_40, self.Cv_40/(40*40), ".", color=line.get_color())
+            
+            line, = ax[1, 0].plot(fine_temp, self.Cv_60_spl(fine_temp)/(60*60))
+            ax[1, 0].plot(self.T_60, self.Cv_60/(60*60), ".", color=line.get_color())
+            
+            line, = ax[1, 0].plot(fine_temp, self.Cv_80_spl(fine_temp)/(80*80))
+            ax[1, 0].plot(self.T_80, self.Cv_80/(80*80), ".", color=line.get_color())
+            
+            line, = ax[1, 0].plot(fine_temp, self.Cv_100_spl(fine_temp)/(100*100))
+            ax[1, 0].plot(self.T_100, self.Cv_100/(100*100), ".", color=line.get_color())
 
-    Cv_100 = (E_squared_100 - E_100**2)/(kb*T_100**2)     # Numerical heat capacity.
-    X_100  = (M_squared_100 - M_abs_100**2)/(kb*T_100) # Numerical susceptibility.
+            ax[1, 0].set_title(r"$\tilde{C}_v$", fontsize=25)
+            ax[1, 0].set_ylabel(r"$\tilde{C}_v/(spins), [k_B\sigma^2_{\tilde{E}}/ \tilde{T}^{2}]$", fontsize=25)
+            ax[1, 0].tick_params(labelsize=25)
+            ax[1, 0].grid()
+            ax[1, 0].legend(loc="upper left", fontsize=20)
 
-    fig, ax = plt.subplots(ncols=2, nrows=2, figsize=(10, 8))
-    fig.text(x=0.48, y=0.035, s=r"$\tilde{T}, [k_bT/J]$", fontsize=25)
+            ax[1, 1].plot(self.T_2, self.X_abs_2/(2*2), "--.", label="2x2")
+            ax[1, 1].plot(self.T_20, self.X_abs_20/(20*20), "--.", label="20x20")
+            ax[1, 1].plot(self.T_40, self.X_abs_40/(40*40), "--.", label="40x40")
+            ax[1, 1].plot(self.T_60, self.X_abs_60/(60*60), "--.", label="60x60")
+            ax[1, 1].plot(self.T_80, self.X_abs_80/(80*80), "--.", label="80x80")
+            ax[1, 1].plot(self.T_100, self.X_abs_100/(100*100), "--.", label="100x100")
+            ax[1, 1].set_title(r"$\tilde{\chi}_{|\tilde{M}|}$", fontsize=25)
+            ax[1, 1].set_ylabel(r"$\tilde{\chi}_{|\tilde{M}|}/(spins), [\sigma^2_{\tilde{|M|}}/(J \tilde{T})]$", fontsize=25)
+            ax[1, 1].tick_params(labelsize=25)
+            ax[1, 1].grid()
 
-    ax[0, 0].plot(T_20, E_20/(20*20), "--.", label="20x20")
-    ax[0, 0].plot(T_40, E_40/(40*40), "--.", label="40x40")
-    ax[0, 0].plot(T_60, E_60/(60*60), "--.", label="60x60")
-    ax[0, 0].plot(T_80, E_80/(80*80), "--.", label="80x80")
-    ax[0, 0].plot(T_100, E_100/(100*100), "--.", label="100x100")
-    ax[0, 0].set_title(r"$\langle \tilde{E} \rangle$", fontsize=25)
-    ax[0, 0].set_ylabel(r"$\tilde{E}/(spins), [E/J]$", fontsize=25)
-    ax[0, 0].legend(fontsize=20)
-    ax[0, 0].tick_params(labelsize=25)
-    ax[0, 0].grid()
-
-    ax[0, 1].plot(T_20, M_abs_20/(20*20), "--.", label="20x20")
-    ax[0, 1].plot(T_40, M_abs_40/(40*40), "--.", label="40x40")
-    ax[0, 1].plot(T_60, M_abs_60/(60*60), "--.", label="60x60")
-    ax[0, 1].plot(T_80, M_abs_80/(80*80), "--.", label="80x80")
-    ax[0, 1].plot(T_100, M_abs_100/(100*100), "--.", label="100x100")
-    ax[0, 1].set_title(r"$\langle|\tilde{M}|\rangle$", fontsize=25)
-    ax[0, 1].set_ylabel(r"$\tilde{M}/(spins), [M/a]$", fontsize=25)
-    ax[0, 1].tick_params(labelsize=25)
-    ax[0, 1].grid()
-
-    ax[1, 0].plot(T_20, Cv_20/(20*20), "--.", label="20x20")
-    ax[1, 0].plot(T_40, Cv_40/(40*40), "--.", label="40x40")
-    ax[1, 0].plot(T_60, Cv_60/(60*60), "--.", label="60x60")
-    ax[1, 0].plot(T_80, Cv_80/(80*80), "--.", label="80x80")
-    ax[1, 0].plot(T_100, Cv_100/(100*100), "--.", label="100x100")
-    ax[1, 0].set_title(r"$C_v$", fontsize=25)
-    ax[1, 0].set_ylabel(r"$C_v, [k_B \sigma^2_{\tilde{E}}/ \tilde{T}^{2}]$", fontsize=25)
-    ax[1, 0].tick_params(labelsize=25)
-    ax[1, 0].grid()
-
-    ax[1, 1].plot(T_20, X_20/(20*20), "--.", label="20x20")
-    ax[1, 1].plot(T_40, X_40/(40*40), "--.", label="40x40")
-    ax[1, 1].plot(T_60, X_60/(60*60), "--.", label="60x60")
-    ax[1, 1].plot(T_80, X_80/(80*80), "--.", label="80x80")
-    ax[1, 1].plot(T_100, X_100/(100*100), "--.", label="100x100")
-    ax[1, 1].set_title(r"$\chi$", fontsize=25)
-    ax[1, 1].set_ylabel(r"$\chi, [a^2 \sigma^2_{\tilde{M}}/(J \tilde{T})]$", fontsize=25)
-    ax[1, 1].tick_params(labelsize=25)
-    ax[1, 1].grid()
-
-    plt.show()
+            plt.show()
 
 
-def quick_buizz():
-    data = np.loadtxt("data_files/ising_model_data_11x11.txt", skiprows=2, unpack=True)
+            # fig, ax = plt.subplots(ncols=1, nrows=2, figsize=(10, 8))
+            # fig.text(x=0.48, y=0.035, s=r"$\tilde{T}, [k_bT/J]$", fontsize=25)
 
-    T, E, E_squared, M, M_squared, M_abs = data
-    kb = 1
-    
-    Cv = (E_squared - E**2)/(kb*T**2)     # Numerical heat capacity.
-    X  = (M_squared - M_abs**2)/(kb*T) # Numerical susceptibility.
+            # ax[0].plot(self.T_20, self.M_squared_20/(20*20), "--.", label="20x20")
+            # ax[0].plot(self.T_40, self.M_squared_40/(40*40), "--.", label="40x40")
+            # ax[0].plot(self.T_60, self.M_squared_60/(60*60), "--.", label="60x60")
+            # ax[0].plot(self.T_80, self.M_squared_80/(80*80), "--.", label="80x80")
+            # ax[0].plot(self.T_100, self.M_squared_100/(100*100), "--.", label="100x100")
+            # ax[0].set_title(r"$\langle \tilde{E} \rangle$", fontsize=25)
+            # ax[0].set_ylabel(r"$\tilde{E}/(spins), [E/J]$", fontsize=25)
+            # ax[0].legend(fontsize=20)
+            # ax[0].tick_params(labelsize=25)
+            # ax[0].grid()
 
-    fig, ax = plt.subplots(ncols=2, nrows=2)
+            # ax[1].plot(self.T_20, self.X_20/(20*20), "--.", label="20x20")
+            # ax[1].plot(self.T_40, self.X_40/(40*40), "--.", label="40x40")
+            # ax[1].plot(self.T_60, self.X_60/(60*60), "--.", label="60x60")
+            # ax[1].plot(self.T_80, self.X_80/(80*80), "--.", label="80x80")
+            # ax[1].plot(self.T_100, self.X_100/(100*100), "--.", label="100x100")
+            # ax[1].set_title(r"$\langle|\tilde{M}|\rangle$", fontsize=25)
+            # ax[1].set_ylabel(r"$\tilde{M}/(spins), [M/a]$", fontsize=25)
+            # ax[1].tick_params(labelsize=25)
+            # ax[1].grid()
 
-    ax[0, 0].plot(T, E)
-    ax[0, 0].set_title("E")
+            # plt.show()
 
-    ax[0, 1].plot(T, M_abs)
-    ax[0, 1].set_title("M abs")
+    def approximate_critical_temperature_for_L_infty(self, show_plot=False):
+        """
+        Analytical solution for the time derivative of Cv for 2x2 to
+        calculate the strange constant, a and more.
+        """
 
-    ax[1, 0].plot(T, Cv)
-    ax[1, 0].set_title("Cv")
+        # Using the temperature derivative of Cv for 2x2 to find a.
+        self.T = np.linspace(1, 3, 10000)
+        arg    = 8*self.J/(self.kb*self.T)
+        res    = 2*(8*self.J)**3*np.sinh(arg)*(3*np.cosh(arg) + 1)/(self.kb**2*self.T**4*(np.cosh(arg) + 3)**3)
+        res   -= 3*(8*self.J)**3*np.sinh(arg)/(self.kb**2*self.T**4*(np.cosh(arg) + 3)**2)
+        res   -= 2*(8*self.J)**2*3*(np.cosh(arg) + 1)/(self.kb*self.T**3*(np.cosh(arg) + 3)**2)
 
-    ax[1, 1].plot(T, X)
-    ax[1, 1].set_title("X")
+        idx = np.argmin(np.abs(res))
+        Tc_2x2 = self.T[idx]    # Critical temperature for 2x2.
+        Tc = 2*self.J/(np.log(1 + np.sqrt(2))*self.kb)  # Critical temperature for L -> infty.
+        self.a = (Tc_2x2 - Tc)/2**(-1)
 
+        fine_temp = np.linspace(2.2, 2.4, 10000)
 
+        # Extracting the indices of the max Cv for each lattice.
+        idx_2   = np.argmax(self.Cv_2_spl(fine_temp))
+        idx_20  = np.argmax(self.Cv_20_spl(fine_temp))
+        idx_40  = np.argmax(self.Cv_40_spl(fine_temp))
+        idx_60  = np.argmax(self.Cv_60_spl(fine_temp))
+        idx_80  = np.argmax(self.Cv_80_spl(fine_temp))
+        idx_100 = np.argmax(self.Cv_100_spl(fine_temp))
 
-    plt.show()
+        # Finding the critical temperatures for each lattice.
+        Tc_2     = fine_temp[idx_2]
+        Tc_20    = fine_temp[idx_20]
+        Tc_40    = fine_temp[idx_40]
+        Tc_60    = fine_temp[idx_60]
+        Tc_80    = fine_temp[idx_80]
+        Tc_100   = fine_temp[idx_100]
+        Tc_exact = 2/np.log(1 + np.sqrt(2))
 
-
-def quicker_buizz():
-    MC_values = np.arange(1, 1e6+1, 1)  # x values for plot
-
-    filename_magnet_ordered = "data_files/M_convergence_data_10x10_ordered.npy"
-    filename_magnet_random = "data_files/M_convergence_data_10x10_random.npy"
-
-    magnet_ordered = np.load(filename_magnet_ordered)
-    magnet_ordered = magnet_ordered[1:]
-
-    
-    M_cum_avg = np.cumsum(magnet_ordered)/np.arange(1, len(magnet_ordered) + 1, 1)
-
-
-    fig, ax = plt.subplots(figsize=(10, 8))
-    ax.plot(MC_values, M_cum_avg)
-    
-    
-    ax.set_xlabel("MC iterations", fontsize=30)
-    ax.set_ylabel("Magnetization", fontsize=30)
-    ax.legend(loc="best", fontsize=20)
-    ax.tick_params(labelsize=25)
-
-    plt.show()
-
-    magnet_random = np.load(filename_magnet_random)
-    magnet_random = magnet_random[1:]
-
-    
-    M_cum_avg_random = np.cumsum(magnet_random)/np.arange(1, len(magnet_random) + 1, 1)
+        print(f"2x2: {Tc_2:.5f}, exact: {Tc_exact:.5f}, diff: {Tc_2 - Tc_exact:.5f}")
+        print(f"20x20: {Tc_20:.5f}, exact: {Tc_exact:.5f}, diff: {Tc_20 - Tc_exact:.5f}")
+        print(f"40x40: {Tc_40:.5f}, exact: {Tc_exact:.5f}, diff: {Tc_40 - Tc_exact:.5f}")
+        print(f"60x60: {Tc_60:.5f}, exact: {Tc_exact:.5f}, diff: {Tc_60 - Tc_exact:.5f}")
+        print(f"80x80: {Tc_80:.5f}, exact: {Tc_exact:.5f}, diff: {Tc_80 - Tc_exact:.5f}")
+        print(f"100x100: {Tc_100:.5f}, exact: {Tc_exact:.5f}, diff: {Tc_100 - Tc_exact:.5f}")
 
 
-    fig, ax = plt.subplots(figsize=(10, 8))
-    ax.plot(MC_values, M_cum_avg_random)
-    
-    
-    ax.set_xlabel("MC iterations", fontsize=30)
-    ax.set_ylabel("Magnetization", fontsize=30)
-    ax.legend(loc="best", fontsize=20)
-    ax.tick_params(labelsize=25)
-
-    plt.show()
 
 
 
@@ -736,7 +824,9 @@ if __name__ == "__main__":
     # q.accepted_configurations_longer_interval()
 
     # task_4d()
-    task_4e()
+    q = Task4E()
+    # q.visualize_data()
+    q.approximate_critical_temperature_for_L_infty()
 
     # quick_buizz()
     # quicker_buizz()
