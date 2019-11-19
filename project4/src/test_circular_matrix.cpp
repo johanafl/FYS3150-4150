@@ -2,25 +2,6 @@
 #include "catch.hpp"
 #include "circular_matrix.h"
 
-
-// TEST_CASE("test_print")
-void test_print()
-{   
-    int seed = 1337;
-    int n = 3;
-    
-    CircularMatrix q1(n);
-    CircularMatrix q2(n, seed);
-    q1.print();
-    std::cout << std::endl;
-    q2.print();
-    std::cout << std::endl;
-    q1.set_new_dim(4);
-    q1.ordered_spin();
-    q1.print();
-    // std::cout << q1(0, 8, true) << std::endl;
-}
-
 TEST_CASE("test_that_ordered_spin_produces_all_spin_up")
 {
     int n    = 2;
