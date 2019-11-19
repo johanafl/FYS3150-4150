@@ -5,6 +5,7 @@
 ### User defined ###
 *.txt
 *.npy
+*.pdf
 
 ### C++ ###
 # Prerequisites
