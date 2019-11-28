@@ -1,57 +1,47 @@
 #include "solver.h"
 
-Solver::Solver(int num_steps_input, double dt_input, double init_pos_x, 
-    double init_pos_y, double init_vel_x, double init_vel_y)
+Solver::Solver(int num_steps_input)
+    : pos(3, num_steps_input+1), vel(3, num_steps_input+1)
 {
     num_steps = num_steps_input;
+}
+
+void Solver::set_initial_conditions(double init_pos_x, double init_pos_y,
+        double init_vel_x, double init_vel_y)
+{
+    // pos_x[0] = init_pos_x;
+    // pos_y[0] = init_pos_y;
+    // vel_x[0] = init_vel_x;
+    // vel_y[0] = init_vel_y;
+    double init_pos_z = 0;
+    double init_vel_z = 0;
+
+    pos(0, 0) = init_pos_x;
+    pos(1, 0) = init_pos_y;
+    pos(2, 0) = init_pos_z;
+    vel(0, 0) = init_vel_x;
+    vel(1, 0) = init_vel_y;
+    vel(2, 0) = init_vel_z;
+    
+}
+
+void Solver::solve(arma::vec (*f)(arma::vec u, double t), double dt_input)
+{
     dt = dt_input;
-
-    pos_x = new double[num_steps];
-    pos_y = new double[num_steps];
-    vel_x = new double[num_steps];
-    vel_y = new double[num_steps];
-
-    pos_x[0] = init_pos_x;
-    pos_y[0] = init_pos_y;
-    vel_x[0] = init_vel_x;
-    vel_y[0] = init_vel_y;
-}
-
-void Solver::one_step_forward_euler(double dt, double pos_x, double pos_y, 
-    double vel_x, double vel_y, double a_x, double a_y, double& pos_x_new, 
-    double& pos_y_new, double& vel_x_new, double& vel_y_new)
-{
-    // Forward Euler
-    vel_x_new = vel_x + dt*a_x;
-    vel_y_new = vel_y + dt*a_y;
-    pos_x_new = pos_x + dt*vel_x;
-    pos_y_new = pos_y + dt*vel_y;
-}
-
-//void func ( void (*f)(int) ); // shold let the function f pass as a parameter.
-void Solver::forward_euler()
-{
-    double a_x;
-    double a_y;
-    double r;
-
-    for (int i = 0; i<num_steps-1; i++)
+    double t = 0;  // Currently unused.
+    
+    for (int k = 0; k < num_steps; k++)
     {
-        r = sqrt(pos_x[i]*pos_x[i] + pos_y[i]*pos_y[i]);
-
-        a_x = -4*pi*pi*pos_x[i]/(r*r*r);
-        a_y = -4*pi*pi*pos_y[i]/(r*r*r);
-
-        one_step_forward_euler(dt, pos_x[i], pos_y[i], vel_x[i], vel_y[i], 
-            a_x, a_y, pos_x[i+1], pos_y[i+1], vel_x[i+1], vel_y[i+1]);
-
-        // pos_x[i+1] = pos_x[i] + dt*vel_x[i];
-        // pos_y[i+1] = pos_y[i] + dt*vel_y[i];
-
-        // vel_x[i+1] = vel_x[i] + dt*a_x;
-        // vel_y[i+1] = vel_y[i] + dt*a_y;
+        advance(f, k);
     }
 }
+
+void Solver::advance(arma::vec (*f)(arma::vec u, double t), int k)
+{
+    // Dummy method.
+    std::cout << "NotImplementedError" << std::endl;
+}
+
 
 void Solver::one_step_velocity_verlet(double dt, double abs_dist, double pos_x, 
     double pos_y, double vel_x, double vel_y, double a_x, double a_y, 
@@ -113,18 +103,18 @@ void Solver::write_to_file()
     // tull_mc_tull.open("data_files/tull_mc_tull.txt", std::ios_base::app);
     tull_mc_tull.open("data_files/tull_mc_tull.txt");
     
-    for (int i=0; i<num_steps; i++)
+    for (int i = 0; i < num_steps; i++)
     {
         tull_mc_tull << std::setw(20) << std::setprecision(15);
         tull_mc_tull << dt*i;
         tull_mc_tull << std::setw(30) << std::setprecision(15);
-        tull_mc_tull << pos_x[i];
+        tull_mc_tull << pos(0, i);
         tull_mc_tull << std::setw(30) << std::setprecision(15);
-        tull_mc_tull << pos_y[i];
+        tull_mc_tull << pos(1, i);
         tull_mc_tull << std::setw(30) << std::setprecision(15);
-        tull_mc_tull << vel_x[i];
+        tull_mc_tull << vel(0, i);
         tull_mc_tull << std::setw(30) << std::setprecision(15);
-        tull_mc_tull << vel_y[i];
+        tull_mc_tull << vel(1, i);
         tull_mc_tull << std::endl;
     }
     tull_mc_tull.close();
@@ -132,8 +122,17 @@ void Solver::write_to_file()
 
 Solver::~Solver()
 {
-    delete[] pos_x;
-    delete[] pos_y;
-    delete[] vel_x;
-    delete[] vel_y;
+}
+
+
+void ForwardEuler::advance(arma::vec (*f)(arma::vec u, double t), int k)
+{   
+    arma::vec a = f(pos.col(k), 0);
+
+    vel(0, k+1) = vel(0, k) + dt*a(0);
+    vel(1, k+1) = vel(1, k) + dt*a(1);
+
+    pos(0, k+1) = pos(0, k) + dt*vel(0, k);
+    pos(1, k+1) = pos(1, k) + dt*vel(1, k);
+    
 }
