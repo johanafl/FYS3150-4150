@@ -1,4 +1,5 @@
 #include "solver.h"
+// #include "solarsystem.cpp"
 
 
 arma::vec acceleration(arma::vec u, double t)
@@ -19,9 +20,6 @@ arma::vec acceleration(arma::vec u, double t)
     value(1) -= 4*pi*pi*y/(r*r*r);
     value(2) -= 4*pi*pi*z/(r*r*r);
 
-    // a_x = -4*pi*pi*pos_x[i]/(r*r*r);
-    // a_y = -4*pi*pi*pos_y[i]/(r*r*r);
-
     return value;
 }
 
@@ -33,21 +31,30 @@ arma::vec f(arma::vec u, double t)
 int main()
 {
     int num_steps_input = 1e5;
-    double dt_input = 1e-3;
+    int num_stellar_objects_input = 1;
+    double dt = 1e-3;
+     
 
     double init_pos_x = 1;
     double init_pos_y = 0;
+    double init_pos_z = 0;
     double init_vel_x = 0;
     double init_vel_y = 2*pi;
-    
-    // system.forward_euler();
-    // // system.velocity_verlet();
-    // system.write_to_file();
+    double init_vel_z = 0;
 
-    ForwardEuler lol(num_steps_input);
-    lol.set_initial_conditions(init_pos_x, init_pos_y, init_vel_x, init_vel_y);
-    lol.solve(acceleration, dt_input);
-    lol.write_to_file();
+    arma::vec U0 = {init_pos_x, init_pos_y, init_pos_z,
+        init_vel_x, init_vel_y, init_vel_z};
+
+    // Solarsystem system();
+    // system.add_planet();
+
+    // ForwardEuler solved(num_steps_input, num_stellar_objects_input);
+    // // VelocityVerlet solved(num_steps_input);
+    // solved.set_initial_conditions(U0);
+    // solved.solve(acceleration, dt);
+    // solved.write_to_file();
+
+    
 
 
     return 0;
