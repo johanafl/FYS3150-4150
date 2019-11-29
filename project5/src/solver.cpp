@@ -1,53 +1,51 @@
 #include "solver.h"
 
-Solver::Solver(int num_steps_input)
-    : pos(3, num_steps_input+1), vel(3, num_steps_input+1)
+template <class T>
+Solver<T>::Solver(int num_steps_input, int num_stellar_objects_input)
+    : pos(3*num_stellar_objects_input, num_steps_input+1),
+    vel(3*num_stellar_objects_input, num_steps_input+1)
 {
     num_steps = num_steps_input;
+    num_stellar_objects = num_stellar_objects_input;
 }
 
-
-void Solver::set_initial_conditions(double init_pos_x, double init_pos_y,
-        double init_vel_x, double init_vel_y)
+template <class T>
+void Solver<T>::set_initial_conditions(arma::vec U0)
 {
-    // pos_x[0] = init_pos_x;
-    // pos_y[0] = init_pos_y;
-    // vel_x[0] = init_vel_x;
-    // vel_y[0] = init_vel_y;
-    double init_pos_z = 0;
-    double init_vel_z = 0;
 
-    pos(0, 0) = init_pos_x;
-    pos(1, 0) = init_pos_y;
-    pos(2, 0) = init_pos_z;
-    vel(0, 0) = init_vel_x;
-    vel(1, 0) = init_vel_y;
-    vel(2, 0) = init_vel_z;
-    
+    for (int i = 0; i < 3*num_stellar_objects; i++)
+    {
+        pos(i, 0) = U0(i);
+    }
+
+    for (int i = 0; i < 3*num_stellar_objects; i++)
+    {
+        vel(i, 0) = U0(i + 3*num_stellar_objects);
+    }
 }
 
-
-void Solver::solve(arma::vec (*f)(arma::vec u, double t), double dt_input)
+template <class T>
+void Solver<T>::solve(T object, double dt_input)
 {
     dt = dt_input;
     double t = 0;  // Currently unused.
     
     for (int k = 0; k < num_steps; k++)
     {
-        advance(f, k);
+        advance(object, k);
     }
 }
 
-
-void Solver::advance(arma::vec (*f)(arma::vec u, double t), int k)
+template <class T>
+void Solver<T>::advance(T object, int k)
 {
     // Dummy method.
     std::cout << "NotImplementedError" << std::endl;
 }
 
 
-
-void Solver::write_to_file()
+template <class T>
+void Solver<T>::write_to_file()
 {
     // defining data files
     std::ofstream tull_mc_tull;
@@ -71,13 +69,14 @@ void Solver::write_to_file()
     tull_mc_tull.close();
 }
 
-
-Solver::~Solver()
+template <class T>
+Solver<T>::~Solver()
 {
 }
 
 
-void ForwardEuler::advance(arma::vec (*f)(arma::vec u, double t), int k)
+template <class T>
+void ForwardEuler<T>::advance(T object, int k)
 {   /*
     One step with Forward Euler.
 
@@ -90,13 +89,15 @@ void ForwardEuler::advance(arma::vec (*f)(arma::vec u, double t), int k)
         Current step in the integration.
     */
 
-    arma::vec a = f(pos.col(k), 0);
+    // arma::vec a = f(pos.col(k), 0);
+    arma::vec a = object.acceleration(pos.col(k), 0);
 
     pos.col(k+1) = pos.col(k) + dt*vel.col(k);
     vel.col(k+1) = vel.col(k) + dt*a;    
 }
 
-void VelocityVerlet::advance(arma::vec (*f)(arma::vec u, double t), int k)
+template <class T>
+void VelocityVerlet<T>::advance(T object, int k)
 {   /*
     One step with Velocity Verlet.
 
@@ -109,10 +110,12 @@ void VelocityVerlet::advance(arma::vec (*f)(arma::vec u, double t), int k)
         Current step in the integration.
     */
     
-    arma::vec a1 = f(pos.col(k), 0);
+    arma::vec a1 = object.acceleration(pos.col(k), 0);
+    // arma::vec a1 = f(pos.col(k), 0);
     pos.col(k+1) = pos.col(k) + dt*vel.col(k) + dt*dt/2*a1;
 
-    arma::vec a2 = f(pos.col(k+1), 0);
+    arma::vec a2 = object.acceleration(pos.col(k+1), 0);
+    // arma::vec a2 = f(pos.col(k+1), 0);
     vel.col(k+1) = vel.col(k) + dt/2*(a2 + a1);
 
 }
