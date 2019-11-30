@@ -90,10 +90,10 @@ void ForwardEuler<T>::advance(T object, int k)
     */
 
     // arma::vec a = f(pos.col(k), 0);
-    arma::vec a = object.acceleration(pos.col(k), 0);
+    arma::vec a = object.acceleration(this.pos.col(k), 0);
 
-    pos.col(k+1) = pos.col(k) + dt*vel.col(k);
-    vel.col(k+1) = vel.col(k) + dt*a;    
+    this.pos.col(k+1) = this.pos.col(k) + this.dt*this.vel.col(k);
+    this.vel.col(k+1) = this.vel.col(k) + this.dt*a;    
 }
 
 template <class T>
@@ -110,12 +110,12 @@ void VelocityVerlet<T>::advance(T object, int k)
         Current step in the integration.
     */
     
-    arma::vec a1 = object.acceleration(pos.col(k), 0);
+    arma::vec a1 = object.acceleration(this.pos.col(k), 0);
     // arma::vec a1 = f(pos.col(k), 0);
-    pos.col(k+1) = pos.col(k) + dt*vel.col(k) + dt*dt/2*a1;
+    this.pos.col(k+1) = this.pos.col(k) + this.dt*this.vel.col(k) + this.dt*this.dt/2*a1;
 
-    arma::vec a2 = object.acceleration(pos.col(k+1), 0);
+    arma::vec a2 = object.acceleration(this.pos.col(k+1), 0);
     // arma::vec a2 = f(pos.col(k+1), 0);
-    vel.col(k+1) = vel.col(k) + dt/2*(a2 + a1);
+    this.vel.col(k+1) = this.vel.col(k) + this.dt/2*(a2 + a1);
 
 }
