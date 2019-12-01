@@ -83,14 +83,23 @@ public:
         {
             tull_mc_tull << std::setw(20) << std::setprecision(15);
             tull_mc_tull << dt*i;
-            tull_mc_tull << std::setw(30) << std::setprecision(15);
-            tull_mc_tull << pos(0, i);
-            tull_mc_tull << std::setw(30) << std::setprecision(15);
-            tull_mc_tull << pos(1, i);
-            tull_mc_tull << std::setw(30) << std::setprecision(15);
-            tull_mc_tull << vel(0, i);
-            tull_mc_tull << std::setw(30) << std::setprecision(15);
-            tull_mc_tull << vel(1, i);
+
+            for (int j = 0; j < num_stellar_objects; j++)
+            {
+                tull_mc_tull << std::setw(30) << std::setprecision(15);
+                tull_mc_tull << pos(3*j + 0, i);
+                tull_mc_tull << std::setw(30) << std::setprecision(15);
+                tull_mc_tull << pos(3*j + 1, i);
+                tull_mc_tull << std::setw(30) << std::setprecision(15);
+                tull_mc_tull << pos(3*j + 2, i);
+
+                tull_mc_tull << std::setw(30) << std::setprecision(15);
+                tull_mc_tull << vel(3*j + 0, i);
+                tull_mc_tull << std::setw(30) << std::setprecision(15);
+                tull_mc_tull << vel(3*j + 1, i);
+                tull_mc_tull << std::setw(30) << std::setprecision(15);
+                tull_mc_tull << vel(3*j + 2, i);
+            }
             tull_mc_tull << std::endl;
         }
         tull_mc_tull.close();
