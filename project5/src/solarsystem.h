@@ -5,6 +5,7 @@
 
 const double grav_const_G = 4*pi*pi;    // [AU^3/(yr^2 * M_sun)]
 const double solar_mass   = 1.988e30;   // [kg]
+const double sped_of_lit  = 63197.790926112524; // [AU/yr]
 
 class Solarsystem
 {
@@ -253,6 +254,51 @@ public:
         }
 
         return accel;
+    }
+
+    arma::vec acc_mercury(arma::vec u_pos, arma::vec u_vel)
+    {   /*
+        Acceleration for two-body problem. Used to calculate perihelion of 
+        mercury i think.
+
+        Parameters
+        ----------
+        u_pos : arma::vec
+            Vector containing the position of the moving object in the x-, y- 
+            and z-direction (in that order), in astronomical units, [AU].
+
+        u_vel : arma::vec
+            Vector containing the velocity of the moving object in the x-, y- 
+            and z-direction (in that order), in astronomical units, [AU].
+
+        Returns
+        -------
+        value : arma::vec
+            Vector containing the acceleration of the moving object in the x-, 
+            y- and z-direction (in that order), in astronomical units per years
+            squared, [AU/yr^2].
+        */
+        arma::vec value(3);
+        value.zeros();
+        double r; arma::vec l_vec; double l_square;
+        double value1;
+        double x; double vx;
+        double y; double vy;
+        double z; double vz;
+
+        x = u_pos(0); vx = u_vel(0);
+        y = u_pos(1); vy = u_vel(1);
+        z = u_pos(2); vz = u_vel(2);
+        r = std::sqrt(x*x + y*y + z*z); // Radial distance from the sun
+        l_vec = arma::cross(u_pos, u_vel);
+        l_square = arma::dot(l_vec, l_vec);
+
+        value1 -= 4*pi*pi/(r*r*r)*(1 + 3*l_square/(r*r*sped_of_lit*sped_of_lit)); 
+        value(0) = value1*x;
+        value(1) = value1*y;
+        value(2) = value1*z;
+
+        return value;
     }
 
     arma::vec acceleration(arma::vec u, double t)
