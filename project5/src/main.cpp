@@ -19,7 +19,7 @@ arma::mat fetch_initial_parameters_from_file()
     std::string word;
     arma::mat stellar_init(num_input_params, 10);
     std::ifstream planet_data;
-    planet_data.open("init.txt", std::ios::in);
+    planet_data.open("initial_parameters_solar_system.txt", std::ios::in);
 
     // First indices of every the number and the length of every number.
     int number_length = 20;
