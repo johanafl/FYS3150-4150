@@ -59,6 +59,7 @@ int main()
 {   
     arma::mat all_planets_initial = fetch_initial_parameters_from_file();
 
+    // All positions in AU, velocities in AU/yr.
     arma::vec sun_initial     = all_planets_initial.col(0);
     arma::vec mercury_initial = all_planets_initial.col(1);
     arma::vec venus_initial   = all_planets_initial.col(2);
@@ -70,6 +71,7 @@ int main()
     arma::vec neptune_initial = all_planets_initial.col(8);
     arma::vec pluto_initial   = all_planets_initial.col(9);
     
+    // All masses in kg.
     double sun_mass     = 1.9891e30;
     double mercury_mass = 3.285e23;
     double venus_mass   = 4.867e24;
@@ -83,17 +85,20 @@ int main()
     
     Solarsystem q;
     // q.add_planet(sun_mass, sun_initial);
-    // q.add_planet(mercury_mass, mercury_initial);
-    // q.add_planet(venus_mass, venus_initial);
+    q.add_planet(mercury_mass, mercury_initial);
+    q.add_planet(venus_mass, venus_initial);
     q.add_planet(earth_mass, earth_initial);
-    // q.add_planet(mars_mass, mars_initial);
+    q.add_planet(mars_mass, mars_initial);
     q.add_planet(jupiter_mass, jupiter_initial);
-    // q.add_planet(saturn_mass, saturn_initial);
-    // q.add_planet(uranus_mass, uranus_initial);
-    // q.add_planet(neptune_mass, neptune_initial);
-    // q.add_planet(pluto_mass, pluto_initial);
+    q.add_planet(saturn_mass, saturn_initial);
+    q.add_planet(uranus_mass, uranus_initial);
+    q.add_planet(neptune_mass, neptune_initial);
+    q.add_planet(pluto_mass, pluto_initial);
 
-    q.solve_system();
+    int num_steps = 1e5;
+    double dt = 1e-3;
+    q.solve_system(num_steps, dt);
+
 
     return 0;
 }
