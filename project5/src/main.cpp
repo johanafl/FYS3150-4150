@@ -1,4 +1,4 @@
-#include "solarsystem.h"
+#include "solar_system.h"
 
 
 arma::mat fetch_initial_parameters_from_file()
