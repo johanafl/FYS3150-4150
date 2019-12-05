@@ -308,14 +308,12 @@ public:
         return acceleration_2(u);
     }
 
-    void solve_system()
+    void solve_system(int num_steps, double dt)
     {   
-        int num_steps = 1e5;
-        double dt = 1e-3;
-        arma::vec U0 = get_U0();
-        
-        // ForwardEuler<Solarsystem> solved(num_steps, num_planets);
+ 
         VelocityVerlet<Solarsystem> solved(num_steps, num_planets);
+        // ForwardEuler<Solarsystem> solved(num_steps, num_planets);
+        arma::vec U0 = get_U0();
         solved.set_initial_conditions(U0);
         
         auto solve_time_1 = std::chrono::steady_clock::now();
@@ -334,6 +332,7 @@ public:
         auto write_time = std::chrono::duration_cast<std::chrono::duration<double> >(write_time_2 - write_time_1);
         std::cout << "write time: " << write_time.count() << " s" << std::endl;
     }
+    
 };
 
 #endif
