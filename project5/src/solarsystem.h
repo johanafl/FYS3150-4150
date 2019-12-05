@@ -3,9 +3,10 @@
 
 #include "solver.h"
 
-const double grav_const_G = 4*pi*pi;    // [AU^3/(yr^2 * M_sun)]
-const double solar_mass   = 1.988e30;   // [kg]
-const double sped_of_lit  = 63197.790926112524; // [AU/yr]
+const double pi = 3.14159265358979323846;
+const double c  = 63197.790926112524; // [AU/yr]
+const double G  = 4*pi*pi;    // [AU^3/(yr^2 * M_sun)]
+const double solar_mass = 1.988e30;   // [kg]
 
 class Solarsystem
 {
@@ -128,32 +129,33 @@ public:
 
     arma::vec acceleration_2(arma::vec u)
     {   /*
-        Acceleration for N-body problem deduced from the gravitational force, 
-        assuming that one object is at center at all time. That is, 
-        position = 0 and velocity = 0.
+        Acceleration for N-body problem deduced from the gravitational
+        force, assuming that one object is at center at all time. That
+        is, position = 0 and velocity = 0.
 
         Parameters
         ----------
         u : arma::vec
-            Vector containing the position of the moving objects in the x-, y- 
-            and z-direction, in astronomical units, [AU]. The vector u shoud be 
-            given as u = [x1, y1, z1, x2, y2, z2, ... , xN, yN, zN], where the
-            indicies corresponds to the i-th object. It is important that the
-            order is the same as when the object was added to the class to match
-            up with the correct mass.
+            Vector containing the position of the moving objects in the
+            x-, y- and z-direction, in astronomical units, [AU]. The
+            vector u shoud be given as u = [x1, y1, z1, x2, y2, z2,
+            ... , xN, yN, zN], where the indicies corresponds to the
+            i-th object. It is important that the order is the same as
+            when the object was added to the class to match up with the
+            correct mass.
 
         Returns
         -------
         accel : arma::vec
-            Vector containing the acceleration of the moving objects in the x-, 
-            y- and z-direction, in astronomical units per years
+            Vector containing the acceleration of the moving objects in
+            the x-, y- and z-direction, in astronomical units per year
             squared, [AU/yr^2]. The vector accel looks like 
             accel = [ax1, ay1, az1, ax2, ay2, az2, ... , axN, ayN, azN].
 
         Note
         ----
-        The object at rest is assumed to be the sun, and everything is therefore
-        scaled after one solar mass.
+        The object at rest is assumed to be the sun, and everything is
+        therefore scaled after one solar mass.
         */
         arma::vec accel(3*num_planets);
         accel.zeros();
@@ -172,9 +174,9 @@ public:
             r = std::sqrt(x*x + y*y + z*z); // Radial distance from the sun for the i-th object.
 
             // unsure of how to get the sign correct for x, y and z.
-            accel(3*i + 0) -= grav_const_G*x/(r*r*r);
-            accel(3*i + 1) -= grav_const_G*y/(r*r*r);
-            accel(3*i + 2) -= grav_const_G*z/(r*r*r);
+            accel(3*i + 0) -= G*x/(r*r*r);
+            accel(3*i + 1) -= G*y/(r*r*r);
+            accel(3*i + 2) -= G*z/(r*r*r);
         }
 
         // Acceleration due to gravitational pull from the j-th object
@@ -190,9 +192,9 @@ public:
                     r = std::sqrt(x*x + y*y + z*z);
 
                     // unsure of how to get the sign correct for x, y and z.
-                    accel(3*i + 0) -= grav_const_G*mass[j]*x/(r*r*r); // Acceleration in x-, y- and z-direction
-                    accel(3*i + 1) -= grav_const_G*mass[j]*y/(r*r*r);
-                    accel(3*i + 2) -= grav_const_G*mass[j]*z/(r*r*r);
+                    accel(3*i + 0) -= G*mass[j]*x/(r*r*r); // Acceleration in x-, y- and z-direction
+                    accel(3*i + 1) -= G*mass[j]*y/(r*r*r);
+                    accel(3*i + 2) -= G*mass[j]*z/(r*r*r);
                 }
             }
         }
@@ -247,9 +249,9 @@ public:
                 r = std::sqrt(x*x + y*y + z*z); // Radial distance from the sun for the i-th object.
 
                 // unsure of how to get the sign correct for x, y and z.
-                accel(3*i + 0) -= grav_const_G*mass[j]*x/(r*r*r); // Acceleration in x-, y- and z-direction
-                accel(3*i + 1) -= grav_const_G*mass[j]*y/(r*r*r);
-                accel(3*i + 2) -= grav_const_G*mass[j]*z/(r*r*r);
+                accel(3*i + 0) -= G*mass[j]*x/(r*r*r); // Acceleration in x-, y- and z-direction
+                accel(3*i + 1) -= G*mass[j]*y/(r*r*r);
+                accel(3*i + 2) -= G*mass[j]*z/(r*r*r);
             }
         }
 
@@ -293,7 +295,7 @@ public:
         l_vec = arma::cross(u_pos, u_vel);
         l_square = arma::dot(l_vec, l_vec);
 
-        value1 -= 4*pi*pi/(r*r*r)*(1 + 3*l_square/(r*r*sped_of_lit*sped_of_lit)); 
+        value1 -= 4*pi*pi/(r*r*r)*(1 + 3*l_square/(r*r*c*c)); 
         value(0) = value1*x;
         value(1) = value1*y;
         value(2) = value1*z;
@@ -312,16 +314,26 @@ public:
         double dt = 1e-3;
         arma::vec U0 = get_U0();
         
-        // std::cout << num_planets << std::endl;  
         // ForwardEuler<Solarsystem> solved(num_steps, num_planets);
         VelocityVerlet<Solarsystem> solved(num_steps, num_planets);
         solved.set_initial_conditions(U0);
-        // U0.print();
-        // solved.pos.col(0).print();
+        
+        auto solve_time_1 = std::chrono::steady_clock::now();
+        
         solved.solve(*this, dt);
+        
+        auto solve_time_2 = std::chrono::steady_clock::now();
+        auto solve_time = std::chrono::duration_cast<std::chrono::duration<double> >(solve_time_2 - solve_time_1);
+        std::cout << "solve time: " << solve_time.count() << " s" << std::endl;
+        
+        auto write_time_1 = std::chrono::steady_clock::now();
+        
         solved.write_to_file();   
+        
+        auto write_time_2 = std::chrono::steady_clock::now();
+        auto write_time = std::chrono::duration_cast<std::chrono::duration<double> >(write_time_2 - write_time_1);
+        std::cout << "write time: " << write_time.count() << " s" << std::endl;
     }
-
 };
 
 #endif
