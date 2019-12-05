@@ -57,7 +57,6 @@ public:
     void solve(T object, double dt_input)
     {
         dt = dt_input;
-        double t = 0;  // Currently unused.
         
         for (int k = 0; k < num_steps; k++)
         {
@@ -72,36 +71,39 @@ public:
     }
 
     void write_to_file()
-    {
-        // defining data files
-        std::ofstream tull_mc_tull;
-        // tull_mc_tull.open("data_files/tull_mc_tull.txt", std::ios_base::app);
-        tull_mc_tull.open("data_files/tull_mc_tull.txt");
+    {   /*
+        rows: time, x, y, z, vx, vy, vz, ... (for every planet).
+        columns: rows for each time step.
+        */
+        
+        std::ofstream outfile;
+        // outfile.open("data_files/solver_data.txt", std::ios_base::app);
+        outfile.open("data_files/solver_data.txt");
 
         for (int i = 0; i < num_steps; i++)
-        {
-            tull_mc_tull << std::setw(20) << std::setprecision(15);
-            tull_mc_tull << dt*i;
+        {   // 
+            outfile << std::setw(20) << std::setprecision(15);
+            outfile << dt*i;
 
             for (int j = 0; j < num_stellar_objects; j++)
             {
-                tull_mc_tull << std::setw(30) << std::setprecision(15);
-                tull_mc_tull << pos(3*j + 0, i);
-                tull_mc_tull << std::setw(30) << std::setprecision(15);
-                tull_mc_tull << pos(3*j + 1, i);
-                tull_mc_tull << std::setw(30) << std::setprecision(15);
-                tull_mc_tull << pos(3*j + 2, i);
+                outfile << std::setw(30) << std::setprecision(15);
+                outfile << pos(3*j + 0, i);
+                outfile << std::setw(30) << std::setprecision(15);
+                outfile << pos(3*j + 1, i);
+                outfile << std::setw(30) << std::setprecision(15);
+                outfile << pos(3*j + 2, i);
 
-                tull_mc_tull << std::setw(30) << std::setprecision(15);
-                tull_mc_tull << vel(3*j + 0, i);
-                tull_mc_tull << std::setw(30) << std::setprecision(15);
-                tull_mc_tull << vel(3*j + 1, i);
-                tull_mc_tull << std::setw(30) << std::setprecision(15);
-                tull_mc_tull << vel(3*j + 2, i);
+                outfile << std::setw(30) << std::setprecision(15);
+                outfile << vel(3*j + 0, i);
+                outfile << std::setw(30) << std::setprecision(15);
+                outfile << vel(3*j + 1, i);
+                outfile << std::setw(30) << std::setprecision(15);
+                outfile << vel(3*j + 2, i);
             }
-            tull_mc_tull << std::endl;
+            outfile << std::endl;
         }
-        tull_mc_tull.close();
+        outfile.close();
     }
     
     ~Solver()
@@ -114,7 +116,6 @@ class ForwardEuler : public Solver<T>
 {
 public:
     using Solver<T>::Solver;   // For inheriting the constructor of Solver.
-    // void advance(arma::vec (*f)(arma::vec u, double t), int k);
     void advance(T object, int k)
     {   /*
         One step with Forward Euler.
@@ -122,16 +123,12 @@ public:
         Parameters
         ----------
         object : object of class T
-            Used for accessing the right hand side of the ODE as well
-            as the position and velocity data.
+            Used for accessing the right hand side of the ODE.
 
         k : int
             Current step in the integration.
         */
 
-        // arma::vec a = f(pos.col(k), 0);
-        // this->pos.col(k).print();
-        // std::cout << std::endl;
         arma::vec a = object.acceleration(this->pos.col(k), 0);
 
         this->pos.col(k+1) = this->pos.col(k) + this->dt*this->vel.col(k);
@@ -152,19 +149,16 @@ public:
         Parameters
         ----------
         object : object of class T
-            Used for accessing the right hand side of the ODE as well as
-            the position and velocity data.
+            Used for accessing the right hand side of the ODE.
 
         k : int
             Current step in the integration.
         */
         
         arma::vec a1 = object.acceleration(this->pos.col(k), 0);
-        // arma::vec a1 = f(pos.col(k), 0);
         this->pos.col(k+1) = this->pos.col(k) + this->dt*this->vel.col(k) + this->dt*this->dt/2*a1;
 
         arma::vec a2 = object.acceleration(this->pos.col(k+1), 0);
-        // arma::vec a2 = f(pos.col(k+1), 0);
         this->vel.col(k+1) = this->vel.col(k) + this->dt/2*(a2 + a1);
 
     }
