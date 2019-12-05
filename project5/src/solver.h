@@ -6,8 +6,7 @@
 #include <iomanip>
 #include <cmath>
 #include <armadillo>
-
-const double pi = 3.14159265358979323846;
+#include <chrono>
 
 template <class T>
 class Solver
@@ -122,8 +121,9 @@ public:
 
         Parameters
         ----------
-        f : function pointer
-            The right hand side of the ODE.
+        object : object of class T
+            Used for accessing the right hand side of the ODE as well
+            as the position and velocity data.
 
         k : int
             Current step in the integration.
@@ -151,8 +151,9 @@ public:
 
         Parameters
         ----------
-        f : function pointer
-            The right hand side of the ODE.
+        object : object of class T
+            Used for accessing the right hand side of the ODE as well as
+            the position and velocity data.
 
         k : int
             Current step in the integration.
