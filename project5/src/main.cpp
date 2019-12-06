@@ -55,8 +55,38 @@ arma::mat fetch_initial_parameters_from_file()
 }
 
 
-int main()
+void task_5c()
 {   
+    
+    const double earth_mass = 5.972e24;
+    arma::vec earth_initial = {1, 0, 0, 0, 2*pi, 0};
+
+    // double dt[4] = {1e-3, 1e-2, 5e-2, 0.1};
+    double dt[4] = {1e-3, 1e-2};
+
+    for (int i = 0; i < 2; i++)
+    {   
+        int num_steps = 100/dt[i];
+        std::cout << "Generating task 5c data. dt = " << std::to_string(dt[i]) << std::endl;
+        std::string filepath_fe = "data_files/task_5c_fe_dt=" + std::to_string(dt[i]) + ".txt";
+        std::string filepath_vv = "data_files/task_5c_vv_dt=" + std::to_string(dt[i]) + ".txt";
+        
+        SolarSystem q;
+        q.add_celestial_body(earth_mass, earth_initial);
+        std::string method_fe = "Forward Euler";
+        std::string method_vv = "Velocity Verlet";
+        
+        q.solve_system(num_steps, dt[i], filepath_fe, method_fe);
+        q.solve_system(num_steps, dt[i], filepath_vv, method_vv);
+
+        std::cout << std::endl;
+    }
+
+
+}
+
+void all_planets()
+{
     arma::mat all_planets_initial = fetch_initial_parameters_from_file();
 
     // All positions in AU, velocities in AU/yr.
@@ -72,33 +102,41 @@ int main()
     arma::vec pluto_initial   = all_planets_initial.col(9);
     
     // All masses in kg.
-    double sun_mass     = 1.9891e30;
-    double mercury_mass = 3.285e23;
-    double venus_mass   = 4.867e24;
-    double earth_mass   = 5.972e24;
-    double mars_mass    = 6.39e23;
-    double jupiter_mass = 1.898e27;
-    double saturn_mass  = 5.683e26;
-    double uranus_mass  = 8.681e25;
-    double neptune_mass = 1.024e26;
-    double pluto_mass   = 1.309e22;
+    const double sun_mass     = 1.9891e30;
+    const double mercury_mass = 3.285e23;
+    const double venus_mass   = 4.867e24;
+    const double earth_mass   = 5.972e24;
+    const double mars_mass    = 6.39e23;
+    const double jupiter_mass = 1.898e27;
+    const double saturn_mass  = 5.683e26;
+    const double uranus_mass  = 8.681e25;
+    const double neptune_mass = 1.024e26;
+    const double pluto_mass   = 1.309e22;
     
-    Solarsystem q;
-    // q.add_planet(sun_mass, sun_initial);
-    q.add_planet(mercury_mass, mercury_initial);
-    q.add_planet(venus_mass, venus_initial);
-    q.add_planet(earth_mass, earth_initial);
-    q.add_planet(mars_mass, mars_initial);
-    q.add_planet(jupiter_mass, jupiter_initial);
-    q.add_planet(saturn_mass, saturn_initial);
-    q.add_planet(uranus_mass, uranus_initial);
-    q.add_planet(neptune_mass, neptune_initial);
-    q.add_planet(pluto_mass, pluto_initial);
+    SolarSystem q;
+    // q.add_celestial_body(sun_mass, sun_initial);
+    q.add_celestial_body(mercury_mass, mercury_initial);
+    q.add_celestial_body(venus_mass, venus_initial);
+    q.add_celestial_body(earth_mass, earth_initial);
+    q.add_celestial_body(mars_mass, mars_initial);
+    q.add_celestial_body(jupiter_mass, jupiter_initial);
+    q.add_celestial_body(saturn_mass, saturn_initial);
+    q.add_celestial_body(uranus_mass, uranus_initial);
+    q.add_celestial_body(neptune_mass, neptune_initial);
+    q.add_celestial_body(pluto_mass, pluto_initial);
 
-    int num_steps = 1e5;
     double dt = 1e-3;
-    q.solve_system(num_steps, dt);
+    int num_steps = 500/dt;
 
+    std::string filepath = "data_files/all_planets.txt";
+    std::string method = "Velocity Verlet";
+    q.solve_system(num_steps, dt, filepath, method);
+}
+
+int main()
+{   
+    task_5c();
+    // all_planets();
 
     return 0;
 }
