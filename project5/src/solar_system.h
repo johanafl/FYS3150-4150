@@ -1,0 +1,408 @@
+#ifndef SOLARSYSTEM_H
+#define SOLARSYSTEM_H
+
+#include "solver.h"
+
+const double pi = 3.14159265358979323846;
+const double c  = 63197.790926112524;   // Speed of light in vacuum, [AU/yr].
+const double G  = 4*pi*pi;              // Gravitational constant, [AU^3/(yr^2 * M_sun)].
+const double solar_mass = 1.988e30;     // Mass of the sun, [kg].
+
+class SolarSystem
+/*
+Keep track of all celestial objects in the solar system. Solve the solar
+system.
+*/
+{
+private:
+    
+    int num_planets = 0;
+    int array_size  = 3;
+
+    double* pos  = new double[array_size];
+    double* vel  = new double[array_size];
+    double* mass = new double[array_size/3];
+
+    double r, x, y, z;
+
+    // For relativistic correction to Mercury.
+    arma::vec l_vec;
+    double l_square, acc1, vx, vy, vz;
+
+    void resize()
+    {   /*
+        Resize the pos, vel, mass arrays when the number of celestial
+        objects increase.
+        */
+        array_size *= 2;
+        double* tmp_pos  = new double[array_size];
+        double* tmp_vel  = new double[array_size];
+        double* tmp_mass = new double[array_size/3];
+
+        for (int i = 0; i < 3*num_planets; i++)
+        {   // Move position and velocity data to larger arrays.
+            tmp_pos[i] = pos[i];
+            tmp_vel[i] = vel[i];
+        }
+
+        for (int i = 0; i < num_planets; i++)
+        {   // Move mass to larger array.
+            tmp_mass[i] = mass[i];
+        }
+
+        delete[] pos;
+        delete[] vel;
+        delete[] mass;
+
+        pos  = tmp_pos;
+        vel  = tmp_vel;
+        mass = tmp_mass;
+    }
+
+    arma::vec get_U0()
+    {   /*
+        Add all the initial positions and initial velocities to a
+        single initial condition vector.
+
+        Returns
+        -------
+        U0 : arma::vec
+            Initial condition vector. r1, v1, r2, v2, ..., rn, vn.
+            r = x, y, z; v = vx, vy, vz.
+        */
+        arma::vec U0(num_planets*3*2);
+        U0.zeros();
+
+        for (int i = 0; i < num_planets*3; i++)
+        {   // Adding positions to initial condition vector.
+            U0(i) = pos[i];
+        }
+        
+        for (int i = 0; i < num_planets*3; i++)
+        {   // Adding velocities to initial condition vector.
+            U0(i + num_planets*3) = vel[i];
+        }
+        
+        return U0;
+    }
+
+    arma::vec acceleration_1(arma::vec u)
+    {   /*
+        Acceleration for two-body problem deduced from the gravitational
+        force, assuming that one object is at center at all time. That
+        is, position = 0 and velocity = 0.
+
+        Parameters
+        ----------
+        u : arma::vec
+            Vector containing the position of the moving object in the
+            x-, y- and z-direction (in that order), in astronomical
+            units, [AU].
+
+        Returns
+        -------
+        acc : arma::vec
+            Vector containing the acceleration of the moving object in
+            the x-, y- and z-direction (in that order), in astronomical
+            units per years squared, [AU/yr^2].
+
+        Note
+        ----
+        The object at rest is assumed to be the sun, and everything is
+        therefore scaled after one solar mass.
+        */
+
+        arma::vec acc(3);
+        acc.zeros();
+
+        x = u(0);
+        y = u(1);
+        z = u(2);
+
+        // Radial distance from the sun.
+        r = std::sqrt(x*x + y*y + z*z);
+
+        // Acceleration in x-, y- and z-direction.
+        acc(0) -= 4*pi*pi*x/(r*r*r);
+        acc(1) -= 4*pi*pi*y/(r*r*r);
+        acc(2) -= 4*pi*pi*z/(r*r*r);
+
+        return acc;
+    }
+
+    arma::vec acceleration_2(arma::vec u)
+    {   /*
+        Acceleration for N-body problem deduced from the gravitational
+        force, assuming that one object is at center at all time. That
+        is, position = 0 and velocity = 0.
+
+        Parameters
+        ----------
+        u : arma::vec
+            Vector containing the position of the moving objects in the
+            x-, y- and z-direction, in astronomical units, [AU]. The
+            vector u shoud be given as u = [x1, y1, z1, x2, y2, z2,
+            ... , xN, yN, zN], where the indicies corresponds to the
+            i-th object. It is important that the order is the same as
+            when the object was added to the class to match up with the
+            correct mass.
+
+        Returns
+        -------
+        acc : arma::vec
+            Vector containing the acceleration of the moving objects in
+            the x-, y- and z-direction, in astronomical units per year
+            squared, [AU/yr^2]. The vector acc looks like 
+            acc = [ax1, ay1, az1, ax2, ay2, az2, ... , axN, ayN, azN].
+
+        Note
+        ----
+        The object at rest is assumed to be the sun, and everything is
+        therefore scaled after one solar mass.
+        */
+        arma::vec acc(3*num_planets);
+        acc.zeros();
+
+        // Acceleration due to gravitational pull from the sun
+        for (int i = 0; i < num_planets; i++)
+        {
+            x = u(3*i + 0);
+            y = u(3*i + 1);
+            z = u(3*i + 2);
+            // Radial distance from the sun for the i-th object.
+            r = std::sqrt(x*x + y*y + z*z);
+
+            acc(3*i + 0) -= G*x/(r*r*r);
+            acc(3*i + 1) -= G*y/(r*r*r);
+            acc(3*i + 2) -= G*z/(r*r*r);
+        }
+
+        // Acceleration due to gravitational pull from the j-th object
+        for (int i = 0; i < num_planets; i++)
+        {
+            for (int j = 0; j < num_planets; j++)
+            {
+                if (i != j)
+                {
+                    x = u(3*j + 0) - u(3*i + 0);
+                    y = u(3*j + 1) - u(3*i + 1);
+                    z = u(3*j + 2) - u(3*i + 2);
+                    r = std::sqrt(x*x + y*y + z*z);
+
+                    // Acceleration in x-, y- and z-direction
+                    acc(3*i + 0) -= G*mass[j]*x/(r*r*r);
+                    acc(3*i + 1) -= G*mass[j]*y/(r*r*r);
+                    acc(3*i + 2) -= G*mass[j]*z/(r*r*r);
+                }
+            }
+        }
+
+        return acc;
+    }
+
+    arma::vec acceleration_3(arma::vec u)
+    {   /*
+        Acceleration for N-body problem deduced from the gravitational force, 
+        assuming that all objects are allowed to move and the center of mass is
+        at rest for all time t.
+
+        Parameters
+        ----------
+        u : arma::vec
+            Vector containing the position of the objects in the x-, y- and 
+            z-direction, in astronomical units, [AU]. The vector u shoud be 
+            given as u = [x1, y1, z1, x2, y2, z2, ... , xN, yN, zN], where the
+            indicies corresponds to the i-th object. It is important that the
+            order is the same as when the object was added to the class to match
+            up with the correct mass.
+
+        Returns
+        -------
+        acc : arma::vec
+            Vector containing the acceleration of the moving objects in the x-, 
+            y- and z-direction, in astronomical units per years
+            squared, [AU/yr^2]. The vector acc looks like 
+            acc = [ax1, ay1, az1, ax2, ay2, az2, ... , axN, ayN, azN].
+
+        Note
+        ----
+        Everything is scaled after one solar mass.
+        */
+        arma::vec acc(3*num_planets);
+        acc.zeros();
+
+        // Acceleration due to gravitational pull from the j-th object.
+        for (int i = 0; i < num_planets; i++)
+        {
+            for (int j = 0; j < num_planets; j++)
+            {
+                x = u(3*j + 0) - u(3*i + 0);
+                y = u(3*j + 1) - u(3*i + 1);
+                z = u(3*j + 2) - u(3*i + 2);
+
+                // Radial distance from the sun for the i-th object.
+                r = std::sqrt(x*x + y*y + z*z);
+
+                // Acceleration in x-, y- and z-direction.
+                acc(3*i + 0) -= G*mass[j]*x/(r*r*r);
+                acc(3*i + 1) -= G*mass[j]*y/(r*r*r);
+                acc(3*i + 2) -= G*mass[j]*z/(r*r*r);
+            }
+        }
+
+        return acc;
+    }
+
+    arma::vec acc_mercury(arma::vec u_pos, arma::vec u_vel)
+    {   /*
+        Acceleration for two-body problem. Used to calculate perihelion
+        of mercury i think.
+
+        Parameters
+        ----------
+        u_pos : arma::vec
+            Vector containing the position of the moving object in the
+            x-, y- and z-direction (in that order), in astronomical
+            units, [AU].
+
+        u_vel : arma::vec
+            Vector containing the velocity of the moving object in the
+            x-, y- and z-direction (in that order), in astronomical
+            units, [AU].
+
+        Returns
+        -------
+        acc : arma::vec
+            Vector containing the acceleration of the moving object in
+            the x-, y- and z-direction (in that order), in astronomical
+            units per years squared, [AU/yr^2].
+        */
+        
+        arma::vec acc(3);
+        acc.zeros();
+        
+        x = u_pos(0); vx = u_vel(0);
+        y = u_pos(1); vy = u_vel(1);
+        z = u_pos(2); vz = u_vel(2);
+        r = std::sqrt(x*x + y*y + z*z); // Radial distance from the sun.
+        l_vec = arma::cross(u_pos, u_vel);
+        l_square = arma::dot(l_vec, l_vec);
+
+        acc1  -= 4*pi*pi/(r*r*r)*(1 + 3*l_square/(r*r*c*c)); 
+        acc(0) = acc1*x;
+        acc(1) = acc1*y;
+        acc(2) = acc1*z;
+
+        return acc;
+    }
+
+public:
+    SolarSystem() {}
+
+    void add_celestial_body(double mass_input, arma::vec U0)
+    {   /*
+        Add a celestial body to the solar system. Add input initial
+        conditions to arrays pos, vel and mass.
+
+        Parameters
+        ----------
+        mass_input : double
+            Mass of the celestial body.
+
+        U0 : arma::vec
+            Vector containing the initial position and velocity of the
+            celestial body. {x, y, z, vx, vy, vz}.
+        */
+        while (array_size <= 3*num_planets + 3)
+        {   // Resize all arrays if they cant fit 3 (1) more values.
+            resize();
+        }
+
+        pos[3*num_planets + 0] = U0(0);
+        pos[3*num_planets + 1] = U0(1);
+        pos[3*num_planets + 2] = U0(2);
+
+        vel[3*num_planets + 0] = U0(3);
+        vel[3*num_planets + 1] = U0(4);
+        vel[3*num_planets + 2] = U0(5);
+
+        mass[num_planets] = mass_input/solar_mass;
+
+        num_planets++;
+    }
+
+    void solve_system(int num_steps, double dt, std::string filepath,
+        std::string method)
+    {   /*
+        Solve the solar system.
+
+        Parameters
+        ----------
+        num_steps : int
+            The number of time steps in the integration.
+
+        dt : double
+            Time step length.
+
+        filepath : std::string
+            Path to the file where data will be written.
+
+        method : std::string
+            Which integration method to use. Allowed values are
+            'Forward Euler' and 'Velocity Verlet'.
+        */
+        if (method == "Velocity Verlet")
+        {
+            VelocityVerlet<SolarSystem> solved(num_steps, num_planets);
+            arma::vec U0 = get_U0();
+            solved.set_initial_conditions(U0);
+            
+            auto solve_time_1 = std::chrono::steady_clock::now();
+            
+            solved.solve(*this, dt);
+            
+            auto solve_time_2 = std::chrono::steady_clock::now();
+            auto solve_time = std::chrono::duration_cast<std::chrono::duration<double> >(solve_time_2 - solve_time_1);
+            std::cout << "solve time: " << solve_time.count() << " s" << std::endl;
+            
+            auto write_time_1 = std::chrono::steady_clock::now();
+            
+            solved.write_to_file(filepath);   
+            
+            auto write_time_2 = std::chrono::steady_clock::now();
+            auto write_time = std::chrono::duration_cast<std::chrono::duration<double> >(write_time_2 - write_time_1);
+            std::cout << "write time: " << write_time.count() << " s" << std::endl;
+        }
+        else if (method == "Forward Euler")
+        {   
+            ForwardEuler<SolarSystem> solved(num_steps, num_planets);
+            arma::vec U0 = get_U0();
+            solved.set_initial_conditions(U0);
+            
+            auto solve_time_1 = std::chrono::steady_clock::now();
+            
+            solved.solve(*this, dt);
+            
+            auto solve_time_2 = std::chrono::steady_clock::now();
+            auto solve_time = std::chrono::duration_cast<std::chrono::duration<double> >(solve_time_2 - solve_time_1);
+            std::cout << "solve time: " << solve_time.count() << " s" << std::endl;
+            
+            auto write_time_1 = std::chrono::steady_clock::now();
+            
+            solved.write_to_file(filepath);   
+            
+            auto write_time_2 = std::chrono::steady_clock::now();
+            auto write_time = std::chrono::duration_cast<std::chrono::duration<double> >(write_time_2 - write_time_1);
+            std::cout << "write time: " << write_time.count() << " s" << std::endl;
+        }
+    }
+
+    arma::vec acceleration(arma::vec u, double t)
+    {   /*
+        The current acceleration of the system.
+        */
+        return acceleration_2(u);
+    }
+};
+
+#endif
