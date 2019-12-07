@@ -14,8 +14,7 @@ Keep track of all celestial objects in the solar system. Solve the solar
 system.
 */
 {
-private:
-    
+protected:    
     int num_planets = 0;
     int array_size  = 3;
 

@@ -11,12 +11,30 @@
 template <class T>
 class Solver
 {
-public:
+protected:
     int num_steps, num_stellar_objects;
     double dt;
 
     arma::mat vel, pos;
 
+    virtual void advance(T object, int k)
+    {   /*
+        Dummy method. This method will be overwritten by the child
+        classes.
+
+        Parameters
+        ----------
+        object : object of class T
+            Object containing the RHS of the ODE.
+
+        k : int
+            Current step in the integration.
+        */
+        
+        std::cout << "NotImplementedError" << std::endl;
+    }
+
+public:
     Solver(int num_steps_input, int num_stellar_objects_input) 
     : pos(3*num_stellar_objects_input, num_steps_input+1),
     vel(3*num_stellar_objects_input, num_steps_input+1)
@@ -69,22 +87,6 @@ public:
 
     }
     
-    virtual void advance(T object, int k)
-    {   /*
-        Dummy method. This method will be overwritten by the child
-        classes.
-
-        Parameters
-        ----------
-        object : object of class T
-            Object containing the RHS of the ODE.
-
-        k : int
-            Current step in the integration.
-        */
-        
-        std::cout << "NotImplementedError" << std::endl;
-    }
 
     void write_to_file(std::string filepath)
     {   /*
@@ -129,6 +131,15 @@ public:
         }
         outfile.close();
     }
+
+    arma::mat get_pos() {return pos;}
+    arma::mat get_vel() {return vel;}
+    // int get_step_and_num_objects(int &steps) 
+    // {
+    //     steps = num_steps;
+    //     return num_stellar_objects;
+    // }
+    // void get_dt(double &dt_in) {dt_in = dt;}
 };
 
 template <class T>
@@ -136,6 +147,8 @@ class ForwardEuler : public Solver<T>
 {
 public:
     using Solver<T>::Solver;   // For inheriting the constructor of Solver.
+
+private:
     void advance(T object, int k)
     {   /*
         One step with Forward Euler.
@@ -162,6 +175,8 @@ class VelocityVerlet : public Solver<T>
 {
 public:
     using Solver<T>::Solver;   // For inheriting the constructor of Solver.
+
+private:
     void advance(T object, int k)
     {   /*
         One step with Velocity Verlet.
