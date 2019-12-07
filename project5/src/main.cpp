@@ -225,11 +225,8 @@ int main()
     // task_5c_algorithm_timing();
     // all_planets();
     // task_5d();
-<<<<<<< HEAD
     // task_5g();
-=======
     task_5d_beta();
->>>>>>> b843d729265e48099db7bfc63a6b8cb6cc384aed
 
     return 0;
 }
