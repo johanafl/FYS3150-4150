@@ -244,9 +244,47 @@ def task_5d():
     
     plt.show()
 
+
+def task_5d_beta():
+
+    fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(11, 9))
+    ax = ax.reshape(-1)
+
+    filenames = []
+    
+    directory = "data_files/"
+    
+    for data_file in os.listdir(directory):
+        # Loops over all files in directory.
+        filename = os.fsdecode(data_file)
+        
+        if filename.startswith("varying_beta"):
+            filenames.append(filename)
+
+    filenames = sorted(filenames)
+    for i in range(4):
+        data = np.loadtxt(f"data_files/{filenames[i]}", unpack=True)
+        ax[i].plot(data[1], data[2], color="black")
+        ax[i].tick_params(labelsize=20)
+        ax[i].set_title(f"beta: {float(filenames[i][13:-4])}")
+        ax[i].grid()
+        ax[i].axis("equal")
+
+
+
+    fig.text(x=0.01, y=0.4, s="Position, [AU]", fontsize=20, rotation="vertical")
+    fig.text(x=0.42, y=0.03, s="Position, [AU]", fontsize=20)
+    # ax.legend()
+    # ax.set_xticks(np.arange(6.5, 10+1, 1))
+    # ax.set_yticks(np.arange(-2.5e33, 1.5e33+1e33, 1e33))
+    
+    plt.show()
+
+
 if __name__ == "__main__":
     # task_5c()
-    task_5d()
+    # task_5d()
+    task_5d_beta()
     # data = np.loadtxt("data_files/all_planets.txt", unpack=True)
 
     # data = np.load("data_files/all_planets.npy")
