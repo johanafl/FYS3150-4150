@@ -32,6 +32,10 @@ protected:
     arma::vec l_vec;
     double l_square, acc1, vx, vy, vz;
 
+    // For acceleration_3.
+    double rpow;
+    double beta = 0;
+
     void resize()
     {   /*
         Resize the pos, vel, mass arrays when the number of celestial
@@ -205,6 +209,54 @@ protected:
 
     arma::vec acceleration_3(arma::vec u)
     {   /*
+        The same ass acceleration_2, but with adjustable exponent of
+        r (for task 5d).
+        */
+
+        arma::vec acc(3*num_planets);
+        acc.zeros();
+        // Acceleration due to gravitational pull from the sun
+        for (int i = 0; i < num_planets; i++)
+        {
+            x = u(3*i + 0);
+            y = u(3*i + 1);
+            z = u(3*i + 2);
+            // Radial distance from the sun for the i-th object.
+
+            r = std::sqrt(x*x + y*y + z*z);
+            rpow = std::pow(r, beta);
+            
+            
+            acc(3*i + 0) -= G*x/(r*rpow);
+            acc(3*i + 1) -= G*y/(r*rpow);
+            acc(3*i + 2) -= G*z/(r*rpow);
+        }
+
+        // Acceleration due to gravitational pull from the j-th object
+        for (int i = 0; i < num_planets; i++)
+        {
+            for (int j = 0; j < num_planets; j++)
+            {
+                if (i != j)
+                {
+                    x = u(3*j + 0) - u(3*i + 0);
+                    y = u(3*j + 1) - u(3*i + 1);
+                    z = u(3*j + 2) - u(3*i + 2);
+                    r = std::sqrt(x*x + y*y + z*z);
+                    rpow = std::pow(r, beta);
+
+                    // Acceleration in x-, y- and z-direction
+                    acc(3*i + 0) -= G*mass[j]*x/(r*rpow);
+                    acc(3*i + 1) -= G*mass[j]*y/(r*rpow);
+                    acc(3*i + 2) -= G*mass[j]*z/(r*rpow);
+                }
+            }
+        }
+        return acc;
+    }
+
+    arma::vec acceleration_4(arma::vec u)
+    {   /*
         Acceleration for N-body problem deduced from the gravitational force, 
         assuming that all objects are allowed to move and the center of mass is
         at rest for all time t.
@@ -258,6 +310,11 @@ protected:
 
 public:
     SolarSystem() {}
+
+    void set_beta(double beta_input)
+    {
+        beta = beta_input;
+    }
 
     void add_celestial_body(double mass_input, arma::vec U0)
     {   /*
@@ -421,7 +478,7 @@ public:
     {   /*
         The current acceleration of the system.
         */
-        return acceleration_2(u);
+        return acceleration_3(u);
     }
 
     arma::vec acc_mercury(arma::vec u_pos, arma::vec u_vel, double t)
