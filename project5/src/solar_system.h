@@ -4,12 +4,13 @@
 #include "solver.h"
 
 const double AU = 149597871e3;  // Meters in one AU.
-const double yr = 31556926;        // Seconds in a year.
+const double yr = 31556926;     // Seconds in a year.
 const double pi = 3.14159265358979323846;
 const double c  = 63197.790926112524;   // Speed of light in vacuum, [AU/yr].
-// const double G_circular  = 4*pi*pi;              // Gravitational constant, [AU^3/(yr^2 * M_sun)].
+// const double G_circular  = 4*pi*pi;  // Gravitational constant, [AU^3/yr^2].
 const double solar_mass = 1.988e30;     // Mass of the sun, [kg].
-const double G = 6.67e-11/(AU*AU*AU)*yr*yr*solar_mass;
+const double G = 6.67e-11;              // Gravitational constant, [m^3/(s^2 * kg)].
+const double GM = G/(AU*AU*AU)*yr*yr*solar_mass;    // [AU^3/yr^2]
 
 class SolarSystem
 /*
@@ -174,9 +175,9 @@ protected:
             // Radial distance from the sun for the i-th object.
             r = std::sqrt(x*x + y*y + z*z);
 
-            acc(3*i + 0) -= G*x/(r*r*r);
-            acc(3*i + 1) -= G*y/(r*r*r);
-            acc(3*i + 2) -= G*z/(r*r*r);
+            acc(3*i + 0) -= GM*x/(r*r*r);
+            acc(3*i + 1) -= GM*y/(r*r*r);
+            acc(3*i + 2) -= GM*z/(r*r*r);
         }
 
         // Acceleration due to gravitational pull from the j-th object
@@ -192,9 +193,9 @@ protected:
                     r = std::sqrt(x*x + y*y + z*z);
 
                     // Acceleration in x-, y- and z-direction
-                    acc(3*i + 0) -= G*mass[j]*x/(r*r*r);
-                    acc(3*i + 1) -= G*mass[j]*y/(r*r*r);
-                    acc(3*i + 2) -= G*mass[j]*z/(r*r*r);
+                    acc(3*i + 0) -= GM*mass[j]*x/(r*r*r);
+                    acc(3*i + 1) -= GM*mass[j]*y/(r*r*r);
+                    acc(3*i + 2) -= GM*mass[j]*z/(r*r*r);
                 }
             }
         }
@@ -246,54 +247,11 @@ protected:
                 r = std::sqrt(x*x + y*y + z*z);
 
                 // Acceleration in x-, y- and z-direction.
-                acc(3*i + 0) -= G*mass[j]*x/(r*r*r);
-                acc(3*i + 1) -= G*mass[j]*y/(r*r*r);
-                acc(3*i + 2) -= G*mass[j]*z/(r*r*r);
+                acc(3*i + 0) -= GM*mass[j]*x/(r*r*r);
+                acc(3*i + 1) -= GM*mass[j]*y/(r*r*r);
+                acc(3*i + 2) -= GM*mass[j]*z/(r*r*r);
             }
         }
-
-        return acc;
-    }
-
-    arma::vec acc_mercury(arma::vec u_pos, arma::vec u_vel)
-    {   /*
-        Acceleration for two-body problem. Used to calculate perihelion
-        of mercury i think.
-
-        Parameters
-        ----------
-        u_pos : arma::vec
-            Vector containing the position of the moving object in the
-            x-, y- and z-direction (in that order), in astronomical
-            units, [AU].
-
-        u_vel : arma::vec
-            Vector containing the velocity of the moving object in the
-            x-, y- and z-direction (in that order), in astronomical
-            units, [AU].
-
-        Returns
-        -------
-        acc : arma::vec
-            Vector containing the acceleration of the moving object in
-            the x-, y- and z-direction (in that order), in astronomical
-            units per years squared, [AU/yr^2].
-        */
-        
-        arma::vec acc(3);
-        acc.zeros();
-        
-        x = u_pos(0); vx = u_vel(0);
-        y = u_pos(1); vy = u_vel(1);
-        z = u_pos(2); vz = u_vel(2);
-        r = std::sqrt(x*x + y*y + z*z); // Radial distance from the sun.
-        l_vec = arma::cross(u_pos, u_vel);
-        l_square = arma::dot(l_vec, l_vec);
-
-        acc1  -= 4*pi*pi/(r*r*r)*(1 + 3*l_square/(r*r*c*c)); 
-        acc(0) = acc1*x;
-        acc(1) = acc1*y;
-        acc(2) = acc1*z;
 
         return acc;
     }
@@ -427,11 +385,86 @@ public:
         }
     }
 
+    void sol_mercury(int num_steps, double dt, std::string filepath)
+    {   /*
+        Solve the solar system.
+
+        Parameters
+        ----------
+        num_steps : int
+            The number of time steps in the integration.
+
+        dt : double
+            Time step length.
+
+        filepath : std::string
+            Path to the file where data will be written.
+
+        method : std::string
+            Which integration method to use. Allowed values are
+            'Forward Euler' and 'Velocity Verlet'.
+
+        write : bool
+            For toggling write to file on/off.
+        */
+
+        VelocityVerlet<SolarSystem> solved(num_steps, num_planets);
+        arma::vec U0 = get_U0();
+        solved.set_initial_conditions(U0);
+                
+        solved.solve_mercury(*this, dt);
+                
+        solved.write_to_file(filepath);   
+    }
+
     arma::vec acceleration(arma::vec u, double t)
     {   /*
         The current acceleration of the system.
         */
         return acceleration_2(u);
+    }
+
+    arma::vec acc_mercury(arma::vec u_pos, arma::vec u_vel, double t)
+    {   /*
+        Acceleration for two-body problem. Used to calculate perihelion
+        of mercury i think.
+
+        Parameters
+        ----------
+        u_pos : arma::vec
+            Vector containing the position of the moving object in the
+            x-, y- and z-direction (in that order), in astronomical
+            units, [AU].
+
+        u_vel : arma::vec
+            Vector containing the velocity of the moving object in the
+            x-, y- and z-direction (in that order), in astronomical
+            units, [AU].
+
+        Returns
+        -------
+        acc : arma::vec
+            Vector containing the acceleration of the moving object in
+            the x-, y- and z-direction (in that order), in astronomical
+            units per years squared, [AU/yr^2].
+        */
+        
+        arma::vec acc(3);
+        acc.zeros();
+        
+        x = u_pos(0); vx = u_vel(0);
+        y = u_pos(1); vy = u_vel(1);
+        z = u_pos(2); vz = u_vel(2);
+        r = std::sqrt(x*x + y*y + z*z); // Radial distance from the sun.
+        l_vec = arma::cross(u_pos, u_vel);
+        l_square = arma::dot(l_vec, l_vec);
+
+        acc1  -= GM/(r*r*r);//*(1 + 3*l_square/(r*r*c*c)); 
+        acc(0) = acc1*x;
+        acc(1) = acc1*y;
+        acc(2) = acc1*z;
+
+        return acc;
     }
 };
 

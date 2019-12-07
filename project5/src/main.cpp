@@ -110,6 +110,20 @@ void task_5d()
     q.solve_system(num_steps, dt, method_vv, filepath_vv);
 }
 
+void task_5g()
+{   
+    double dt = 1e-3;
+    int num_steps = 100/dt;
+    const double mercury_mass = 3.285e23;    
+    arma::vec mercury_initial = {0.3075, 0, 0, 0, 12.44, 0};
+
+    std::string filepath_vv = "data_files/task_5g.txt";
+    
+    SolarSystem q;
+    q.add_celestial_body(mercury_mass, mercury_initial);
+    q.sol_mercury(num_steps, dt, filepath_vv);
+}
+
 void all_planets()
 {
     arma::mat all_planets_initial = fetch_initial_parameters_from_file();
@@ -164,6 +178,7 @@ int main()
     task_5c_algorithm_timing();
     // all_planets();
     // task_5d();
+    // task_5g();
 
     return 0;
 }
