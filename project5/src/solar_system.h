@@ -3,10 +3,13 @@
 
 #include "solver.h"
 
+const double AU = 149597871e3;  // Meters in one AU.
+const double yr = 31556926;        // Seconds in a year.
 const double pi = 3.14159265358979323846;
 const double c  = 63197.790926112524;   // Speed of light in vacuum, [AU/yr].
-const double G  = 4*pi*pi;              // Gravitational constant, [AU^3/(yr^2 * M_sun)].
+// const double G_circular  = 4*pi*pi;              // Gravitational constant, [AU^3/(yr^2 * M_sun)].
 const double solar_mass = 1.988e30;     // Mass of the sun, [kg].
+const double G = 6.67e-11/(AU*AU*AU)*yr*yr*solar_mass;
 
 class SolarSystem
 /*
@@ -331,8 +334,26 @@ public:
         num_planets++;
     }
 
-    void solve_system(int num_steps, double dt, std::string filepath,
-        std::string method)
+    void solve_system(int num_steps, double dt, std::string method, 
+        std::string filepath)
+    {   /*
+        When filename is specified, data is written to file.
+        */
+
+        solve_system(num_steps, dt, method, filepath, true);
+    }
+
+    void solve_system(int num_steps, double dt, std::string method)
+    {   /*
+        When no filename is specified, no data is written to file.
+        */
+
+        std::string filepath = "unused";
+        solve_system(num_steps, dt, method, filepath, false);
+    }
+
+    void solve_system(int num_steps, double dt, std::string method,
+        std::string filepath, bool write)
     {   /*
         Solve the solar system.
 
@@ -350,7 +371,11 @@ public:
         method : std::string
             Which integration method to use. Allowed values are
             'Forward Euler' and 'Velocity Verlet'.
+
+        write : bool
+            For toggling write to file on/off.
         */
+
         if (method == "Velocity Verlet")
         {
             VelocityVerlet<SolarSystem> solved(num_steps, num_planets);
@@ -365,13 +390,16 @@ public:
             auto solve_time = std::chrono::duration_cast<std::chrono::duration<double> >(solve_time_2 - solve_time_1);
             std::cout << "solve time: " << solve_time.count() << " s" << std::endl;
             
-            auto write_time_1 = std::chrono::steady_clock::now();
-            
-            solved.write_to_file(filepath);   
-            
-            auto write_time_2 = std::chrono::steady_clock::now();
-            auto write_time = std::chrono::duration_cast<std::chrono::duration<double> >(write_time_2 - write_time_1);
-            std::cout << "write time: " << write_time.count() << " s" << std::endl;
+            if (write)
+            {
+                auto write_time_1 = std::chrono::steady_clock::now();
+                
+                solved.write_to_file(filepath);   
+                
+                auto write_time_2 = std::chrono::steady_clock::now();
+                auto write_time = std::chrono::duration_cast<std::chrono::duration<double> >(write_time_2 - write_time_1);
+                std::cout << "write time: " << write_time.count() << " s" << std::endl;
+            }
         }
         else if (method == "Forward Euler")
         {   
@@ -387,13 +415,16 @@ public:
             auto solve_time = std::chrono::duration_cast<std::chrono::duration<double> >(solve_time_2 - solve_time_1);
             std::cout << "solve time: " << solve_time.count() << " s" << std::endl;
             
-            auto write_time_1 = std::chrono::steady_clock::now();
-            
-            solved.write_to_file(filepath);   
-            
-            auto write_time_2 = std::chrono::steady_clock::now();
-            auto write_time = std::chrono::duration_cast<std::chrono::duration<double> >(write_time_2 - write_time_1);
-            std::cout << "write time: " << write_time.count() << " s" << std::endl;
+            if (write)
+            {
+                auto write_time_1 = std::chrono::steady_clock::now();
+                
+                solved.write_to_file(filepath);   
+                
+                auto write_time_2 = std::chrono::steady_clock::now();
+                auto write_time = std::chrono::duration_cast<std::chrono::duration<double> >(write_time_2 - write_time_1);
+                std::cout << "write time: " << write_time.count() << " s" << std::endl;
+            }
         }
     }
 
