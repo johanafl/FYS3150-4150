@@ -87,27 +87,56 @@ void task_5c()
 void task_5c_algorithm_timing()
 {
     const double earth_mass = 5.972e24;
+    double dt = 1e-2;
+    double simulation_time_in_years = 100000;
+    int num_steps = simulation_time_in_years/dt;
     arma::vec earth_initial = {1, 0, 0, 0, 2*pi, 0};
-    double dt = 1e-3;
-    int num_steps = 100/dt;
 
+    SolarSystem q;
+    q.add_celestial_body(earth_mass, earth_initial);
+    
+    std::string method = "Forward Euler";
+    std::cout << "Method: " << method << ". dt: " << dt << " yr, N: "
+    << num_steps << ", T: " << simulation_time_in_years << " yr.\n" << std::endl;
+    q.solve_system(num_steps, dt, method);
 
-
+    method = "Velocity Verlet";
+    std::cout << "Method: " << method << ". dt: " << dt << " yr, N: "
+    << num_steps << ", T: " << simulation_time_in_years << " yr.\n" << std::endl;
+    q.solve_system(num_steps, dt, method);
 }
 
 void task_5d()
 {   
     double dt = 1e-4;
-    int num_steps = 100/dt;
+    int num_steps = 1;
     const double earth_mass = 5.972e24;
-    arma::vec earth_initial = {1, 0, 0, 0, 2*pi/2, 0};
+    arma::vec earth_initial = {1, 0, 0, 0, 0, 0};
+    std::string method = "Velocity Verlet";
+    std::string filepath;
+    std::string tmp;
 
-    std::string filepath_vv = "data_files/task_5d.txt";
+    int file_counter = 0;
     
-    SolarSystem q;
-    q.add_celestial_body(earth_mass, earth_initial);
-    std::string method_vv = "Velocity Verlet";
-    q.solve_system(num_steps, dt, method_vv, filepath_vv);
+    for (double i = 1; i <= 1.6; i = i + 0.00625)
+    {   
+        earth_initial[4] = i*2*pi;
+        SolarSystem q;
+        filepath = "data_files/task_5d_" + std::to_string(earth_initial[4]) + ".txt";
+        
+        q.add_celestial_body(earth_mass, earth_initial);
+        q.solve_system(num_steps, dt, method, filepath);
+
+        file_counter++;
+    }
+
+    // earth_initial[4] = std::sqrt(2*G);
+    
+    // SolarSystem q;
+    // filepath = "data_files/task_5d_" + std::to_string(file_counter) + ".txt";
+    
+    // q.add_celestial_body(earth_mass, earth_initial);
+    // q.solve_system(num_steps, dt, method, filepath);
 }
 
 void all_planets()
@@ -161,9 +190,9 @@ void all_planets()
 int main()
 {   
     // task_5c();
-    task_5c_algorithm_timing();
+    // task_5c_algorithm_timing();
     // all_planets();
-    // task_5d();
+    task_5d();
 
     return 0;
 }
