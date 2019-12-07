@@ -61,7 +61,6 @@ void task_5c()
     const double earth_mass = 5.972e24;
     arma::vec earth_initial = {1, 0, 0, 0, 2*pi, 0};
 
-    // double dt[4] = {1e-3, 1e-2, 5e-2, 0.1};
     double dt[4] = {1e-3, 1e-2};
 
     for (int i = 0; i < 2; i++)
@@ -76,13 +75,39 @@ void task_5c()
         std::string method_fe = "Forward Euler";
         std::string method_vv = "Velocity Verlet";
         
-        q.solve_system(num_steps, dt[i], filepath_fe, method_fe);
-        q.solve_system(num_steps, dt[i], filepath_vv, method_vv);
+        q.solve_system(num_steps, dt[i], method_fe, filepath_fe);
+        q.solve_system(num_steps, dt[i], method_vv, filepath_vv);
 
         std::cout << std::endl;
     }
 
 
+}
+
+void task_5c_algorithm_timing()
+{
+    const double earth_mass = 5.972e24;
+    arma::vec earth_initial = {1, 0, 0, 0, 2*pi, 0};
+    double dt = 1e-3;
+    int num_steps = 100/dt;
+
+
+
+}
+
+void task_5d()
+{   
+    double dt = 1e-4;
+    int num_steps = 100/dt;
+    const double earth_mass = 5.972e24;
+    arma::vec earth_initial = {1, 0, 0, 0, 2*pi/2, 0};
+
+    std::string filepath_vv = "data_files/task_5d.txt";
+    
+    SolarSystem q;
+    q.add_celestial_body(earth_mass, earth_initial);
+    std::string method_vv = "Velocity Verlet";
+    q.solve_system(num_steps, dt, method_vv, filepath_vv);
 }
 
 void all_planets()
@@ -130,13 +155,15 @@ void all_planets()
 
     std::string filepath = "data_files/all_planets.txt";
     std::string method = "Velocity Verlet";
-    q.solve_system(num_steps, dt, filepath, method);
+    q.solve_system(num_steps, dt, method, filepath);
 }
 
 int main()
 {   
-    task_5c();
+    // task_5c();
+    task_5c_algorithm_timing();
     // all_planets();
+    // task_5d();
 
     return 0;
 }

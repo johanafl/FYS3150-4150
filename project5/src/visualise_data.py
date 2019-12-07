@@ -5,7 +5,8 @@ import constants as c
 
 def total_energy_and_angular_momentum(data):
     """
-    Used for task 5c
+    Used for task 5c. Generates the total energy and angular momentum
+    for the system at every time step.
     """
 
     earth_mass = 5.972e24
@@ -23,6 +24,7 @@ def total_energy_and_angular_momentum(data):
     L = np.cross(rvec, vvec)*earth_mass
     
     return K + V, L.transpose()
+
 
 def task_5c():
     dts = ["0.001000", "0.010000"]
@@ -77,8 +79,8 @@ def task_5c():
     ax[1, 0].plot(np.abs((E1[0:end] - E1[0])/E1[0]), color="black")
     ax[1, 0].plot(np.abs((E2[0:end] - E2[0])/E2[0]), color="gray")
     ax[1, 0].set_xlabel("Number of time steps", fontsize=20)
-    ax[1, 0].set_ylabel(r"$Energy, [E_0]$", fontsize=20)
-    ax[1, 0].set_title("Total energy", fontsize=23)
+    ax[1, 0].set_ylabel(r"Rel. energy error, $[E_0]$", fontsize=20)
+    # ax[1, 0].set_title("Total energy", fontsize=23)
     ax[1, 0].set_xticks([0, 1000, 2000])
     ax[1, 0].set_yticks([0, 2.5e-6/2, 2.5e-6])
     ax[1, 0].set_yticklabels([0, r"$1.25 \cdot 10^{-6}$", r"$2.5 \cdot 10^{-6}$"])
@@ -88,8 +90,8 @@ def task_5c():
     #-----------
     
     end = 35
-    ax[1, 1].plot(np.abs(diff1[0:end] - diff1[0]), color="black")
-    ax[1, 1].plot(np.abs(diff2[0:end] - diff2[0]), color="gray")
+    ax[1, 1].plot(np.abs(diff1[0:end] - diff1[0]), "--o", color="black")
+    ax[1, 1].plot(np.abs(diff2[0:end] - diff2[0]), "--o", color="gray")
     ax[1, 1].set_xlabel("Number of orbits", fontsize=20)
     ax[1, 1].set_ylabel("Displacement, [AU]", fontsize=20)
     ax[1, 1].tick_params(labelsize=20)
@@ -155,8 +157,8 @@ def task_5c():
     ax[1, 0].plot(np.abs((E1[0:end] - E1[0])/E1[0]), color="black")
     ax[1, 0].plot(np.abs((E2[0:end] - E2[0])/E2[0]), color="gray")
     ax[1, 0].set_xlabel("Number of time steps", fontsize=20)
-    ax[1, 0].set_ylabel(r"$Energy, [E_0]$", fontsize=20)
-    ax[1, 0].set_title("Total energy", fontsize=23)
+    ax[1, 0].set_ylabel(r"Rel. energy error, $[E_0]$", fontsize=20)
+    # ax[1, 0].set_title("Rel. energy error", fontsize=23)
     ax[1, 0].set_xticks(np.arange(0, 1e4+1, 3000))
     ax[1, 0].tick_params(labelsize=20)
     ax[1, 0].grid()
@@ -164,10 +166,10 @@ def task_5c():
     #-----------
     
     end = 10
-    ax[1, 1].plot(np.abs(diff1[0:end] - diff1[0]), color="black")
-    ax[1, 1].plot(np.abs(diff2[0:end] - diff2[0]), color="gray")
+    ax[1, 1].plot(np.abs(diff1[0:end] - diff1[0]), "--o", color="black")
+    ax[1, 1].plot(np.abs(diff2[0:end] - diff2[0]), "--o", color="gray")
     ax[1, 1].set_xlabel("Number of orbits", fontsize=20)
-    ax[1, 1].set_ylabel("Error, [AU]", fontsize=20)
+    ax[1, 1].set_ylabel("Displacement, [AU]", fontsize=20)
     ax[1, 1].tick_params(labelsize=20)
     ax[1, 1].grid() 
 
@@ -180,17 +182,41 @@ def task_5c():
     L2vv = np.linalg.norm(L2vv, axis=0)
     L1fe = np.linalg.norm(L1fe, axis=0)
     L2fe = np.linalg.norm(L2fe, axis=0)
+
+    #-----------
+
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(8, 6))
     
-    plt.plot(L1vv[0:end]/L1vv[0], label="L1vv")
-    plt.plot(L2vv[0:end]/L2vv[0], label="L2vv")
-    plt.plot(L1fe[0:end]/L1fe[0], label="L1fe")
-    plt.plot(L2fe[0:end]/L2fe[0], label="L2fe")
-    plt.legend()
+    ax.plot(L1vv[0:end]/L1vv[0], label=f"VV, dt={float(dts[0])}", color="black")
+    ax.plot(L2vv[0:end]/L2vv[0], label=f"VV, dt={float(dts[1])}", color="black",
+        linestyle="dashed")
+    ax.plot(L1fe[0:end]/L1fe[0], label=f"FE, dt={float(dts[0])}", color="gray")
+    ax.plot(L2fe[0:end]/L2fe[0], label=f"FE, dt={float(dts[1])}", color="gray",
+        linestyle="dashed")
+
+    ax.tick_params(labelsize=20)
+    ax.grid()
+    ax.set_xlabel("Number of time steps", fontsize=20)
+    ax.set_ylabel(r"Total angular momentum, $[L_0]$", fontsize=20)
+    ax.set_xticks(np.arange(0, 1e4+1, 3000))
+    ax.set_yticks(np.arange(1, 2.4+0.4, 0.4))
+
+    ax.legend(fontsize=15, loc="upper left")
     plt.show()
 
 
+def task_5d():
+    data = np.loadtxt("data_files/task_5d.txt", unpack=True)
+
+    plt.plot(data[1], data[2], label="earth")
+    plt.legend(loc="best")
+    plt.axis("equal")
+    plt.show()
+    
+
 if __name__ == "__main__":
     task_5c()
+    # task_5d()
     # data = np.loadtxt("data_files/all_planets.txt", unpack=True)
 
     # data = np.load("data_files/all_planets.npy")
