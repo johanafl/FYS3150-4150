@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
@@ -9,9 +10,9 @@ def total_energy_and_angular_momentum(data):
     for the system at every time step.
     """
 
-    earth_mass = 5.972e24
-    solar_mass   = 1.9891e30
-    G = 6.67e-11
+    earth_mass = 5.972e24       # [kg]
+    solar_mass   = 1.9891e30    # [kg]
+    G = 6.67e-11                # [m^3 kg^-1 s^-2]
 
     rvec = data[1:4].transpose()*c.AU*1000
     vvec = data[4:7].transpose()*c.AU*1000/31556926
@@ -206,17 +207,46 @@ def task_5c():
 
 
 def task_5d():
-    data = np.loadtxt("data_files/task_5d.txt", unpack=True)
-
-    plt.plot(data[1], data[2], label="earth")
-    plt.legend(loc="best")
-    plt.axis("equal")
-    plt.show()
     
+    energies = []
+    velocities = []
+    directory = "data_files/"
+
+    for data_file in os.listdir(directory):
+        # Loops over all files in directory.
+        
+        filename = os.fsdecode(data_file)
+        if filename.startswith("task_5d"):
+            
+            data = np.loadtxt(f"data_files/{filename}", unpack=True)
+            E, _ = total_energy_and_angular_momentum(data)
+            energies.append(E)
+            
+            velocities.append(float(filename[8:-4]))
+    
+    velocities = np.array(sorted(velocities))
+    energies = np.array(sorted(energies))
+
+    idx = np.argmin( np.abs(energies) )
+    
+    fig, ax = plt.subplots(figsize=(10, 8))
+    
+    fig.text(x=0.51, y=0.61, s=f"({velocities[idx]:.1f}, 0)", fontsize=20, color="black")
+    
+    ax.plot(velocities, energies, color="black")
+    ax.plot(velocities[idx], energies[idx], "ko")
+    ax.set_xlabel("Initial velocity, [AU/yr]", fontsize=20)
+    ax.set_ylabel("Initial total energy, [J]", fontsize=20)
+    ax.set_xticks(np.arange(6.5, 10+1, 1))
+    ax.set_yticks(np.arange(-2.5e33, 1.5e33+1e33, 1e33))
+    ax.tick_params(labelsize=20)
+    ax.grid()
+    
+    plt.show()
 
 if __name__ == "__main__":
-    task_5c()
-    # task_5d()
+    # task_5c()
+    task_5d()
     # data = np.loadtxt("data_files/all_planets.txt", unpack=True)
 
     # data = np.load("data_files/all_planets.npy")
