@@ -2,7 +2,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
-import constants as c
+
 
 def total_energy_and_angular_momentum(data):
     """
@@ -10,15 +10,17 @@ def total_energy_and_angular_momentum(data):
     for the system at every time step.
     """
 
+    yr = 31556926   # Seconds in a year.
+    AU = 149597871*1000 # Meters in one AU.
     earth_mass = 5.972e24       # [kg]
     solar_mass   = 1.9891e30    # [kg]
     G = 6.67e-11                # [m^3 kg^-1 s^-2]
 
-    rvec = data[1:4].transpose()*c.AU*1000
-    vvec = data[4:7].transpose()*c.AU*1000/31556926
+    rvec = data[1:4].transpose()*AU
+    vvec = data[4:7].transpose()*AU/yr
     
-    r = np.sqrt(data[1]**2 + data[2]**2 + data[3]**2)*c.AU*1000
-    v = np.sqrt(data[4]**2 + data[5]**2 + data[6]**2)*c.AU*1000/31556926
+    r = np.sqrt(data[1]**2 + data[2]**2 + data[3]**2)*AU
+    v = np.sqrt(data[4]**2 + data[5]**2 + data[6]**2)*AU/yr
     K = 1/2*earth_mass*v**2
     V = -G*solar_mass*earth_mass/r
 
@@ -206,7 +208,7 @@ def task_5c():
     plt.show()
 
 
-def task_5d():
+def task_5d_escape_velocity():
     
     energies = []
     velocities = []
@@ -266,13 +268,13 @@ def task_5d_beta():
         data = np.loadtxt(f"data_files/{filenames[i]}", unpack=True)
         ax[i].plot(data[1], data[2], color="black")
         ax[i].tick_params(labelsize=20)
-        ax[i].set_title(f"beta: {float(filenames[i][13:-4])}")
+        ax[i].set_title(r"$\beta$ = " + f"{float(filenames[i][13:-4])}", fontsize=20)
         ax[i].grid()
         ax[i].axis("equal")
 
 
 
-    fig.text(x=0.01, y=0.4, s="Position, [AU]", fontsize=20, rotation="vertical")
+    fig.text(x=0.02, y=0.4, s="Position, [AU]", fontsize=20, rotation="vertical")
     fig.text(x=0.42, y=0.03, s="Position, [AU]", fontsize=20)
     # ax.legend()
     # ax.set_xticks(np.arange(6.5, 10+1, 1))
@@ -282,9 +284,9 @@ def task_5d_beta():
 
 
 if __name__ == "__main__":
-    # task_5c()
-    # task_5d()
-    task_5d_beta()
+    task_5c()
+    # task_5d_escape_velocity()
+    # task_5d_beta()
     # data = np.loadtxt("data_files/all_planets.txt", unpack=True)
 
     # data = np.load("data_files/all_planets.npy")
