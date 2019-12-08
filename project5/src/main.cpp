@@ -144,7 +144,7 @@ void task_5d_beta()
     q.add_celestial_body(earth_mass, earth_initial);
 
     // double beta[4] = {2, 2.33333333, 2.66666667, 3};
-    double beta[4] = {2.99, 2.999, 2.9999, 3};
+    double beta[4] = {2, 2.8, 2.99, 3};
     
     for (int i = 0; i < 4; i++)
     {   
