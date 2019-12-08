@@ -34,6 +34,23 @@ protected:
         std::cout << "NotImplementedError" << std::endl;
     }
 
+    virtual void advance_mercury(T object, int k)
+    {   /*
+        Dummy method. This method will be overwritten by the child
+        classes.
+
+        Parameters
+        ----------
+        object : object of class T
+            Object containing the RHS of the ODE.
+
+        k : int
+            Current step in the integration.
+        */
+        
+        std::cout << "NotImplementedError" << std::endl;
+    }
+
 public:
     Solver(int num_steps_input, int num_stellar_objects_input) 
     : pos(3*num_stellar_objects_input, num_steps_input+1),
@@ -140,6 +157,27 @@ public:
     //     return num_stellar_objects;
     // }
     // void get_dt(double &dt_in) {dt_in = dt;}
+
+    void solve_mercury(T object, double dt_input)
+    {   /*
+        Solve the ODE by looping the appropriate advance method.
+
+        Parameters
+        ----------
+        object : object of class T
+            Object containing the RHS of the ODE.
+
+        dt_input : double
+            Time step length.
+        */
+        
+        dt = dt_input;
+        
+        for (int k = 0; k < num_steps; k++)
+        {
+            advance_mercury(object, k);
+        }
+    }
 };
 
 template <class T>
@@ -194,6 +232,27 @@ private:
         this->pos.col(k+1) = this->pos.col(k) + this->dt*this->vel.col(k) + this->dt*this->dt/2*a1;
 
         arma::vec a2 = object.acceleration(this->pos.col(k+1), 0);
+        this->vel.col(k+1) = this->vel.col(k) + this->dt/2*(a2 + a1);
+
+    }
+    
+    void advance_mercury(T object, int k)
+    {   /*
+        One step with Velocity Verlet.
+
+        Parameters
+        ----------
+        object : object of class T
+            Used for accessing the right hand side of the ODE.
+
+        k : int
+            Current step in the integration.
+        */
+        
+        arma::vec a1 = object.acc_mercury(this->pos.col(k), this->vel.col(k), 0);
+        this->pos.col(k+1) = this->pos.col(k) + this->dt*this->vel.col(k) + this->dt*this->dt/2*a1;
+
+        arma::vec a2 = object.acc_mercury(this->pos.col(k+1), this->vel.col(k), 0);
         this->vel.col(k+1) = this->vel.col(k) + this->dt/2*(a2 + a1);
 
     }

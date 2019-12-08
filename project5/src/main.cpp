@@ -42,9 +42,7 @@ arma::mat fetch_initial_parameters_from_file()
             // Convert the word to double and insert into matrix.
             stellar_init(param, line_number) = std::stod(word);
             word.clear();
-
         }
-
     }
     planet_data.close();
 
@@ -78,8 +76,6 @@ void task_5c()
 
         std::cout << std::endl;
     }
-
-
 }
 
 void task_5c_algorithm_timing()
@@ -125,7 +121,6 @@ void task_5d()
 
         file_counter++;
     }
-
 }
 
 void task_5d_beta()
@@ -154,7 +149,22 @@ void task_5d_beta()
         q.solve_system(num_steps, dt, method, filepath);
 
     }
+}
 
+void task_5g()
+{   
+    double dt = 1e-6;
+    int num_steps = 100/dt;
+    const double mercury_mass = 3.285e23;
+    // arma::vec mercury_initial = {-3.397162482844107e-1, 1.179729441938765e-1, 4.080404839815078e-2, -1.504265080337234e-2*365.242199, -2.537738274969423e-2*365.242199, -6.937544462359349e-4*365.242199};
+    arma::vec mercury_initial = {0.3075, 0, 0, 0, 12.44, 0};
+    // arma::vec mercury_initial = {0.3075, 0, 0, 0, 13.9, 0};
+
+    std::string filepath = "data_files/task_5g.txt";
+    
+    SolarSystem q;
+    q.add_celestial_body(mercury_mass, mercury_initial);
+    q.sol_mercury(num_steps, dt, filepath);
 }
 
 void all_planets()
@@ -211,7 +221,8 @@ int main()
     // task_5c_algorithm_timing();
     // all_planets();
     // task_5d();
-    task_5d_beta();
+    task_5g();
+    // task_5d_beta();
 
     return 0;
 }
