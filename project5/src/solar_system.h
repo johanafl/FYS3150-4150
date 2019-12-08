@@ -348,25 +348,25 @@ public:
         num_planets++;
     }
 
-    void solve_system(int num_steps, double dt, std::string method, 
+    void solve_system(int num_steps, double dt, int func_id, std::string method, 
         std::string filepath)
     {   /*
         When filename is specified, data is written to file.
         */
 
-        solve_system(num_steps, dt, method, filepath, true);
+        solve_system(num_steps, dt, func_id, method, filepath, true);
     }
 
-    void solve_system(int num_steps, double dt, std::string method)
+    void solve_system(int num_steps, double dt, int func_id, std::string method)
     {   /*
         When no filename is specified, no data is written to file.
         */
 
         std::string filepath = "unused";
-        solve_system(num_steps, dt, method, filepath, false);
+        solve_system(num_steps, dt, func_id, method, filepath, false);
     }
 
-    void solve_system(int num_steps, double dt, std::string method,
+    void solve_system(int num_steps, double dt, int func_id, std::string method,
         std::string filepath, bool write)
     {   /*
         Solve the solar system.
@@ -388,6 +388,9 @@ public:
 
         write : bool
             For toggling write to file on/off.
+
+        func_id : int
+            Choose which function to integrate.
         */
 
         if (method == "Velocity Verlet")
@@ -398,7 +401,7 @@ public:
             
             auto solve_time_1 = std::chrono::steady_clock::now();
             
-            solved.solve(*this, dt);
+            solved.solve(*this, dt, func_id);
             
             auto solve_time_2 = std::chrono::steady_clock::now();
             auto solve_time = std::chrono::duration_cast<std::chrono::duration<double> >(solve_time_2 - solve_time_1);
@@ -423,7 +426,7 @@ public:
             
             auto solve_time_1 = std::chrono::steady_clock::now();
             
-            solved.solve(*this, dt);
+            solved.solve(*this, dt, func_id);
             
             auto solve_time_2 = std::chrono::steady_clock::now();
             auto solve_time = std::chrono::duration_cast<std::chrono::duration<double> >(solve_time_2 - solve_time_1);
@@ -474,11 +477,30 @@ public:
         solved.write_to_file(filepath);   
     }
 
-    arma::vec acceleration(arma::vec u, double t)
+    arma::vec acceleration(arma::vec u, double t, int func_id)
     {   /*
         The current acceleration of the system.
+
+        Parameters
+        ----------
+        func_id : int
+            Choose which of the accelerations to use.
         */
-        return acceleration_3(u);
+        
+        if (func_id == 1)
+        {
+            return acceleration_1(u);
+        }
+
+        if (func_id == 2)
+        {
+            return acceleration_2(u);
+        }
+
+        if (func_id == 3)
+        {
+            return acceleration_3(u);
+        }
     }
 
     arma::vec acc_mercury(arma::vec u_pos, arma::vec u_vel, double t)

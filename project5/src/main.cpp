@@ -1,11 +1,16 @@
 #include "solar_system.h"
 const double earth_mass = 5.972e24;
 
-arma::mat fetch_initial_parameters_from_file()
+arma::mat fetch_initial_parameters_from_file(std::string filepath)
 {   /*
     Fetch the initial parameters for every planet from a text file from
     NASA. Read values into an Armadillo matrix with planets as columns
     and parameters as rows.
+
+    Parameters
+    ----------
+    filepath : std::string
+        The path and name of the text file.
 
     Returns
     -------
@@ -19,7 +24,7 @@ arma::mat fetch_initial_parameters_from_file()
     std::string word;
     arma::mat stellar_init(num_input_params, 10);
     std::ifstream planet_data;
-    planet_data.open("initial_parameters_solar_system.txt", std::ios::in);
+    planet_data.open(filepath, std::ios::in);
 
     // First indices of every the number and the length of every number.
     int number_length = 20;
@@ -58,6 +63,7 @@ void task_5c()
     arma::vec earth_initial = {1, 0, 0, 0, 2*pi, 0};
 
     double dt[4] = {1e-3, 1e-2};
+    int func_id = 2;
 
     for (int i = 0; i < 2; i++)
     {   
@@ -71,15 +77,16 @@ void task_5c()
         std::string method_fe = "Forward Euler";
         std::string method_vv = "Velocity Verlet";
         
-        q.solve_system(num_steps, dt[i], method_fe, filepath_fe);
-        q.solve_system(num_steps, dt[i], method_vv, filepath_vv);
+        q.solve_system(num_steps, dt[i], func_id, method_fe, filepath_fe);
+        q.solve_system(num_steps, dt[i], func_id, method_vv, filepath_vv);
 
         std::cout << std::endl;
     }
 }
 
 void task_5c_algorithm_timing()
-{
+{   
+    int func_id = 2;    // Choose which of the accelerations to use.
     double dt = 1e-2;
     double simulation_time_in_years = 100000;
     int num_steps = simulation_time_in_years/dt;
@@ -91,16 +98,17 @@ void task_5c_algorithm_timing()
     std::string method = "Forward Euler";
     std::cout << "Method: " << method << ". dt: " << dt << " yr, N: "
     << num_steps << ", T: " << simulation_time_in_years << " yr.\n" << std::endl;
-    q.solve_system(num_steps, dt, method);
+    q.solve_system(num_steps, dt, func_id, method);
 
     method = "Velocity Verlet";
     std::cout << "Method: " << method << ". dt: " << dt << " yr, N: "
     << num_steps << ", T: " << simulation_time_in_years << " yr.\n" << std::endl;
-    q.solve_system(num_steps, dt, method);
+    q.solve_system(num_steps, dt, func_id, method);
 }
 
 void task_5d()
 {   
+    int func_id = 2;
     double dt = 1e-4;
     int num_steps = 1;
     arma::vec earth_initial = {1, 0, 0, 0, 0, 0};
@@ -117,14 +125,15 @@ void task_5d()
         filepath = "data_files/task_5d_" + std::to_string(earth_initial[4]) + ".txt";
         
         q.add_celestial_body(earth_mass, earth_initial);
-        q.solve_system(num_steps, dt, method, filepath);
+        q.solve_system(num_steps, dt, func_id, method, filepath);
 
         file_counter++;
     }
 }
 
 void task_5d_beta()
-{
+{   
+    int func_id = 2;
     double dt = 1e-3;
     double simulation_time_in_years = 40;
     int num_steps = simulation_time_in_years/dt;
@@ -146,9 +155,33 @@ void task_5d_beta()
         filepath = "data_files/varying_beta=" + std::to_string(beta[i]) + ".txt";
         
         q.set_beta(beta[i]);
-        q.solve_system(num_steps, dt, method, filepath);
+        q.solve_system(num_steps, dt, func_id, method, filepath);
 
     }
+}
+
+void task_5e()
+{   /*
+    Lets see how much Jupiter affects Earths orbit.
+    */
+    int func_id = 2;
+    double dt = 1e-3;
+    double simulation_time_in_years = 40;
+    int num_steps = simulation_time_in_years/dt;
+    // int num_steps = 10;
+    
+    arma::vec earth_initial = {1, 0, 0, 0, 2*pi, 0};
+    std::string method = "Velocity Verlet";
+    std::string filepath;
+    std::string tmp;
+
+    SolarSystem q;
+    q.add_celestial_body(earth_mass, earth_initial);
+
+    // double beta[4] = {2, 2.33333333, 2.66666667, 3};
+    double beta[4] = {2, 2.8, 2.99, 3};
+    // filepath = "data_files/varying_beta=" + std::to_string(beta[i]) + ".txt";
+    // q.solve_system(num_steps, dt, func_id, method, filepath);
 }
 
 void task_5g()
@@ -168,8 +201,9 @@ void task_5g()
 }
 
 void all_planets()
-{
-    arma::mat all_planets_initial = fetch_initial_parameters_from_file();
+{   
+    std::string infilepath = "data_files/initial_parameters_solar_system_cm_at_rest.txt";
+    arma::mat all_planets_initial = fetch_initial_parameters_from_file(infilepath);
 
     // All positions in AU, velocities in AU/yr.
     arma::vec sun_initial     = all_planets_initial.col(0);
@@ -209,19 +243,20 @@ void all_planets()
 
     double dt = 1e-3;
     int num_steps = 500/dt;
+    int func_id = 2;
 
-    std::string filepath = "data_files/all_planets.txt";
+    std::string outfilepath = "data_files/all_planets.txt";
     std::string method = "Velocity Verlet";
-    q.solve_system(num_steps, dt, method, filepath);
+    q.solve_system(num_steps, dt, func_id, method, outfilepath);
 }
 
 int main()
 {   
     // task_5c();
-    // task_5c_algorithm_timing();
+    task_5c_algorithm_timing();
     // all_planets();
     // task_5d();
-    task_5g();
+    // task_5g();
     // task_5d_beta();
 
     return 0;
