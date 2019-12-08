@@ -283,22 +283,26 @@ def task_5d_beta():
     plt.show()
 
 
-if __name__ == "__main__":
-    task_5c()
-    # task_5d_escape_velocity()
-    # task_5d_beta()
-    # data = np.loadtxt("data_files/all_planets.txt", unpack=True)
-
+def all_planets():
+    data = np.loadtxt("data_files/all_planets.txt", unpack=True)
     # data = np.load("data_files/all_planets.npy")
 
-    # planets = ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn",
-    #     "Uranus", "Neptune", "Pluto"]
-    # for i in range(9):
-    #     plt.plot(data[1 + i*6, ::10], data[2 + i*6, ::10], label=planets[i])
+    planets = ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn",
+        "Uranus", "Neptune", "Pluto"]
+    for i in range(9):
+        plt.plot(data[1 + i*6, ::10], data[2 + i*6, ::10], label=planets[i])
 
-    # plt.legend(loc="best")
-    # plt.axis("equal")
-    # plt.show()
+    plt.legend(loc="best")
+    plt.axis("equal")
+    plt.show()
+
+if __name__ == "__main__":
+    all_planets()
+    # task_5c()
+    # task_5d_escape_velocity()
+    # task_5d_beta()
+
+
     
     # # plt.plot(data[1], data[2], label="mercury")
     # # plt.plot(data[1], data[2], label="venus")
