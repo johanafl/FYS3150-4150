@@ -401,6 +401,15 @@ public:
             return 1;
         }
 
+        if ((func_id != 3) and (beta_set))
+        {
+            std::cout << "Beta is set to: " << beta << ", but the acceleration";
+            std::cout << " dependent on beta is not selected. Please use func_id = 3. Exiting.";
+            std::cout << std::endl;
+
+            return 1;
+        }
+
         if (method == "Velocity Verlet")
         {
             VelocityVerlet<SolarSystem> solved(num_steps, num_planets);
@@ -500,11 +509,13 @@ public:
         switch (func_id)
         {
             case 1 :
-                return acceleration_1(u);
+                return acceleration_1(u);   // Two body.
             case 2 :
-                return acceleration_2(u);
+                return acceleration_2(u);   // N body, Sun at center.
             case 3 :
-                return acceleration_3(u);
+                return acceleration_3(u);   // N body, Adjustable beta.
+            case 4 :
+                return acceleration_4(u);   // N body, CM at center.
         }
 
         return acceleration_2(u); // Mostly to make the compiler shut up.
