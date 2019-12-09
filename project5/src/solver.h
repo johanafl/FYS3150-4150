@@ -84,27 +84,7 @@ public:
             vel(i, 0) = U0(i + 3*num_stellar_objects);
         }
     }
-    
-    void solve(T object, double dt_input)
-    {   /*
-        Solve the ODE by looping the appropriate advance method.
-        Defaults to func_id = 2.
 
-        Parameters
-        ----------
-        object : object of class T
-            Object containing the RHS of the ODE.
-
-        dt_input : double
-            Time step length.
-        */
-        dt = dt_input;
-        int func_id = 2;
-        for (int k = 0; k < num_steps; k++)
-        {
-            advance(object, k, func_id);
-        }
-    }
 
     void solve(T object, double dt_input, int func_id)
     {   /*

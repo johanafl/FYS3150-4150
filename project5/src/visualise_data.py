@@ -297,8 +297,8 @@ def all_planets():
     plt.show()
 
 if __name__ == "__main__":
-    all_planets()
-    # task_5c()
+    # all_planets()
+    task_5c()
     # task_5d_escape_velocity()
     # task_5d_beta()
 

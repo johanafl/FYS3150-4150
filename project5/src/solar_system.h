@@ -213,7 +213,7 @@ protected:
         The same ass acceleration_2, but with adjustable exponent of
         r (for task 5d).
         */
-
+        
         arma::vec acc(3*num_planets);
         acc.zeros();
         // Acceleration due to gravitational pull from the sun
@@ -395,10 +395,11 @@ public:
             Choose which function to integrate.
         */
 
+        std::cout << "BETA = " << beta << std::endl;
         if ((func_id == 3) and (not beta_set))
         {
             std::cout << "Beta not set! Please use set_beta(value). Exiting." << std::endl;
-            return 1;
+            // return 1;
         }
 
         if ((func_id != 3) and (beta_set))
@@ -407,7 +408,7 @@ public:
             std::cout << " dependent on beta is not selected. Please use func_id = 3. Exiting.";
             std::cout << std::endl;
 
-            return 1;
+            // return 1;
         }
 
         if (method == "Velocity Verlet")
@@ -517,8 +518,7 @@ public:
             case 4 :
                 return acceleration_4(u);   // N body, CM at center.
         }
-
-        return acceleration_2(u); // Mostly to make the compiler shut up.
+        // return acceleration_2(u); // Mostly to make the compiler shut up.
     }
 
     arma::vec acc_mercury(arma::vec u_pos, arma::vec u_vel, double t)

@@ -68,6 +68,7 @@ void task_5c()
     for (int i = 0; i < 2; i++)
     {   
         int num_steps = 100/dt[i];
+        // int num_steps = 2;
         std::cout << "Generating task 5c data. dt = " << std::to_string(dt[i]) << std::endl;
         std::string filepath_fe = "data_files/task_5c_fe_dt=" + std::to_string(dt[i]) + ".txt";
         std::string filepath_vv = "data_files/task_5c_vv_dt=" + std::to_string(dt[i]) + ".txt";
@@ -76,6 +77,7 @@ void task_5c()
         q.add_celestial_body(earth_mass, earth_initial);
         std::string method_fe = "Forward Euler";
         std::string method_vv = "Velocity Verlet";
+        q.set_beta(2);
         
         q.solve_system(num_steps, dt[i], func_id, method_fe, filepath_fe);
         q.solve_system(num_steps, dt[i], func_id, method_vv, filepath_vv);
@@ -133,22 +135,23 @@ void task_5d()
 
 void task_5d_beta()
 {   
-    int func_id = 2;
+    std::cout << "task_5d_beta" << std::endl;
+
+    int func_id = 3;
     double dt = 1e-3;
     double simulation_time_in_years = 40;
     int num_steps = simulation_time_in_years/dt;
     // int num_steps = 10;
     
-    arma::vec earth_initial = {1, 0, 0, 0, 2*pi, 0};
+    arma::vec earth_initial = {1, 0, 0, 0, 2*pi, 0};    // In the report currently.
     std::string method = "Velocity Verlet";
     std::string filepath;
-    std::string tmp;
 
     SolarSystem q;
     q.add_celestial_body(earth_mass, earth_initial);
 
     // double beta[4] = {2, 2.33333333, 2.66666667, 3};
-    double beta[4] = {2, 2.8, 2.99, 3};
+    double beta[4] = {2, 2.8, 2.99, 3};  // In the report currently.
     
     for (int i = 0; i < 4; i++)
     {   
@@ -162,7 +165,8 @@ void task_5d_beta()
 
 void task_5e()
 {   /*
-    Lets see how much Jupiter affects Earths orbit.
+    Lets see how much Jupiter affects Earths orbit. Keeping the Sun
+    fixed as the CM, using acceleration_2.
     */
     int func_id = 2;
     double dt = 1e-3;
@@ -177,11 +181,9 @@ void task_5e()
 
     SolarSystem q;
     q.add_celestial_body(earth_mass, earth_initial);
-
-    // double beta[4] = {2, 2.33333333, 2.66666667, 3};
-    double beta[4] = {2, 2.8, 2.99, 3};
-    // filepath = "data_files/varying_beta=" + std::to_string(beta[i]) + ".txt";
-    // q.solve_system(num_steps, dt, func_id, method, filepath);
+    
+    filepath = "data_files/jupiter_mass=" + std::to_string(func_id) + ".txt";
+    q.solve_system(num_steps, dt, func_id, method);//, filepath);
 }
 
 void task_5g()
@@ -242,7 +244,7 @@ void all_planets()
     q.add_celestial_body(pluto_mass, pluto_initial);
 
     double dt = 1e-3;
-    int num_steps = 500/dt;
+    int num_steps = 50/dt;
     int func_id = 2;
 
     std::string outfilepath = "data_files/all_planets.txt";
@@ -252,12 +254,13 @@ void all_planets()
 
 int main()
 {   
-    // task_5c();
-    task_5c_algorithm_timing();
-    // all_planets();
+    task_5c();
+    // task_5c_algorithm_timing();
     // task_5d();
-    // task_5g();
     // task_5d_beta();
+    // task_5e();
+    // task_5g();
+    // all_planets();
 
     return 0;
 }
