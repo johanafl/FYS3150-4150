@@ -228,9 +228,9 @@ protected:
             rpow = std::pow(r, beta);
             
             
-            acc(3*i + 0) -= G*x/(r*rpow);
-            acc(3*i + 1) -= G*y/(r*rpow);
-            acc(3*i + 2) -= G*z/(r*rpow);
+            acc(3*i + 0) -= GM*x/(r*rpow);
+            acc(3*i + 1) -= GM*y/(r*rpow);
+            acc(3*i + 2) -= GM*z/(r*rpow);
         }
 
         // Acceleration due to gravitational pull from the j-th object
@@ -247,9 +247,9 @@ protected:
                     rpow = std::pow(r, beta);
 
                     // Acceleration in x-, y- and z-direction
-                    acc(3*i + 0) -= G*mass[j]*x/(r*rpow);
-                    acc(3*i + 1) -= G*mass[j]*y/(r*rpow);
-                    acc(3*i + 2) -= G*mass[j]*z/(r*rpow);
+                    acc(3*i + 0) -= GM*mass[j]*x/(r*rpow);
+                    acc(3*i + 1) -= GM*mass[j]*y/(r*rpow);
+                    acc(3*i + 2) -= GM*mass[j]*z/(r*rpow);
                 }
             }
         }
@@ -395,11 +395,10 @@ public:
             Choose which function to integrate.
         */
 
-        std::cout << "BETA = " << beta << std::endl;
         if ((func_id == 3) and (not beta_set))
         {
             std::cout << "Beta not set! Please use set_beta(value). Exiting." << std::endl;
-            // return 1;
+            return 1;
         }
 
         if ((func_id != 3) and (beta_set))
@@ -408,7 +407,7 @@ public:
             std::cout << " dependent on beta is not selected. Please use func_id = 3. Exiting.";
             std::cout << std::endl;
 
-            // return 1;
+            return 1;
         }
 
         if (method == "Velocity Verlet")
@@ -465,7 +464,7 @@ public:
         return 0;
     }
 
-    void sol_mercury(int num_steps, double dt, std::string filepath)
+    void solve_system_mercury(int num_steps, double dt, std::string filepath)
     {   /*
         Solve the solar system.
 
@@ -518,10 +517,10 @@ public:
             case 4 :
                 return acceleration_4(u);   // N body, CM at center.
         }
-        // return acceleration_2(u); // Mostly to make the compiler shut up.
+        return acceleration_2(u); // Mostly to make the compiler shut up.
     }
 
-    arma::vec acc_mercury(arma::vec u_pos, arma::vec u_vel, double t)
+    arma::vec acceleration_mercury(arma::vec u_pos, arma::vec u_vel, double t)
     {   /*
         Acceleration for two-body problem. Used to calculate perihelion
         of mercury i think.

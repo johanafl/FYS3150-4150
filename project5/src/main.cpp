@@ -63,20 +63,19 @@ void task_5c()
     arma::vec earth_initial = {1, 0, 0, 0, 2*pi, 0};
 
     double dt[4] = {1e-3, 1e-2};
-    int func_id = 2;
+    int func_id = 3;
 
     for (int i = 0; i < 2; i++)
     {   
         int num_steps = 100/dt[i];
-        // int num_steps = 2;
         std::cout << "Generating task 5c data. dt = " << std::to_string(dt[i]) << std::endl;
         std::string filepath_fe = "data_files/task_5c_fe_dt=" + std::to_string(dt[i]) + ".txt";
         std::string filepath_vv = "data_files/task_5c_vv_dt=" + std::to_string(dt[i]) + ".txt";
+        std::string method_fe = "Forward Euler";
+        std::string method_vv = "Velocity Verlet";
         
         SolarSystem q;
         q.add_celestial_body(earth_mass, earth_initial);
-        std::string method_fe = "Forward Euler";
-        std::string method_vv = "Velocity Verlet";
         q.set_beta(2);
         
         q.solve_system(num_steps, dt[i], func_id, method_fe, filepath_fe);
@@ -199,7 +198,7 @@ void task_5g()
     
     SolarSystem q;
     q.add_celestial_body(mercury_mass, mercury_initial);
-    q.sol_mercury(num_steps, dt, filepath);
+    q.solve_system_mercury(num_steps, dt, filepath);
 }
 
 void all_planets()

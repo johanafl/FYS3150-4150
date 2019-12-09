@@ -253,10 +253,10 @@ private:
             Current step in the integration.
         */
         
-        arma::vec a1 = object.acc_mercury(this->pos.col(k), this->vel.col(k), 0);
+        arma::vec a1 = object.acceleration_mercury(this->pos.col(k), this->vel.col(k), 0);
         this->pos.col(k+1) = this->pos.col(k) + this->dt*this->vel.col(k) + this->dt*this->dt/2*a1;
 
-        arma::vec a2 = object.acc_mercury(this->pos.col(k+1), this->vel.col(k), 0);
+        arma::vec a2 = object.acceleration_mercury(this->pos.col(k+1), this->vel.col(k), 0);
         this->vel.col(k+1) = this->vel.col(k) + this->dt/2*(a2 + a1);
 
     }
