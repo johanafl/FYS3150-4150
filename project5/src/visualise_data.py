@@ -288,11 +288,12 @@ def task_5e():
     fig1.text(x=0.02, y=0.4, s="Position, [AU]", fontsize=20, rotation="vertical")
     fig1.text(x=0.42, y=0.03, s="Position, [AU]", fontsize=20)
     fig2, ax2 = plt.subplots(nrows=2, ncols=2, figsize=(11, 9))
-    fig2.text(x=0.02, y=0.4, s="Distance from the Sun, [AU]", fontsize=20, rotation="vertical")
-    fig2.text(x=0.42, y=0.03, s="Number of time steps", fontsize=20)
+    fig2.text(x=0.02, y=0.31, s="Distance from the Sun, [AU]", fontsize=20, rotation="vertical")
+    fig2.text(x=0.46, y=0.03, s="Time, [yr]", fontsize=20)
     ax1 = ax1.reshape(-1)
     ax2 = ax2.reshape(-1)
 
+    dt = 1e-3   # Time step length, used for scaling the x axis.
     filenames = []
     masses = []
     
@@ -318,13 +319,34 @@ def task_5e():
         ax1[i].axis("equal")
 
         earth_dist = np.linalg.norm(data[1:4].transpose(), axis=1)
-        ax2[i].plot(earth_dist, color="black")
+        ax2[i].plot(np.arange(1, len(earth_dist)+1, 1)*dt, earth_dist ,color="black")
         ax2[i].tick_params(labelsize=20)
         ax2[i].set_title(r"$M_{Jupiter}$ = " + f"{float(filenames[i][13:-4]):.3e}", fontsize=20)
         ax2[i].grid()
     
 
 
+    plt.show()
+
+
+def task_5f():
+
+    data = np.loadtxt(f"data_files/sun_earth_jupiter.txt", unpack=True)
+
+    print(len(data[1]))
+    
+    fig, ax = plt.subplots(figsize=(10, 8))
+    
+    ax.plot(data[1], data[2], label="Sun")
+    ax.plot(data[7], data[8], label="Earth")
+    # ax.plot(data[13], data[14], label="Jupiter")
+    ax.set_xlabel("Position, [AU]", fontsize=20)
+    ax.set_ylabel("Position, [AU]", fontsize=20)
+    ax.tick_params(labelsize=20)
+    ax.grid()
+    ax.axis("equal")
+    ax.legend()
+    
     plt.show()
 
 
@@ -345,7 +367,8 @@ if __name__ == "__main__":
     # task_5c()
     # task_5d_escape_velocity()
     # task_5d_beta()
-    task_5e()
+    # task_5e()
+    task_5f()
     # all_planets()
 
 

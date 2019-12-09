@@ -171,7 +171,7 @@ protected:
         arma::vec acc(3*num_planets);
         acc.zeros();
 
-        // Acceleration due to gravitational pull from the sun
+        // Acceleration due to gravitational pull from the sun.
         for (int i = 0; i < num_planets; i++)
         {
             x = u(3*i + 0);
@@ -189,19 +189,18 @@ protected:
         for (int i = 0; i < num_planets; i++)
         {
             for (int j = 0; j < num_planets; j++)
-            {
-                if (i != j)
-                {
-                    x = u(3*j + 0) - u(3*i + 0);
-                    y = u(3*j + 1) - u(3*i + 1);
-                    z = u(3*j + 2) - u(3*i + 2);
-                    r = std::sqrt(x*x + y*y + z*z);
+            {   
+                if (i == j) continue;
+                
+                x = u(3*j + 0) - u(3*i + 0);
+                y = u(3*j + 1) - u(3*i + 1);
+                z = u(3*j + 2) - u(3*i + 2);
+                r = std::sqrt(x*x + y*y + z*z);
 
-                    // Acceleration in x-, y- and z-direction
-                    acc(3*i + 0) -= GM*mass[j]*x/(r*r*r);
-                    acc(3*i + 1) -= GM*mass[j]*y/(r*r*r);
-                    acc(3*i + 2) -= GM*mass[j]*z/(r*r*r);
-                }
+                // Acceleration in x-, y- and z-direction
+                acc(3*i + 0) -= GM*mass[j]*x/(r*r*r);
+                acc(3*i + 1) -= GM*mass[j]*y/(r*r*r);
+                acc(3*i + 2) -= GM*mass[j]*z/(r*r*r);
             }
         }
 
@@ -258,31 +257,27 @@ protected:
 
     arma::vec acceleration_4(arma::vec u)
     {   /*
-        Acceleration for N-body problem deduced from the gravitational force, 
-        assuming that all objects are allowed to move and the center of mass is
-        at rest for all time t.
+        Acceleration for N-body problem deduced from the gravitational
+        force, assuming that all objects are allowed to move and the
+        center of mass is at rest for all time t.
 
         Parameters
         ----------
         u : arma::vec
-            Vector containing the position of the objects in the x-, y- and 
-            z-direction, in astronomical units, [AU]. The vector u shoud be 
-            given as u = [x1, y1, z1, x2, y2, z2, ... , xN, yN, zN], where the
-            indicies corresponds to the i-th object. It is important that the
-            order is the same as when the object was added to the class to match
-            up with the correct mass.
+            Vector containing the position of the objects in the x-, y-
+            and z-direction, in astronomical units, [AU]. The vector u
+            shoud be given as
+            u = [x1, y1, z1, x2, y2, z2, ... , xN, yN, zN], where the
+            indicies corresponds to the i-th object. It is important
+            that the order is the same as when the object was added to
+            the class to match up with the correct mass.
 
         Returns
         -------
         acc : arma::vec
-            Vector containing the acceleration of the moving objects in the x-, 
-            y- and z-direction, in astronomical units per years
-            squared, [AU/yr^2]. The vector acc looks like 
+            Vector containing the acceleration of the moving objects in
+            the x-, y- and z-direction. The vector acc looks like 
             acc = [ax1, ay1, az1, ax2, ay2, az2, ... , axN, ayN, azN].
-
-        Note
-        ----
-        Everything is scaled after one solar mass.
         */
         arma::vec acc(3*num_planets);
         acc.zeros();
@@ -291,12 +286,12 @@ protected:
         for (int i = 0; i < num_planets; i++)
         {
             for (int j = 0; j < num_planets; j++)
-            {
+            {   
+                if (i == j) continue;
+                
                 x = u(3*j + 0) - u(3*i + 0);
                 y = u(3*j + 1) - u(3*i + 1);
                 z = u(3*j + 2) - u(3*i + 2);
-
-                // Radial distance from the sun for the i-th object.
                 r = std::sqrt(x*x + y*y + z*z);
 
                 // Acceleration in x-, y- and z-direction.
@@ -350,7 +345,7 @@ public:
         num_planets++;
     }
 
-    void solve_system(int num_steps, double dt, int func_id, std::string method, 
+    void solve_system(int num_steps,double dt, int func_id, std::string method, 
         std::string filepath)
     {   /*
         When filename is specified, data is written to file.

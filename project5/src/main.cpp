@@ -210,6 +210,52 @@ void task_5e()
 
 }
 
+void task_5f()
+{
+    std::cout << "task_5f\n" << std::endl;
+    
+    std::string infilepath = "data_files/initial_parameters_solar_system_sun_at_rest.txt";
+    arma::mat all_planets_initial = fetch_initial_parameters_from_file(infilepath);
+
+    arma::vec sun_initial     = all_planets_initial.col(0);
+    arma::vec mercury_initial = all_planets_initial.col(1);
+    arma::vec venus_initial   = all_planets_initial.col(2);
+    arma::vec earth_initial   = all_planets_initial.col(3);
+    arma::vec mars_initial    = all_planets_initial.col(4);
+    arma::vec jupiter_initial = all_planets_initial.col(5);
+    arma::vec saturn_initial  = all_planets_initial.col(6);
+    arma::vec uranus_initial  = all_planets_initial.col(7);
+    arma::vec neptune_initial = all_planets_initial.col(8);
+    arma::vec pluto_initial   = all_planets_initial.col(9);
+
+
+
+    // sun_initial.subvec(0, 2) *= AU;
+    // sun_initial.subvec(3, 5) *= AU/yr;
+
+    // earth_initial.subvec(0, 2) *= AU;
+    // earth_initial.subvec(3, 5) *= AU/yr;
+
+    // jupiter_initial.subvec(0, 2) *= AU;
+    // jupiter_initial.subvec(3, 5) *= AU/yr;
+    
+    const int func_id = 4;    // Acceleration with the Sun fixed at the center.
+    const double dt = 1e-3;
+    const double simulation_time_in_years = 40;
+    const int num_steps = simulation_time_in_years/dt;
+    // int num_steps = 10;
+    
+    std::string method = "Velocity Verlet";
+    std::string filepath = "data_files/sun_earth_jupiter.txt";
+
+    SolarSystem q;
+    q.add_celestial_body(sun_mass, sun_initial);
+    // q.add_celestial_body(mercury_mass, mercury_initial);
+    q.add_celestial_body(earth_mass, earth_initial);
+    // q.add_celestial_body(jupiter_mass, jupiter_initial);
+    q.solve_system(num_steps, dt, func_id, method, filepath);
+}
+
 void task_5g()
 {   
     double dt = 1e-6;
@@ -225,6 +271,7 @@ void task_5g()
     q.add_celestial_body(mercury_mass, mercury_initial);
     q.solve_system_mercury(num_steps, dt, filepath);
 }
+
 
 void all_planets()
 {   
@@ -271,9 +318,11 @@ int main()
     // task_5c_algorithm_timing();
     // task_5d();
     // task_5d_beta();
-    task_5e();
+    // task_5e();
+    task_5f();
     // task_5g();
     // all_planets();
+
 
     return 0;
 }
