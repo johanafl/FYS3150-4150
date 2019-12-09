@@ -17,7 +17,7 @@ protected:
 
     arma::mat vel, pos;
 
-    virtual void advance(T object, int k)
+    virtual void advance(T object, int k, int func_id)
     {   /*
         Dummy method. This method will be overwritten by the child
         classes.
@@ -29,6 +29,9 @@ protected:
 
         k : int
             Current step in the integration.
+
+        func_id : int
+            Choose which function to integrate.
         */
         
         std::cout << "NotImplementedError" << std::endl;
@@ -85,6 +88,7 @@ public:
     void solve(T object, double dt_input)
     {   /*
         Solve the ODE by looping the appropriate advance method.
+        Defaults to func_id = 2.
 
         Parameters
         ----------
@@ -94,14 +98,35 @@ public:
         dt_input : double
             Time step length.
         */
-        
         dt = dt_input;
-        
+        int func_id = 2;
         for (int k = 0; k < num_steps; k++)
         {
-            advance(object, k);
+            advance(object, k, func_id);
         }
+    }
 
+    void solve(T object, double dt_input, int func_id)
+    {   /*
+        Solve the ODE by looping the appropriate advance method.
+
+        Parameters
+        ----------
+        object : object of class T
+            Object containing the RHS of the ODE.
+
+        dt_input : double
+            Time step length.
+
+        func_id : int
+            Choose which function to integrate.
+        */
+       
+        dt = dt_input;
+        for (int k = 0; k < num_steps; k++)
+        {
+            advance(object, k, func_id);
+        }
     }
     
 
@@ -151,12 +176,6 @@ public:
 
     arma::mat get_pos() {return pos;}
     arma::mat get_vel() {return vel;}
-    // int get_step_and_num_objects(int &steps) 
-    // {
-    //     steps = num_steps;
-    //     return num_stellar_objects;
-    // }
-    // void get_dt(double &dt_in) {dt_in = dt;}
 
     void solve_mercury(T object, double dt_input)
     {   /*
@@ -187,7 +206,7 @@ public:
     using Solver<T>::Solver;   // For inheriting the constructor of Solver.
 
 private:
-    void advance(T object, int k)
+    void advance(T object, int k, int func_id)
     {   /*
         One step with Forward Euler.
 
@@ -198,9 +217,11 @@ private:
 
         k : int
             Current step in the integration.
-        */
 
-        arma::vec a = object.acceleration(this->pos.col(k), 0);
+        func_id : int
+            Choose which function to integrate.
+        */
+        arma::vec a = object.acceleration(this->pos.col(k), 0, func_id);
 
         this->pos.col(k+1) = this->pos.col(k) + this->dt*this->vel.col(k);
         this->vel.col(k+1) = this->vel.col(k) + this->dt*a;    
@@ -215,7 +236,7 @@ public:
     using Solver<T>::Solver;   // For inheriting the constructor of Solver.
 
 private:
-    void advance(T object, int k)
+    void advance(T object, int k, int func_id)
     {   /*
         One step with Velocity Verlet.
 
@@ -226,12 +247,15 @@ private:
 
         k : int
             Current step in the integration.
+
+        func_id : int
+            Choose which function to integrate.
         */
         
-        arma::vec a1 = object.acceleration(this->pos.col(k), 0);
+        arma::vec a1 = object.acceleration(this->pos.col(k), 0, func_id);
         this->pos.col(k+1) = this->pos.col(k) + this->dt*this->vel.col(k) + this->dt*this->dt/2*a1;
 
-        arma::vec a2 = object.acceleration(this->pos.col(k+1), 0);
+        arma::vec a2 = object.acceleration(this->pos.col(k+1), 0, func_id);
         this->vel.col(k+1) = this->vel.col(k) + this->dt/2*(a2 + a1);
 
     }
