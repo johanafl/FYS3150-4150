@@ -35,6 +35,7 @@ protected:
     // For acceleration_3.
     double rpow;
     double beta = 0;
+    bool beta_set = false;
 
     void resize()
     {   /*
@@ -312,8 +313,9 @@ public:
     SolarSystem() {}
 
     void set_beta(double beta_input)
-    {
+    {   
         beta = beta_input;
+        beta_set = true;
     }
 
     void add_celestial_body(double mass_input, arma::vec U0)
@@ -366,7 +368,7 @@ public:
         solve_system(num_steps, dt, func_id, method, filepath, false);
     }
 
-    void solve_system(int num_steps, double dt, int func_id, std::string method,
+    int solve_system(int num_steps, double dt, int func_id, std::string method,
         std::string filepath, bool write)
     {   /*
         Solve the solar system.
@@ -392,6 +394,12 @@ public:
         func_id : int
             Choose which function to integrate.
         */
+
+        if ((func_id == 3) and (not beta_set))
+        {
+            std::cout << "Beta not set! Please use set_beta(value). Exiting." << std::endl;
+            return 1;
+        }
 
         if (method == "Velocity Verlet")
         {
@@ -443,6 +451,8 @@ public:
                 std::cout << "write time: " << write_time.count() << " s" << std::endl;
             }
         }
+
+        return 0;
     }
 
     void sol_mercury(int num_steps, double dt, std::string filepath)
@@ -487,20 +497,17 @@ public:
             Choose which of the accelerations to use.
         */
         
-        if (func_id == 1)
+        switch (func_id)
         {
-            return acceleration_1(u);
+            case 1 :
+                return acceleration_1(u);
+            case 2 :
+                return acceleration_2(u);
+            case 3 :
+                return acceleration_3(u);
         }
 
-        if (func_id == 2)
-        {
-            return acceleration_2(u);
-        }
-
-        if (func_id == 3)
-        {
-            return acceleration_3(u);
-        }
+        return acceleration_2(u); // Mostly to make the compiler shut up.
     }
 
     arma::vec acc_mercury(arma::vec u_pos, arma::vec u_vel, double t)
