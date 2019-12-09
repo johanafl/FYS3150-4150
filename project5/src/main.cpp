@@ -1,5 +1,16 @@
 #include "solar_system.h"
-const double earth_mass = 5.972e24;
+
+// All masses in kg.
+const double sun_mass     = 1.9891e30;
+const double mercury_mass = 3.285e23;
+const double venus_mass   = 4.867e24;
+const double earth_mass   = 5.972e24;
+const double mars_mass    = 6.39e23;
+const double jupiter_mass = 1.898e27;
+const double saturn_mass  = 5.683e26;
+const double uranus_mass  = 8.681e25;
+const double neptune_mass = 1.024e26;
+const double pluto_mass   = 1.309e22;
 
 arma::mat fetch_initial_parameters_from_file(std::string filepath)
 {   /*
@@ -167,22 +178,36 @@ void task_5e()
     Lets see how much Jupiter affects Earths orbit. Keeping the Sun
     fixed as the CM, using acceleration_2.
     */
-    int func_id = 2;
+
+    std::cout << "task_5e\n" << std::endl;
+    
+    std::string infilepath = "data_files/initial_parameters_solar_system_sun_at_rest.txt";
+    arma::mat all_planets_initial = fetch_initial_parameters_from_file(infilepath);
+
+    arma::vec earth_initial   = all_planets_initial.col(3);
+    arma::vec jupiter_initial = all_planets_initial.col(5);
+    
+    int func_id = 2;    // Acceleration with the Sun fixed at the center.
     double dt = 1e-3;
     double simulation_time_in_years = 40;
     int num_steps = simulation_time_in_years/dt;
     // int num_steps = 10;
     
-    arma::vec earth_initial = {1, 0, 0, 0, 2*pi, 0};
     std::string method = "Velocity Verlet";
     std::string filepath;
-    std::string tmp;
 
-    SolarSystem q;
-    q.add_celestial_body(earth_mass, earth_initial);
-    
-    filepath = "data_files/jupiter_mass=" + std::to_string(func_id) + ".txt";
-    q.solve_system(num_steps, dt, func_id, method);//, filepath);
+    double jupiter_factor[4] = {1, 10, 100, 1000};
+
+    for (int i = 0; i < 3; i++)
+    {
+        SolarSystem q;
+        q.add_celestial_body(earth_mass, earth_initial);
+        q.add_celestial_body(jupiter_mass*jupiter_factor[i], jupiter_initial);
+        
+        filepath = "data_files/jupiter_mass=" + std::to_string(jupiter_mass*jupiter_factor[i]) + ".txt";
+        q.solve_system(num_steps, dt, func_id, method, filepath);
+    }
+
 }
 
 void task_5g()
@@ -217,18 +242,7 @@ void all_planets()
     arma::vec uranus_initial  = all_planets_initial.col(7);
     arma::vec neptune_initial = all_planets_initial.col(8);
     arma::vec pluto_initial   = all_planets_initial.col(9);
-    
-    // All masses in kg.
-    const double sun_mass     = 1.9891e30;
-    const double mercury_mass = 3.285e23;
-    const double venus_mass   = 4.867e24;
-    const double earth_mass   = 5.972e24;
-    const double mars_mass    = 6.39e23;
-    const double jupiter_mass = 1.898e27;
-    const double saturn_mass  = 5.683e26;
-    const double uranus_mass  = 8.681e25;
-    const double neptune_mass = 1.024e26;
-    const double pluto_mass   = 1.309e22;
+
     
     SolarSystem q;
     // q.add_celestial_body(sun_mass, sun_initial);
@@ -253,11 +267,11 @@ void all_planets()
 
 int main()
 {   
-    task_5c();
+    // task_5c();
     // task_5c_algorithm_timing();
     // task_5d();
     // task_5d_beta();
-    // task_5e();
+    task_5e();
     // task_5g();
     // all_planets();
 

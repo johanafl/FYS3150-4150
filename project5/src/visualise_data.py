@@ -283,6 +283,51 @@ def task_5d_beta():
     plt.show()
 
 
+def task_5e():
+    fig1, ax1 = plt.subplots(nrows=2, ncols=2, figsize=(11, 9))
+    fig1.text(x=0.02, y=0.4, s="Position, [AU]", fontsize=20, rotation="vertical")
+    fig1.text(x=0.42, y=0.03, s="Position, [AU]", fontsize=20)
+    fig2, ax2 = plt.subplots(nrows=2, ncols=2, figsize=(11, 9))
+    fig2.text(x=0.02, y=0.4, s="Distance from the Sun, [AU]", fontsize=20, rotation="vertical")
+    fig2.text(x=0.42, y=0.03, s="Number of time steps", fontsize=20)
+    ax1 = ax1.reshape(-1)
+    ax2 = ax2.reshape(-1)
+
+    filenames = []
+    masses = []
+    
+    directory = "data_files/"
+    
+    for data_file in os.listdir(directory):
+        # Loops over all files in directory.
+        filename = os.fsdecode(data_file)
+        
+        if filename.startswith("jupiter_mass"):
+            filenames.append(filename)
+            masses.append(float(filename[13:-4]))
+
+    filenames = [x for _, x in sorted(zip(masses, filenames))]
+    
+    for i in range(4):
+        data = np.loadtxt(f"data_files/{filenames[i]}", unpack=True)
+        ax1[i].plot(data[1], data[2], label="Earth")
+        ax1[i].plot(data[7], data[8], label="Jupiter")
+        ax1[i].tick_params(labelsize=20)
+        ax1[i].set_title(r"$M_{Jupiter}$ = " + f"{float(filenames[i][13:-4]):.3e}", fontsize=20)
+        ax1[i].grid()
+        ax1[i].axis("equal")
+
+        earth_dist = np.linalg.norm(data[1:4].transpose(), axis=1)
+        ax2[i].plot(earth_dist, color="black")
+        ax2[i].tick_params(labelsize=20)
+        ax2[i].set_title(r"$M_{Jupiter}$ = " + f"{float(filenames[i][13:-4]):.3e}", fontsize=20)
+        ax2[i].grid()
+    
+
+
+    plt.show()
+
+
 def all_planets():
     data = np.loadtxt("data_files/all_planets.txt", unpack=True)
     # data = np.load("data_files/all_planets.npy")
@@ -297,10 +342,11 @@ def all_planets():
     plt.show()
 
 if __name__ == "__main__":
-    # all_planets()
-    task_5c()
+    # task_5c()
     # task_5d_escape_velocity()
     # task_5d_beta()
+    task_5e()
+    # all_planets()
 
 
     
