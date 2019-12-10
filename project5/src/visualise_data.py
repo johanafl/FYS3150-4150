@@ -378,7 +378,7 @@ def task_5f_all_planets():
     planets = ["Sun", "Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn",
         "Uranus", "Neptune", "Pluto"]
     for i in range(10):
-        ax.plot(data[1 + i*6, ::10], data[2 + i*6, ::10], label=planets[i])
+        ax.plot(data[1 + i*6, ::10], data[2 + i*6, ::10], label=planets[i], linewidth=0.8)
 
     
     ax.set_xlabel("Position, [AU]", fontsize=20)
@@ -416,8 +416,8 @@ if __name__ == "__main__":
     # task_5c()
     # task_5d_escape_velocity()
     # task_5d_beta()
-    task_5e()
+    # task_5e()
     # task_5f()
-    # task_5f_all_planets()
+    task_5f_all_planets()
     pass
 
