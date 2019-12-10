@@ -17,7 +17,7 @@ protected:
 
     arma::mat vel, pos;
 
-    virtual void advance(T object, int k, int func_id)
+    virtual void advance(T &object, int k, int func_id)
     {   /*
         Dummy method. This method will be overwritten by the child
         classes.
@@ -37,7 +37,7 @@ protected:
         std::cout << "NotImplementedError" << std::endl;
     }
 
-    virtual void advance_mercury(T object, int k)
+    virtual void advance_mercury(T &object, int k)
     {   /*
         Dummy method. This method will be overwritten by the child
         classes.
@@ -86,7 +86,7 @@ public:
     }
 
 
-    void solve(T object, double dt_input, int func_id)
+    void solve(T &object, double dt_input, int func_id)
     {   /*
         Solve the ODE by looping the appropriate advance method.
 
@@ -157,7 +157,7 @@ public:
     arma::mat get_pos() {return pos;}
     arma::mat get_vel() {return vel;}
 
-    void solve_mercury(T object, double dt_input)
+    void solve_mercury(T &object, double dt_input)
     {   /*
         Solve the ODE by looping the appropriate advance method.
 
@@ -186,7 +186,7 @@ public:
     using Solver<T>::Solver;   // For inheriting the constructor of Solver.
 
 private:
-    void advance(T object, int k, int func_id)
+    void advance(T &object, int k, int func_id)
     {   /*
         One step with Forward Euler.
 
@@ -216,7 +216,7 @@ public:
     using Solver<T>::Solver;   // For inheriting the constructor of Solver.
 
 private:
-    void advance(T object, int k, int func_id)
+    void advance(T &object, int k, int func_id)
     {   /*
         One step with Velocity Verlet.
 
@@ -240,7 +240,7 @@ private:
 
     }
     
-    void advance_mercury(T object, int k)
+    void advance_mercury(T &object, int k)
     {   /*
         One step with Velocity Verlet.
 
