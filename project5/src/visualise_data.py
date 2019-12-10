@@ -366,9 +366,9 @@ def all_planets():
 if __name__ == "__main__":
     # task_5c()
     # task_5d_escape_velocity()
-    # task_5d_beta()
+    task_5d_beta()
     # task_5e()
-    task_5f()
+    # task_5f()
     # all_planets()
 
 
