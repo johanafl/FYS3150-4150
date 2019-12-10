@@ -198,9 +198,9 @@ protected:
                 r = std::sqrt(x*x + y*y + z*z);
 
                 // Acceleration in x-, y- and z-direction
-                acc(3*i + 0) -= GM*mass[j]*x/(r*r*r);
-                acc(3*i + 1) -= GM*mass[j]*y/(r*r*r);
-                acc(3*i + 2) -= GM*mass[j]*z/(r*r*r);
+                acc(3*i + 0) += GM*mass[j]*x/(r*r*r);
+                acc(3*i + 1) += GM*mass[j]*y/(r*r*r);
+                acc(3*i + 2) += GM*mass[j]*z/(r*r*r);
             }
         }
 
@@ -246,9 +246,9 @@ protected:
                     rpow = std::pow(r, beta);
 
                     // Acceleration in x-, y- and z-direction
-                    acc(3*i + 0) -= GM*mass[j]*x/(r*rpow);
-                    acc(3*i + 1) -= GM*mass[j]*y/(r*rpow);
-                    acc(3*i + 2) -= GM*mass[j]*z/(r*rpow);
+                    acc(3*i + 0) += GM*mass[j]*x/(r*rpow);
+                    acc(3*i + 1) += GM*mass[j]*y/(r*rpow);
+                    acc(3*i + 2) += GM*mass[j]*z/(r*rpow);
                 }
             }
         }
@@ -281,6 +281,7 @@ protected:
         */
         arma::vec acc(3*num_planets);
         acc.zeros();
+        
 
         // Acceleration due to gravitational pull from the j-th object.
         for (int i = 0; i < num_planets; i++)
@@ -295,9 +296,9 @@ protected:
                 r = std::sqrt(x*x + y*y + z*z);
 
                 // Acceleration in x-, y- and z-direction.
-                acc(3*i + 0) -= GM*mass[j]*x/(r*r*r);
-                acc(3*i + 1) -= GM*mass[j]*y/(r*r*r);
-                acc(3*i + 2) -= GM*mass[j]*z/(r*r*r);
+                acc(3*i + 0) += GM*mass[j]*x/(r*r*r);
+                acc(3*i + 1) += GM*mass[j]*y/(r*r*r);
+                acc(3*i + 2) += GM*mass[j]*z/(r*r*r);
             }
         }
 
