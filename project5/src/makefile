@@ -9,7 +9,7 @@ tests_solver.out : solver.h test_solver.cpp
 	g++ -o test_solver.out test_solver.cpp -std=c++17
 
 main.out : solver.h solar_system.h main.cpp
-	g++ -o main.out main.cpp -std=c++17 -larmadillo
+	g++ -o main.out main.cpp -std=c++17 -larmadillo -O3
 	
 clean :
 	rm *.out
