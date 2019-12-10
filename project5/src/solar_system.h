@@ -559,6 +559,13 @@ public:
 
         return acc;
     }
+
+    ~SolarSystem()
+    {
+        delete[] pos;
+        delete[] vel;
+        delete[] mass;
+    }
 };
 
 #endif
