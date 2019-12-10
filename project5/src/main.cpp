@@ -70,11 +70,13 @@ arma::mat fetch_initial_parameters_from_file(std::string filepath)
 
 
 void task_5c()
-{   
+{   /*
+    Eath with Sun fixed at the origin.
+    */
     arma::vec earth_initial = {1, 0, 0, 0, 2*pi, 0};
 
     double dt[4] = {1e-3, 1e-2};
-    int func_id = 3;
+    int func_id = 2;
 
     for (int i = 0; i < 2; i++)
     {   
@@ -87,7 +89,6 @@ void task_5c()
         
         SolarSystem q;
         q.add_celestial_body(earth_mass, earth_initial);
-        q.set_beta(2);
         
         q.solve_system(num_steps, dt[i], func_id, method_fe, filepath_fe);
         q.solve_system(num_steps, dt[i], func_id, method_vv, filepath_vv);
@@ -119,7 +120,11 @@ void task_5c_algorithm_timing()
 }
 
 void task_5d()
-{   
+{   /*
+    Earth with Sun fixed at the origin. Earth with various initial
+    velocities.
+    */
+
     int func_id = 2;
     double dt = 1e-4;
     int num_steps = 1;
@@ -144,24 +149,24 @@ void task_5d()
 }
 
 void task_5d_beta()
-{   
+{   /*
+    Earth with Sun fixed at the origin. Varying beta.
+    */
     std::cout << "task_5d_beta" << std::endl;
 
     int func_id = 3;
     double dt = 1e-3;
     double simulation_time_in_years = 40;
     int num_steps = simulation_time_in_years/dt;
-    // int num_steps = 10;
     
-    arma::vec earth_initial = {1, 0, 0, 0, 2*pi, 0};    // In the report currently.
+    arma::vec earth_initial = {1, 0, 0, 0, 6.7, 0};
     std::string method = "Velocity Verlet";
     std::string filepath;
 
     SolarSystem q;
     q.add_celestial_body(earth_mass, earth_initial);
 
-    // double beta[4] = {2, 2.33333333, 2.66666667, 3};
-    double beta[4] = {2, 2.8, 2.99, 3};  // In the report currently.
+    double beta[4] = {2, 2.33333333, 2.66666667, 3};
     
     for (int i = 0; i < 4; i++)
     {   
@@ -198,7 +203,7 @@ void task_5e()
 
     double jupiter_factor[4] = {1, 10, 100, 1000};
 
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 4; i++)
     {
         SolarSystem q;
         q.add_celestial_body(earth_mass, earth_initial);
@@ -317,9 +322,9 @@ int main()
     // task_5c();
     // task_5c_algorithm_timing();
     // task_5d();
-    // task_5d_beta();
+    task_5d_beta();
     // task_5e();
-    task_5f();
+    // task_5f();
     // task_5g();
     // all_planets();
 
