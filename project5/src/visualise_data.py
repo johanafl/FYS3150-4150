@@ -1,7 +1,8 @@
+import time
 import os
+import os.path
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FormatStrFormatter
 
 
 def total_energy_and_angular_momentum(data):
@@ -303,14 +304,24 @@ def task_5e():
         # Loops over all files in directory.
         filename = os.fsdecode(data_file)
         
-        if filename.startswith("jupiter_mass"):
+        if filename.startswith("jupiter_mass") and filename.endswith(".txt"):
             filenames.append(filename)
             masses.append(float(filename[13:-4]))
 
     filenames = [x for _, x in sorted(zip(masses, filenames))]
+
+
     
     for i in range(4):
-        data = np.loadtxt(f"data_files/{filenames[i]}", unpack=True)
+        try:
+            data = np.load("data_files/" + filenames[i][:-4] + ".npy")
+            print("data_files/" + filenames[i][:-4] + ".npy")
+
+        except FileNotFoundError:
+            convert_to_npy("data_files/" + filenames[i][:-4])
+            data = np.load("data_files/" + filenames[i][:-4] + ".npy")
+
+
         ax1[i].plot(data[1], data[2], label="Earth")
         ax1[i].plot(data[7], data[8], label="Jupiter")
         ax1[i].tick_params(labelsize=20)
@@ -324,7 +335,7 @@ def task_5e():
         ax2[i].set_title(r"$M_{Jupiter}$ = " + f"{float(filenames[i][13:-4]):.3e}", fontsize=20)
         ax2[i].grid()
     
-
+    # ax1[0].legend(fontsize=20, loc="upper left")
 
     plt.show()
 
@@ -332,58 +343,81 @@ def task_5e():
 def task_5f():
 
     data = np.loadtxt(f"data_files/sun_earth_jupiter.txt", unpack=True)
-
-    print(len(data[1]))
     
     fig, ax = plt.subplots(figsize=(10, 8))
     
-    ax.plot(data[1], data[2], label="Sun")
     ax.plot(data[7], data[8], label="Earth")
-    # ax.plot(data[13], data[14], label="Jupiter")
+    ax.plot(data[13], data[14], label="Jupiter")
+    ax.plot(data[1], data[2], label="Sun")
     ax.set_xlabel("Position, [AU]", fontsize=20)
     ax.set_ylabel("Position, [AU]", fontsize=20)
     ax.tick_params(labelsize=20)
     ax.grid()
     ax.axis("equal")
-    ax.legend()
+    ax.legend(fontsize=20)
     
     plt.show()
 
 
-def all_planets():
-    data = np.loadtxt("data_files/all_planets.txt", unpack=True)
-    # data = np.load("data_files/all_planets.npy")
+def task_5f_all_planets():
+    """
+    NB: REMEMBER TO DELETE THE .npy FILE IF THE .txt DATA FILE IS UPDATED.
+    ELSE YOU WILL JUST VIEW THE SAME DATA OVER AND OVER.
+    """
+    filename = "data_files/all_planets"
+    
+    try:
+        data = np.load(filename + ".npy")
 
-    planets = ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn",
+    except FileNotFoundError:
+        convert_to_npy(filename)
+        data = np.load(filename + ".npy")
+    
+    fig, ax = plt.subplots(figsize=(11, 9))
+
+    planets = ["Sun", "Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn",
         "Uranus", "Neptune", "Pluto"]
-    for i in range(9):
-        plt.plot(data[1 + i*6, ::10], data[2 + i*6, ::10], label=planets[i])
+    for i in range(10):
+        ax.plot(data[1 + i*6, ::10], data[2 + i*6, ::10], label=planets[i])
 
-    plt.legend(loc="best")
-    plt.axis("equal")
+    
+    ax.set_xlabel("Position, [AU]", fontsize=20)
+    ax.set_ylabel("Position, [AU]", fontsize=20)
+    ax.tick_params(labelsize=20)
+    ax.grid()
+    ax.axis("equal")
+    ax.legend(fontsize=15, loc="upper left")
     plt.show()
+
+
+def convert_to_npy(filename):
+    """
+    For converting .txt files to .npy.
+
+    Parameters
+    ----------
+    filename : str
+        Filepath and name without file extension. If .txt file extension
+        is present, it will be removed.
+    """
+
+    if filename[-4:] == ".txt":
+        filename = filename[:-4]    # Removing extension.
+
+    print(f"Converting {filename}.txt to Numpy binary...")
+    t1 = time.time()
+
+    data = np.loadtxt(filename + ".txt", unpack=True)
+    np.save(filename + ".npy", data)
+
+    print(f"Numpy binary saved to {filename}.npy in {time.time() - t1:.4f} seconds.")
 
 if __name__ == "__main__":
     # task_5c()
     # task_5d_escape_velocity()
-    task_5d_beta()
-    # task_5e()
+    # task_5d_beta()
+    task_5e()
     # task_5f()
-    # all_planets()
-
-
-    
-    # # plt.plot(data[1], data[2], label="mercury")
-    # # plt.plot(data[1], data[2], label="venus")
-    # # plt.plot(data[1], data[2], label="earth")
-    # # plt.plot(data[1], data[2], label="mars")
-    # # plt.plot(data[1], data[2], label="jupiter")
-    # # plt.plot(data[1], data[2], label="saturn")
-    # # plt.plot(data[1], data[2], label="uranus")
-    # # plt.plot(data[1], data[2], label="neptune")
-    # # plt.plot(data[1], data[2], label="pluto")
-
-    # # plt.plot(data[1], data[2], label="earth")
-    # # plt.plot(data[7], data[8], label="jupiter")
-    # # plt.plot(data[13], data[14], label="uranus")
+    # task_5f_all_planets()
+    pass
 
