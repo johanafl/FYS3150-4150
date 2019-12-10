@@ -40,6 +40,7 @@ def total_energy_and_angular_momentum(data):
     
     return K + V, L.transpose()
 
+
 def total_energy_earth_and_jupiter_5e(data):
     
     rvec_earth   = data[1:4]*AU # Sun to Earth.
@@ -65,6 +66,7 @@ def total_energy_earth_and_jupiter_5e(data):
 
     
     return K_earth + K_jupiter + V_earth + V_jupiter + V_earth_jupiter
+
 
 def task_5c():
     dts = ["0.001000", "0.010000"]
@@ -434,6 +436,23 @@ def task_5f_all_planets():
     plt.show()
 
 
+def task_5g():
+    data = np.load("data_files/task_5g.npy")
+
+    fig, ax = plt.subplots(figsize=(10, 8))
+    
+    ax.plot(data[1], data[2], label="Mercury")
+    ax.set_xlabel("Position, [AU]", fontsize=20)
+    ax.set_ylabel("Position, [AU]", fontsize=20)
+    ax.tick_params(labelsize=20)
+    ax.grid()
+    # ax.axis("equal")
+    # ax.legend(fontsize=20)
+    
+    plt.show()
+    
+
+
 def convert_to_npy(filename):
     """
     For converting .txt files to .npy.
@@ -456,12 +475,14 @@ def convert_to_npy(filename):
 
     print(f"Numpy binary saved to {filename}.npy in {time.time() - t1:.4f} seconds.")
 
+
 if __name__ == "__main__":
     # task_5c()
     # task_5d_escape_velocity()
     # task_5d_beta()
-    task_5e()
+    # task_5e()
     # task_5f()
     # task_5f_all_planets()
+    task_5g()
     pass
 
