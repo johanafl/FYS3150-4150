@@ -3,6 +3,22 @@ import os
 import os.path
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FormatStrFormatter
+
+# All masses in kg.
+solar_mass     = 1.9891e30
+mercury_mass = 3.285e23
+venus_mass   = 4.867e24
+earth_mass   = 5.972e24
+mars_mass    = 6.39e23
+jupiter_mass = 1.898e27
+saturn_mass  = 5.683e26
+uranus_mass  = 8.681e25
+neptune_mass = 1.024e26
+pluto_mass   = 1.309e22
+yr = 31556926   # Seconds in a year.
+AU = 149597871*1000 # Meters in one AU.
+G = 6.67e-11                # [m^3 kg^-1 s^-2]
 
 
 def total_energy_and_angular_momentum(data):
@@ -11,11 +27,6 @@ def total_energy_and_angular_momentum(data):
     for the system at every time step.
     """
 
-    yr = 31556926   # Seconds in a year.
-    AU = 149597871*1000 # Meters in one AU.
-    earth_mass = 5.972e24       # [kg]
-    solar_mass   = 1.9891e30    # [kg]
-    G = 6.67e-11                # [m^3 kg^-1 s^-2]
 
     rvec = data[1:4].transpose()*AU
     vvec = data[4:7].transpose()*AU/yr
@@ -29,6 +40,31 @@ def total_energy_and_angular_momentum(data):
     
     return K + V, L.transpose()
 
+def total_energy_earth_and_jupiter_5e(data):
+    
+    rvec_earth   = data[1:4]*AU # Sun to Earth.
+    rvec_jupiter = data[7:10]*AU # Sun to Jupiter.
+    rvec_earth_jupiter = np.abs(rvec_earth - rvec_jupiter)  # Earth to Jupiter.
+
+    vvec_earth = data[4:7]*AU/yr
+    vvec_jupiter = data[10:13]*AU/yr
+
+    r_earth = np.linalg.norm(rvec_earth, axis=0)
+    r_jupiter = np.linalg.norm(rvec_jupiter, axis=0)
+    r_earth_jupiter = np.linalg.norm(rvec_earth_jupiter, axis=0)
+
+    v_earth = np.linalg.norm(vvec_earth, axis=0)
+    v_jupiter = np.linalg.norm(vvec_jupiter, axis=0)
+    
+    K_earth = 1/2*earth_mass*v_earth**2
+    K_jupiter = 1/2*jupiter_mass*v_jupiter**2
+    
+    V_earth = -G*solar_mass*earth_mass/r_earth
+    V_jupiter = -G*solar_mass*jupiter_mass/r_jupiter
+    V_earth_jupiter = -G*earth_mass*jupiter_mass/r_earth_jupiter
+
+    
+    return K_earth + K_jupiter + V_earth + V_jupiter + V_earth_jupiter
 
 def task_5c():
     dts = ["0.001000", "0.010000"]
@@ -291,10 +327,14 @@ def task_5e():
     fig2, ax2 = plt.subplots(nrows=2, ncols=2, figsize=(11, 9))
     fig2.text(x=0.02, y=0.31, s="Distance from the Sun, [AU]", fontsize=20, rotation="vertical")
     fig2.text(x=0.46, y=0.03, s="Time, [yr]", fontsize=20)
+    fig3, ax3 = plt.subplots(nrows=2, ncols=2, figsize=(11, 9))
+    fig3.text(x=0.02, y=0.38, s=r"Total energy, $[E_0]$", fontsize=20, rotation="vertical")
+    fig3.text(x=0.46, y=0.03, s="Time, [yr]", fontsize=20)
     ax1 = ax1.reshape(-1)
     ax2 = ax2.reshape(-1)
+    ax3 = ax3.reshape(-1)
 
-    dt = 1e-3   # Time step length, used for scaling the x axis.
+    dt = 1e-5   # Time step length, used for scaling the x axis.
     filenames = []
     masses = []
     
@@ -315,7 +355,6 @@ def task_5e():
     for i in range(4):
         try:
             data = np.load("data_files/" + filenames[i][:-4] + ".npy")
-            print("data_files/" + filenames[i][:-4] + ".npy")
 
         except FileNotFoundError:
             convert_to_npy("data_files/" + filenames[i][:-4])
@@ -330,12 +369,17 @@ def task_5e():
         ax1[i].axis("equal")
 
         earth_dist = np.linalg.norm(data[1:4].transpose(), axis=1)
-        ax2[i].plot(np.arange(1, len(earth_dist)+1, 1)*dt, earth_dist ,color="black")
+        ax2[i].plot(np.arange(1, len(earth_dist)+1, 1)*dt, earth_dist, color="black")
         ax2[i].tick_params(labelsize=20)
         ax2[i].set_title(r"$M_{Jupiter}$ = " + f"{float(filenames[i][13:-4]):.3e}", fontsize=20)
         ax2[i].grid()
-    
-    # ax1[0].legend(fontsize=20, loc="upper left")
+
+        E = total_energy_earth_and_jupiter_5e(data)
+        ax3[i].plot(np.arange(1, len(E)+1, 1)*dt, E/E[0], color="black")
+        ax3[i].tick_params(labelsize=15)
+        ax3[i].set_title(r"$M_{Jupiter}$ = " + f"{float(filenames[i][13:-4]):.3e}", fontsize=20)
+        # ax3[i].yaxis.set_major_formatter(FormatStrFormatter('%.2e'))
+        ax3[i].grid()
 
     plt.show()
 
@@ -416,8 +460,8 @@ if __name__ == "__main__":
     # task_5c()
     # task_5d_escape_velocity()
     # task_5d_beta()
-    # task_5e()
+    task_5e()
     # task_5f()
-    task_5f_all_planets()
+    # task_5f_all_planets()
     pass
 

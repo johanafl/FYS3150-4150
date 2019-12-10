@@ -100,7 +100,7 @@ void task_5c()
 void task_5c_algorithm_timing()
 {   
     int func_id = 2;    // Choose which of the accelerations to use.
-    double dt = 1e-2;
+    double dt = 1e-3;
     double simulation_time_in_years = 100000;
     int num_steps = simulation_time_in_years/dt;
     arma::vec earth_initial = {1, 0, 0, 0, 2*pi, 0};
