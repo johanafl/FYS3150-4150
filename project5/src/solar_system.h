@@ -22,9 +22,12 @@ protected:
     int num_planets = 0;
     int array_size  = 3;
 
-    double* pos  = new double[array_size];
-    double* vel  = new double[array_size];
-    double* mass = new double[array_size/3];
+    arma::vec pos = arma::zeros<arma::vec>(array_size);
+    arma::vec vel = arma::zeros<arma::vec>(array_size);
+    arma::vec mass = arma::zeros<arma::vec>(array_size);
+    // double* pos  = new double[array_size];
+    // double* vel  = new double[array_size];
+    // double* mass = new double[array_size/3];
 
     double r, x, y, z;
 
@@ -35,7 +38,6 @@ protected:
     // For acceleration_3.
     double rpow;
     double beta = 0;
-    bool beta_set = false;
 
     void resize()
     {   /*
@@ -43,28 +45,38 @@ protected:
         objects increase.
         */
         array_size *= 2;
-        double* tmp_pos  = new double[array_size];
-        double* tmp_vel  = new double[array_size];
-        double* tmp_mass = new double[array_size/3];
+        pos.resize(15);
+        pos.resize(array_size);
+        vel.resize(array_size);
+        mass.resize(array_size/3);
+        // arma::vec tmp_pos(array_size);
+        // arma::vec tmp_vel(array_size);
+        // arma::vec tmp_mass(array_size);
+        // // double* tmp_pos  = new double[array_size];
+        // // double* tmp_vel  = new double[array_size];
+        // // double* tmp_mass = new double[array_size/3];
 
-        for (int i = 0; i < 3*num_planets; i++)
-        {   // Move position and velocity data to larger arrays.
-            tmp_pos[i] = pos[i];
-            tmp_vel[i] = vel[i];
-        }
+        // for (int i = 0; i < 3*num_planets; i++)
+        // {   // Move position and velocity data to larger arrays.
+        //     tmp_pos(i) = pos(i);
+        //     tmp_vel(i) = vel(i);
+        //     // tmp_pos[i] = pos[i];
+        //     // tmp_vel[i] = vel[i];
+        // }
 
-        for (int i = 0; i < num_planets; i++)
-        {   // Move mass to larger array.
-            tmp_mass[i] = mass[i];
-        }
+        // for (int i = 0; i < num_planets; i++)
+        // {   // Move mass to larger array.
+        //     tmp_mass(i) = mass(i);
+        //     // tmp_mass[i] = mass[i];
+        // }
 
-        delete[] pos;
-        delete[] vel;
-        delete[] mass;
+        // // delete[] pos;
+        // // delete[] vel;
+        // // delete[] mass;
 
-        pos  = tmp_pos;
-        vel  = tmp_vel;
-        mass = tmp_mass;
+        // pos  = tmp_pos;
+        // vel  = tmp_vel;
+        // mass = tmp_mass;
     }
 
     arma::vec get_U0()
@@ -83,12 +95,14 @@ protected:
 
         for (int i = 0; i < num_planets*3; i++)
         {   // Adding positions to initial condition vector.
-            U0(i) = pos[i];
+            U0(i) = pos(i);
+            // U0(i) = pos[i];
         }
         
         for (int i = 0; i < num_planets*3; i++)
         {   // Adding velocities to initial condition vector.
-            U0(i + num_planets*3) = vel[i];
+            U0(i + num_planets*3) = vel(i);
+            // U0(i + num_planets*3) = vel[i];
         }
         
         return U0;
@@ -189,30 +203,34 @@ protected:
         for (int i = 0; i < num_planets; i++)
         {
             for (int j = 0; j < num_planets; j++)
-            {   
-                if (i == j) continue;
-                
-                x = u(3*j + 0) - u(3*i + 0);
-                y = u(3*j + 1) - u(3*i + 1);
-                z = u(3*j + 2) - u(3*i + 2);
-                r = std::sqrt(x*x + y*y + z*z);
+            {
+                if (i != j)
+                {
+                    x = u(3*j + 0) - u(3*i + 0);
+                    y = u(3*j + 1) - u(3*i + 1);
+                    z = u(3*j + 2) - u(3*i + 2);
+                    r = std::sqrt(x*x + y*y + z*z);
+                    rpow = std::pow(r, beta);
 
-                // Acceleration in x-, y- and z-direction
-                acc(3*i + 0) += GM*mass[j]*x/(r*r*r);
-                acc(3*i + 1) += GM*mass[j]*y/(r*r*r);
-                acc(3*i + 2) += GM*mass[j]*z/(r*r*r);
+                    // Acceleration in x-, y- and z-direction
+                    acc(3*i + 0) -= GM*mass(j)*x/(r*r*r);
+                    acc(3*i + 1) -= GM*mass(j)*y/(r*r*r);
+                    acc(3*i + 2) -= GM*mass(j)*z/(r*r*r);
+                    // acc(3*i + 0) -= GM*mass[j]*x/(r*r*r);
+                    // acc(3*i + 1) -= GM*mass[j]*y/(r*r*r);
+                    // acc(3*i + 2) -= GM*mass[j]*z/(r*r*r);
+                }
             }
         }
-
         return acc;
     }
 
-    arma::vec acceleration_3(arma::vec u)
+    arma::vec acceleration_4(arma::vec u)
     {   /*
         The same ass acceleration_2, but with adjustable exponent of
         r (for task 5d).
         */
-        
+
         arma::vec acc(3*num_planets);
         acc.zeros();
         // Acceleration due to gravitational pull from the sun
@@ -227,9 +245,9 @@ protected:
             rpow = std::pow(r, beta);
             
             
-            acc(3*i + 0) -= GM*x/(r*rpow);
-            acc(3*i + 1) -= GM*y/(r*rpow);
-            acc(3*i + 2) -= GM*z/(r*rpow);
+            acc(3*i + 0) -= G*x/(r*rpow);
+            acc(3*i + 1) -= G*y/(r*rpow);
+            acc(3*i + 2) -= G*z/(r*rpow);
         }
 
         // Acceleration due to gravitational pull from the j-th object
@@ -246,9 +264,12 @@ protected:
                     rpow = std::pow(r, beta);
 
                     // Acceleration in x-, y- and z-direction
-                    acc(3*i + 0) += GM*mass[j]*x/(r*rpow);
-                    acc(3*i + 1) += GM*mass[j]*y/(r*rpow);
-                    acc(3*i + 2) += GM*mass[j]*z/(r*rpow);
+                    acc(3*i + 0) -= G*mass(j)*x/(r*rpow);
+                    acc(3*i + 1) -= G*mass(j)*y/(r*rpow);
+                    acc(3*i + 2) -= G*mass(j)*z/(r*rpow);
+                    // acc(3*i + 0) -= G*mass[j]*x/(r*rpow);
+                    // acc(3*i + 1) -= G*mass[j]*y/(r*rpow);
+                    // acc(3*i + 2) -= G*mass[j]*z/(r*rpow);
                 }
             }
         }
@@ -257,9 +278,9 @@ protected:
 
     arma::vec acceleration_4(arma::vec u)
     {   /*
-        Acceleration for N-body problem deduced from the gravitational
-        force, assuming that all objects are allowed to move and the
-        center of mass is at rest for all time t.
+        Acceleration for N-body problem deduced from the gravitational force, 
+        assuming that all objects are allowed to move and the center of mass is
+        at rest for all time t.
 
         Parameters
         ----------
@@ -296,9 +317,12 @@ protected:
                 r = std::sqrt(x*x + y*y + z*z);
 
                 // Acceleration in x-, y- and z-direction.
-                acc(3*i + 0) += GM*mass[j]*x/(r*r*r);
-                acc(3*i + 1) += GM*mass[j]*y/(r*r*r);
-                acc(3*i + 2) += GM*mass[j]*z/(r*r*r);
+                acc(3*i + 0) -= GM*mass(j)*x/(r*r*r);
+                acc(3*i + 1) -= GM*mass(j)*y/(r*r*r);
+                acc(3*i + 2) -= GM*mass(j)*z/(r*r*r);
+                // acc(3*i + 0) -= GM*mass[j]*x/(r*r*r);
+                // acc(3*i + 1) -= GM*mass[j]*y/(r*r*r);
+                // acc(3*i + 2) -= GM*mass[j]*z/(r*r*r);
             }
         }
 
@@ -307,6 +331,17 @@ protected:
 
 public:
     SolarSystem() {}
+    // ~SolarSystem() 
+    // {
+    //     delete[] pos;
+    //     delete[] vel;
+    //     delete[] mass;
+    // }
+
+    void set_beta(double beta_input)
+    {
+        beta = beta_input;
+    }
 
     void set_beta(double beta_input)
     {   
@@ -333,38 +368,45 @@ public:
             resize();
         }
 
-        pos[3*num_planets + 0] = U0(0);
-        pos[3*num_planets + 1] = U0(1);
-        pos[3*num_planets + 2] = U0(2);
+        pos(3*num_planets + 0) = U0(0);
+        pos(3*num_planets + 1) = U0(1);
+        pos(3*num_planets + 2) = U0(2);
+        // pos[3*num_planets + 0] = U0(0);
+        // pos[3*num_planets + 1] = U0(1);
+        // pos[3*num_planets + 2] = U0(2);
 
-        vel[3*num_planets + 0] = U0(3);
-        vel[3*num_planets + 1] = U0(4);
-        vel[3*num_planets + 2] = U0(5);
+        vel(3*num_planets + 0) = U0(3);
+        vel(3*num_planets + 1) = U0(4);
+        vel(3*num_planets + 2) = U0(5);
+        // vel[3*num_planets + 0] = U0(3);
+        // vel[3*num_planets + 1] = U0(4);
+        // vel[3*num_planets + 2] = U0(5);
 
-        mass[num_planets] = mass_input/solar_mass;
+        mass(num_planets) = mass_input/solar_mass;
+        // mass[num_planets] = mass_input/solar_mass;
 
         num_planets++;
     }
 
-    void solve_system(int num_steps,double dt, int func_id, std::string method, 
+    void solve_system(int num_steps, double dt, std::string method, 
         std::string filepath)
     {   /*
         When filename is specified, data is written to file.
         */
 
-        solve_system(num_steps, dt, func_id, method, filepath, true);
+        solve_system(num_steps, dt, method, filepath, true);
     }
 
-    void solve_system(int num_steps, double dt, int func_id, std::string method)
+    void solve_system(int num_steps, double dt, std::string method)
     {   /*
         When no filename is specified, no data is written to file.
         */
 
         std::string filepath = "unused";
-        solve_system(num_steps, dt, func_id, method, filepath, false);
+        solve_system(num_steps, dt, method, filepath, false);
     }
 
-    int solve_system(int num_steps, double dt, int func_id, std::string method,
+    void solve_system(int num_steps, double dt, std::string method,
         std::string filepath, bool write)
     {   /*
         Solve the solar system.
@@ -386,25 +428,7 @@ public:
 
         write : bool
             For toggling write to file on/off.
-
-        func_id : int
-            Choose which function to integrate.
         */
-
-        if ((func_id == 3) and (not beta_set))
-        {
-            std::cout << "Beta not set! Please use set_beta(value). Exiting." << std::endl;
-            return 1;
-        }
-
-        if ((func_id != 3) and (beta_set))
-        {
-            std::cout << "Beta is set to: " << beta << ", but the acceleration";
-            std::cout << " dependent on beta is not selected. Please use func_id = 3. Exiting.";
-            std::cout << std::endl;
-
-            return 1;
-        }
 
         if (method == "Velocity Verlet")
         {
@@ -460,7 +484,7 @@ public:
         return 0;
     }
 
-    void solve_system_mercury(int num_steps, double dt, std::string filepath)
+    void sol_mercury(int num_steps, double dt, std::string filepath)
     {   /*
         Solve the solar system.
 
@@ -492,7 +516,7 @@ public:
         solved.write_to_file(filepath);   
     }
 
-    arma::vec acceleration(arma::vec u, double t, int func_id)
+    arma::vec acceleration(arma::vec u, double t)
     {   /*
         The current acceleration of the system.
 
@@ -501,22 +525,10 @@ public:
         func_id : int
             Choose which of the accelerations to use.
         */
-        
-        switch (func_id)
-        {
-            case 1 :
-                return acceleration_1(u);   // Two body.
-            case 2 :
-                return acceleration_2(u);   // N body, Sun at center.
-            case 3 :
-                return acceleration_3(u);   // N body, Adjustable beta.
-            case 4 :
-                return acceleration_4(u);   // N body, CM at center.
-        }
-        return acceleration_2(u); // Mostly to make the compiler shut up.
+        return acceleration_3(u);
     }
 
-    arma::vec acceleration_mercury(arma::vec u_pos, arma::vec u_vel, double t)
+    arma::vec acc_mercury(arma::vec u_pos, arma::vec u_vel, double t)
     {   /*
         Acceleration for two-body problem. Used to calculate perihelion
         of mercury i think.
@@ -558,13 +570,6 @@ public:
         acc(2) = acc1*z;
 
         return acc;
-    }
-
-    ~SolarSystem()
-    {
-        delete[] pos;
-        delete[] vel;
-        delete[] mass;
     }
 };
 
