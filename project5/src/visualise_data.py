@@ -451,6 +451,23 @@ def task_5f_all_planets():
     plt.show()
 
 
+def task_5g():
+    data = np.load("data_files/task_5g.npy")
+
+    fig, ax = plt.subplots(figsize=(10, 8))
+    
+    ax.plot(data[1], data[2], label="Mercury")
+    ax.set_xlabel("Position, [AU]", fontsize=20)
+    ax.set_ylabel("Position, [AU]", fontsize=20)
+    ax.tick_params(labelsize=20)
+    ax.grid()
+    # ax.axis("equal")
+    # ax.legend(fontsize=20)
+    
+    plt.show()
+    
+
+
 def convert_to_npy(filename):
     """
     For converting .txt files to .npy.
@@ -479,7 +496,8 @@ if __name__ == "__main__":
     # task_5d_escape_velocity()
     # task_5d_beta()
     # task_5e()
-    task_5f()
+    # task_5f()
     # task_5f_all_planets()
+    task_5g()
     pass
 
