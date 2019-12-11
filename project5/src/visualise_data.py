@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 
 # All masses in kg.
-solar_mass     = 1.9891e30
+solar_mass   = 1.9891e30
 mercury_mass = 3.285e23
 venus_mass   = 4.867e24
 earth_mass   = 5.972e24
@@ -16,9 +16,9 @@ saturn_mass  = 5.683e26
 uranus_mass  = 8.681e25
 neptune_mass = 1.024e26
 pluto_mass   = 1.309e22
-yr = 31556926   # Seconds in a year.
+yr = 31556926       # Seconds in a year.
 AU = 149597871*1000 # Meters in one AU.
-G = 6.67e-11                # [m^3 kg^-1 s^-2]
+G = 6.67e-11        # [m^3 kg^-1 s^-2]
 
 
 def total_energy_and_angular_momentum(data):
@@ -39,6 +39,7 @@ def total_energy_and_angular_momentum(data):
     L = np.cross(rvec, vvec)*earth_mass
     
     return K + V, L.transpose()
+
 
 def total_energy_earth_and_jupiter_5e(data):
     
@@ -65,6 +66,7 @@ def total_energy_earth_and_jupiter_5e(data):
 
     
     return K_earth + K_jupiter + V_earth + V_jupiter + V_earth_jupiter
+
 
 def task_5c():
     dts = ["0.001000", "0.010000"]
@@ -291,18 +293,25 @@ def task_5d_beta():
 
     filenames = []
     
-    directory = "data_files/"
-    
-    for data_file in os.listdir(directory):
-        # Loops over all files in directory.
+    for data_file in os.listdir("data_files/"):
+        # Loops over all files in "data_files/".
         filename = os.fsdecode(data_file)
         
-        if filename.startswith("varying_beta"):
+        if filename.startswith("varying_beta") and filename.endswith(".txt"):
             filenames.append(filename)
 
     filenames = sorted(filenames)
+    
     for i in range(4):
-        data = np.loadtxt(f"data_files/{filenames[i]}", unpack=True)
+
+        try:
+            data = np.load("data_files/" + filenames[i][:-4] + ".npy")
+
+        except FileNotFoundError:
+            # Converts .txt to .npy.
+            convert_to_npy("data_files/" + filenames[i][:-4])
+            data = np.load("data_files/" + filenames[i][:-4] + ".npy")
+
         ax[i].plot(data[1], data[2], color="black")
         ax[i].tick_params(labelsize=20)
         ax[i].set_title(r"$\beta$ = " + f"{float(filenames[i][13:-4])}", fontsize=20)
@@ -386,7 +395,15 @@ def task_5e():
 
 def task_5f():
 
-    data = np.loadtxt(f"data_files/sun_earth_jupiter.txt", unpack=True)
+    # data = np.loadtxt(f"data_files/sun_earth_jupiter.txt", unpack=True)
+    filepath = "data_files/sun_earth_jupiter"
+    try:
+        data = np.load(filepath + ".npy")
+
+    except FileNotFoundError:
+        # Converts .txt to .npy.
+        convert_to_npy(filepath)
+        data = np.load(filepath + ".npy")
     
     fig, ax = plt.subplots(figsize=(10, 8))
     
@@ -398,7 +415,7 @@ def task_5f():
     ax.tick_params(labelsize=20)
     ax.grid()
     ax.axis("equal")
-    ax.legend(fontsize=20)
+    ax.legend(fontsize=20, loc="upper left")
     
     plt.show()
 
@@ -456,12 +473,13 @@ def convert_to_npy(filename):
 
     print(f"Numpy binary saved to {filename}.npy in {time.time() - t1:.4f} seconds.")
 
+
 if __name__ == "__main__":
     # task_5c()
     # task_5d_escape_velocity()
     # task_5d_beta()
-    task_5e()
-    # task_5f()
+    # task_5e()
+    task_5f()
     # task_5f_all_planets()
     pass
 

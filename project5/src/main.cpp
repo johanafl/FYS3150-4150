@@ -97,6 +97,7 @@ void task_5c()
     }
 }
 
+
 void task_5c_algorithm_timing()
 {   
     int func_id = 2;    // Choose which of the accelerations to use.
@@ -119,6 +120,7 @@ void task_5c_algorithm_timing()
     q.solve_system(num_steps, dt, func_id, method);
 }
 
+
 void task_5d()
 {   /*
     Earth with Sun fixed at the origin. Earth with various initial
@@ -126,7 +128,7 @@ void task_5d()
     */
 
     int func_id = 2;
-    double dt = 1e-4;
+    double dt = 1e-4; // Irrelevant since we only consider the initial energy.
     int num_steps = 1;
     arma::vec earth_initial = {1, 0, 0, 0, 0, 0};
     std::string method = "Velocity Verlet";
@@ -148,16 +150,19 @@ void task_5d()
     }
 }
 
+
 void task_5d_beta()
 {   /*
     Earth with Sun fixed at the origin. Varying beta.
     */
-    std::cout << "task_5d_beta" << std::endl;
 
     int func_id = 3;
-    double dt = 1e-3;
+    double dt = 1e-5;
     double simulation_time_in_years = 40;
     int num_steps = simulation_time_in_years/dt;
+    std::cout << "task_5d_beta" << std::endl;
+    std::cout << "dt: " << dt << " yr, simulation time: "
+    << simulation_time_in_years << " yr, steps: " << num_steps << std::endl;
     
     arma::vec earth_initial = {1, 0, 0, 0, 6.7, 0};
     std::string method = "Velocity Verlet";
@@ -177,6 +182,7 @@ void task_5d_beta()
 
     }
 }
+
 
 void task_5e()
 {   /*
@@ -215,9 +221,9 @@ void task_5e()
 
 }
 
+
 void task_5f()
 {
-    std::cout << "task_5f\n" << std::endl;
     
     std::string infilepath = "data_files/initial_parameters_solar_system_sun_at_rest.txt";
     arma::mat all_planets_initial = fetch_initial_parameters_from_file(infilepath);
@@ -234,21 +240,24 @@ void task_5f()
     arma::vec pluto_initial   = all_planets_initial.col(9);
     
     const int func_id = 4;    // Acceleration with the Sun fixed at the center.
-    const double dt = 1e-3;
+    const double dt = 1e-5;
     const double simulation_time_in_years = 100;
     const int num_steps = simulation_time_in_years/dt;
-    // int num_steps = 10;
+
+    std::cout << "task_5f" << std::endl;
+    std::cout << "dt: " << dt << " yr, simulation time: "
+    << simulation_time_in_years << " yr, steps: " << num_steps << std::endl;
     
     std::string method = "Velocity Verlet";
     std::string filepath = "data_files/sun_earth_jupiter.txt";
 
     SolarSystem q;
     q.add_celestial_body(sun_mass, sun_initial);
-    // q.add_celestial_body(mercury_mass, mercury_initial);
     q.add_celestial_body(earth_mass, earth_initial);
     q.add_celestial_body(jupiter_mass, jupiter_initial);
     q.solve_system(num_steps, dt, func_id, method, filepath);
 }
+
 
 void task_5g()
 {   
@@ -307,14 +316,15 @@ void task_5f_all_planets()
     q.solve_system(num_steps, dt, func_id, method, outfilepath);
 }
 
+
 int main()
 {   
     // task_5c();
-    task_5c_algorithm_timing();
+    // task_5c_algorithm_timing();
     // task_5d();
     // task_5d_beta();
     // task_5e();
-    // task_5f();
+    task_5f();
     // task_5f_all_planets();
     // task_5g();
 
