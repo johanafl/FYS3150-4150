@@ -464,23 +464,45 @@ def task_5g():
     
 
     idx1 = np.where(data[2] > 0)[0]     # All occurrences where y is positive.
-    idx2 = np.where( np.diff(idx1) < 1 )[0] # First occurrence where y is positive after n orbits.
+    idx2 = np.where( np.diff(idx1) > 1 )[0] # First occurrence where y is positive after n orbits.
     
-    # r = np.linalg.norm(data[1:4])
-    # data[2][0:idx1[idx2[0]]]
+    r = np.linalg.norm(data[1:4], axis=0)
+    r_first_orbit = r[0:idx1[idx2[0]]]
+    p1_idx = np.argmin(r_first_orbit)
 
+    r_last_orbit = r[idx1[idx2[-2]]:]
+    p2_idx = np.argmin(r_last_orbit) + idx1[idx2[-2]]
+
+    theta1 = np.arctan(data[2][p1_idx]/data[1][p1_idx])
+    theta2 = np.arctan(data[2][p2_idx]/data[1][p2_idx])
+    
+    print()
+    print(f"theta1 = {theta1}")
+    print(f"theta2 = {theta2}")
+    precession = (theta2 - theta1)
+    print()
+    print(f"precession (arcsec)  = {precession*180/np.pi*60*60}")
+    print(f"precession (radians) = {precession}")
+    print(f"precession (degrees) = {precession*180/np.pi}")
+    print()
+    print(f"43 arcsec (arcsec)  = {43}")
+    print(f"43 arcsec (radians) = {43/3600*np.pi/180}")
+    print(f"43 arcsec (degrees) = {43/3600}")
+
+    
     fig, ax = plt.subplots(figsize=(10, 8))
     
     ax.plot(data[1], data[2], label="Mercury")
+    ax.plot(data[1][p1_idx], data[2][p1_idx], "ro")
+    ax.plot(0, 0, "yo")
+    ax.plot(data[1][p2_idx], data[2][p2_idx], "go")
     ax.set_xlabel("Position, [AU]", fontsize=20)
     ax.set_ylabel("Position, [AU]", fontsize=20)
     ax.tick_params(labelsize=20)
     ax.grid()
-    # ax.axis("equal")
-    # ax.legend(fontsize=20)
-    
+    ax.axis("equal")
+    ax.legend(fontsize=20)
     plt.show()
-    
 
 
 def convert_to_npy(filename):
