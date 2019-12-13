@@ -261,9 +261,8 @@ void task_5f()
 
 void task_5g()
 {   
-    double dt = 1e-6;
-    int num_steps = 100/dt;
-    const double mercury_mass = 3.285e23;
+    double dt = 1e-5;
+    int num_steps = 2/dt;
     // arma::vec mercury_initial = {-3.397162482844107e-1, 1.179729441938765e-1, 4.080404839815078e-2, -1.504265080337234e-2*365.242199, -2.537738274969423e-2*365.242199, -6.937544462359349e-4*365.242199};
     arma::vec mercury_initial = {0.3075, 0, 0, 0, 12.44, 0};
     // arma::vec mercury_initial = {0.3075, 0, 0, 0, 13.9, 0};
@@ -278,8 +277,16 @@ void task_5g()
 
 void task_5f_all_planets()
 {   
+    const double dt = 1e-3;
+    const double simulation_time_in_years = 50;
+    const int num_steps = simulation_time_in_years/dt;
+    const int func_id = 4;        // Acceleration with cm at rest.
     std::string infilepath = "data_files/initial_parameters_solar_system_cm_at_rest.txt";
     arma::mat all_planets_initial = fetch_initial_parameters_from_file(infilepath);
+
+    std::cout << "task_5f_all_planets" << std::endl;
+    std::cout << "dt: " << dt << " yr, simulation time: "
+    << simulation_time_in_years << " yr, steps: " << num_steps << std::endl;
 
     // All positions in AU, velocities in AU/yr.
     const arma::vec sun_initial     = all_planets_initial.col(0);
@@ -306,10 +313,6 @@ void task_5f_all_planets()
     q.add_celestial_body(neptune_mass, neptune_initial);
     q.add_celestial_body(pluto_mass, pluto_initial);
 
-    const double dt = 1e-3;
-    const double simulation_time_in_years = 350;
-    const int num_steps = simulation_time_in_years/dt;
-    const int func_id = 4;        // Acceleration with cm at rest.
 
     std::string outfilepath = "data_files/all_planets.txt";
     std::string method = "Velocity Verlet";
@@ -324,9 +327,9 @@ int main()
     // task_5d();
     // task_5d_beta();
     // task_5e();
-    task_5f();
+    // task_5f();
     // task_5f_all_planets();
-    // task_5g();
+    task_5g();
 
 
     return 0;
