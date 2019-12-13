@@ -103,6 +103,7 @@ public:
         */
        
         dt = dt_input;
+        
         for (int k = 0; k < num_steps; k++)
         {
             advance(object, k, func_id);
