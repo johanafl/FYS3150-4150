@@ -552,7 +552,7 @@ public:
         l_vec = arma::cross(u_pos, u_vel);
         l_square = arma::dot(l_vec, l_vec);
 
-        acc1  -= GM/(r*r*r)*(1 + 3*l_square/(r*r*c*c)); 
+        acc1   = -GM/(r*r*r)*(1 + 3*l_square/(r*r*c*c)); 
         acc(0) = acc1*x;
         acc(1) = acc1*y;
         acc(2) = acc1*z;
