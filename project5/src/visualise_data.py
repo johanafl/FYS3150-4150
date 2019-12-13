@@ -452,7 +452,22 @@ def task_5f_all_planets():
 
 
 def task_5g():
-    data = np.load("data_files/task_5g.npy")
+
+    filename = "data_files/task_5g"
+    
+    try:
+        data = np.load(filename + ".npy")
+
+    except FileNotFoundError:
+        convert_to_npy(filename)
+        data = np.load(filename + ".npy")
+    
+
+    idx1 = np.where(data[2] > 0)[0]     # All occurrences where y is positive.
+    idx2 = np.where( np.diff(idx1) < 1 )[0] # First occurrence where y is positive after n orbits.
+    
+    # r = np.linalg.norm(data[1:4])
+    # data[2][0:idx1[idx2[0]]]
 
     fig, ax = plt.subplots(figsize=(10, 8))
     
