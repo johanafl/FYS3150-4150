@@ -155,8 +155,118 @@ public:
         outfile.close();
     }
 
+
+    int write_selection_to_file(std::string filepath, int selection_1, int selection_2)
+    {   /*
+        Write two selections of the generated data to file.
+
+        Parameters
+        ----------
+        filepath : std::string
+            Path (and filename) to file.
+
+        selection_1 : int
+            Index for where the first selection will stop. Starts at the
+            beginning of the data set.
+
+        selection_1 : int
+            Index for where the last selection will start. Stops at the
+            end of the data set.
+
+        Returns
+        -------
+            0 for successful write to file.
+
+            1 for unsuccessful write to file.
+
+
+        Note
+        ----
+        rows: time, x, y, z, vx, vy, vz, ... (for every planet).
+        columns: rows for each time step.
+
+        Slices will be: [0:selection_1] and [selection_2:].
+        */
+
+        if ((selection_1 > num_steps) or (selection_2 > num_steps))
+        {
+            std::cout << "Selections cannot be greater than the total number of steps.";
+            std::cout << " Write to file aborted.";
+            std::cout << "selection_1: " << selection_1 << std::endl;
+            std::cout << "selection_2: " << selection_2 << std::endl;
+            std::cout << "num_steps: " << num_steps << std::endl;
+
+            return 1;
+        }
+
+        std::cout << "Writing selections of the data to file." << std::endl;
+        std::cout << "slice 1: " << "[0:" << selection_1 << "]" << std::endl;
+        std::cout << "slice 2: " <<"[" << selection_2 << ":" << num_steps << "+1]" << std::endl;
+        
+        std::ofstream outfile;
+        outfile.open(filepath);
+
+        for (int i = 0; i < selection_1; i++)
+        {   // Selection from the start of the data set.
+            
+            outfile << std::setw(20) << std::setprecision(15);
+            outfile << dt*i;
+
+            for (int j = 0; j < num_stellar_objects; j++)
+            {
+                outfile << std::setw(30) << std::setprecision(15);
+                outfile << pos(3*j + 0, i);
+                outfile << std::setw(30) << std::setprecision(15);
+                outfile << pos(3*j + 1, i);
+                outfile << std::setw(30) << std::setprecision(15);
+                outfile << pos(3*j + 2, i);
+
+                outfile << std::setw(30) << std::setprecision(15);
+                outfile << vel(3*j + 0, i);
+                outfile << std::setw(30) << std::setprecision(15);
+                outfile << vel(3*j + 1, i);
+                outfile << std::setw(30) << std::setprecision(15);
+                outfile << vel(3*j + 2, i);
+            }
+            outfile << std::endl;
+        }
+
+        for (int i = selection_2; i < num_steps; i++)
+        {   // Selection from the end of the data set.
+            outfile << std::setw(20) << std::setprecision(15);
+            outfile << dt*i;
+
+            for (int j = 0; j < num_stellar_objects; j++)
+            {
+                outfile << std::setw(30) << std::setprecision(15);
+                outfile << pos(3*j + 0, i);
+                outfile << std::setw(30) << std::setprecision(15);
+                outfile << pos(3*j + 1, i);
+                outfile << std::setw(30) << std::setprecision(15);
+                outfile << pos(3*j + 2, i);
+
+                outfile << std::setw(30) << std::setprecision(15);
+                outfile << vel(3*j + 0, i);
+                outfile << std::setw(30) << std::setprecision(15);
+                outfile << vel(3*j + 1, i);
+                outfile << std::setw(30) << std::setprecision(15);
+                outfile << vel(3*j + 2, i);
+            }
+            outfile << std::endl;
+        }
+        outfile.close();
+        
+        std::cout << "Write completed. Filename: " << filepath << std::endl;
+
+        return 0;
+    }
+
+
     arma::mat get_pos() {return pos;}
+
+    
     arma::mat get_vel() {return vel;}
+
 
     void solve_mercury(T &object, double dt_input)
     {   /*

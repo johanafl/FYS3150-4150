@@ -67,6 +67,7 @@ protected:
         mass = tmp_mass;
     }
 
+
     arma::vec get_U0()
     {   /*
         Add all the initial positions and initial velocities to a
@@ -93,6 +94,7 @@ protected:
         
         return U0;
     }
+
 
     arma::vec acceleration_1(arma::vec u)
     {   /*
@@ -137,6 +139,7 @@ protected:
 
         return acc;
     }
+
 
     arma::vec acceleration_2(arma::vec u)
     {   /*
@@ -207,6 +210,7 @@ protected:
         return acc;
     }
 
+
     arma::vec acceleration_3(arma::vec u)
     {   /*
         The same ass acceleration_2, but with adjustable exponent of
@@ -254,6 +258,7 @@ protected:
         }
         return acc;
     }
+
 
     arma::vec acceleration_4(arma::vec u)
     {   /*
@@ -305,14 +310,17 @@ protected:
         return acc;
     }
 
+
 public:
     SolarSystem() {}
+
 
     void set_beta(double beta_input)
     {   
         beta = beta_input;
         beta_set = true;
     }
+
 
     void add_celestial_body(double mass_input, arma::vec U0)
     {   /*
@@ -346,6 +354,7 @@ public:
         num_planets++;
     }
 
+
     void solve_system(int num_steps,double dt, int func_id, std::string method, 
         std::string filepath)
     {   /*
@@ -355,6 +364,7 @@ public:
         solve_system(num_steps, dt, func_id, method, filepath, true);
     }
 
+
     void solve_system(int num_steps, double dt, int func_id, std::string method)
     {   /*
         When no filename is specified, no data is written to file.
@@ -363,6 +373,7 @@ public:
         std::string filepath = "unused";
         solve_system(num_steps, dt, func_id, method, filepath, false);
     }
+
 
     int solve_system(int num_steps, double dt, int func_id, std::string method,
         std::string filepath, bool write)
@@ -460,7 +471,9 @@ public:
         return 0;
     }
 
-    void solve_system_mercury(int num_steps, double dt, std::string filepath)
+
+    int solve_system_mercury(int num_steps, double dt,
+        std::string filepath_gr_newton, std::string filepath_newton)
     {   /*
         Solve the solar system.
 
@@ -472,25 +485,78 @@ public:
         dt : double
             Time step length.
 
-        filepath : std::string
-            Path to the file where data will be written.
+        filepath_gr_newton : std::string
+            Path to the file where the GR + Newton data will be written.
 
-        method : std::string
-            Which integration method to use. Allowed values are
-            'Forward Euler' and 'Velocity Verlet'.
-
-        write : bool
-            For toggling write to file on/off.
+        filepath_newton : std::string
+            Path to the file where the Newton data will be written.
         */
 
-        VelocityVerlet<SolarSystem> solved(num_steps, num_planets);
+        if (num_steps <= 1/dt )
+        {
+            std::cout << "Number of steps cannot be smaller than one year. Exiting." << std::endl;
+            std::cout << "num_steps:" << num_steps << std::endl;
+            std::cout << "num_steps*dt: " << num_steps*dt << std::endl;
+
+            return 1;
+        }
+        
+        int selection_1 = 1/dt;     // Number of steps equal to one year simulated time.
+        int selection_2 = num_steps - selection_1;
+        int func_id = 2;
+
+        // solve_system(num_steps, dt, func_id, "Velocity Verlet", filepath_newton, true);
+
+        // --------------
+        // GR + Newton.
+        
+        VelocityVerlet<SolarSystem>* solved = new VelocityVerlet<SolarSystem>(num_steps, num_planets);
         arma::vec U0 = get_U0();
-        solved.set_initial_conditions(U0);
-                
-        solved.solve_mercury(*this, dt);
-                
-        solved.write_to_file(filepath);   
+        solved->set_initial_conditions(U0);
+
+        auto solve_time_1 = std::chrono::steady_clock::now();
+
+        solved->solve_mercury(*this, dt);
+        
+        auto solve_time_2 = std::chrono::steady_clock::now();
+        auto solve_time = std::chrono::duration_cast<std::chrono::duration<double> >(solve_time_2 - solve_time_1);
+        std::cout << "\nGR + Newton solve time: " << solve_time.count() << " s" << std::endl;
+
+        auto write_time_1 = std::chrono::steady_clock::now();
+          
+        solved->write_selection_to_file(filepath_gr_newton, selection_1, selection_2);
+        
+        auto write_time_2 = std::chrono::steady_clock::now();
+        auto write_time = std::chrono::duration_cast<std::chrono::duration<double> >(write_time_2 - write_time_1);
+        std::cout << "GR + Newton write time: " << write_time.count() << " s" << std::endl;
+
+        delete solved;
+
+        // --------------
+        // Newton.
+        solved = new VelocityVerlet<SolarSystem>(num_steps, num_planets);
+        solved->set_initial_conditions(U0);
+        solve_time_1 = std::chrono::steady_clock::now();
+
+        solved->solve(*this, dt, func_id);
+        
+        solve_time_2 = std::chrono::steady_clock::now();
+        solve_time = std::chrono::duration_cast<std::chrono::duration<double> >(solve_time_2 - solve_time_1);
+        std::cout << "\nNewton solve time: " << solve_time.count() << " s" << std::endl;
+
+        write_time_1 = std::chrono::steady_clock::now();
+          
+        solved->write_selection_to_file(filepath_newton, selection_1, selection_2);
+        
+        write_time_2 = std::chrono::steady_clock::now();
+        write_time = std::chrono::duration_cast<std::chrono::duration<double> >(write_time_2 - write_time_1);
+        std::cout << "Newton write time: " << write_time.count() << " s" << std::endl;
+        
+        delete solved;
+
+        return 0;
     }
+
 
     arma::vec acceleration(arma::vec u, double t, int func_id)
     {   /*
@@ -515,6 +581,7 @@ public:
         }
         return acceleration_2(u); // Mostly to make the compiler shut up.
     }
+
 
     arma::vec acceleration_mercury(arma::vec u_pos, arma::vec u_vel, double t)
     {   /*
@@ -559,6 +626,7 @@ public:
 
         return acc;
     }
+
 
     ~SolarSystem()
     {

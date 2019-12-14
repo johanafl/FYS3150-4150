@@ -260,18 +260,25 @@ void task_5f()
 
 
 void task_5g()
-{   
-    double dt = 1e-5;
-    int num_steps = 2/dt;
-    // arma::vec mercury_initial = {-3.397162482844107e-1, 1.179729441938765e-1, 4.080404839815078e-2, -1.504265080337234e-2*365.242199, -2.537738274969423e-2*365.242199, -6.937544462359349e-4*365.242199};
-    arma::vec mercury_initial = {0.3075, 0, 0, 0, 12.44, 0};
-    // arma::vec mercury_initial = {0.3075, 0, 0, 0, 13.9, 0};
+{   /*
+    WARNING: You need 46.5 GB RAM/swap to run this function with
+    dt = 1e-7.
+    */
+    const double dt = 1e-7;
+    const double simulation_time_in_years = 100;
+    const int num_steps = simulation_time_in_years/dt;
+    const arma::vec mercury_initial = {0.3075, 0, 0, 0, 12.44, 0};
 
-    std::string filepath = "data_files/task_5g.txt";
+    std::cout << "task_5g" << std::endl;
+    std::cout << "dt: " << dt << " yr, simulation time: "
+    << simulation_time_in_years << " yr, steps: " << num_steps << std::endl;
+
+    std::string filepath_gr_newton = "data_files/task_5g_gr_newton.txt";
+    std::string filepath_newton = "data_files/task_5g_newton.txt";
     
     SolarSystem q;
     q.add_celestial_body(mercury_mass, mercury_initial);
-    q.solve_system_mercury(num_steps, dt, filepath);
+    q.solve_system_mercury(num_steps, dt, filepath_gr_newton, filepath_newton);
 }
 
 

@@ -453,16 +453,30 @@ def task_5f_all_planets():
 
 def task_5g():
 
-    filename = "data_files/task_5g"
+    filepath_gr_newton = "data_files/task_5g_gr_newton"
+    filepath_newton = "data_files/task_5g_newton"
     
     try:
-        data = np.load(filename + ".npy")
+        data_gr_newton = np.load(filepath_gr_newton + ".npy")
+        data_newton = np.load(filepath_newton + ".npy")
 
     except FileNotFoundError:
-        convert_to_npy(filename)
-        data = np.load(filename + ".npy")
+        convert_to_npy(filepath_gr_newton)
+        convert_to_npy(filepath_newton)
+        data_gr_newton = np.load(filepath_gr_newton + ".npy")
+        data_newton = np.load(filepath_newton + ".npy")
+
+
+    print("\nGR + Newton")
+    print("===========")
+    precession(data_gr_newton)
+
+    print("\nNewton")
+    print("=======")
+    precession(data_newton)
     
 
+def precession(data):
     idx1 = np.where(data[2] > 0)[0]     # All occurrences where y is positive.
     idx2 = np.where( np.diff(idx1) > 1 )[0] # First occurrence where y is positive after n orbits.
     
@@ -475,20 +489,22 @@ def task_5g():
 
     theta1 = np.arctan(data[2][p1_idx]/data[1][p1_idx])
     theta2 = np.arctan(data[2][p2_idx]/data[1][p2_idx])
+    precession = (theta2 - theta1)
     
     print()
-    print(f"theta1 = {theta1}")
-    print(f"theta2 = {theta2}")
-    precession = (theta2 - theta1)
+    print("Calculated")
+    print("----------")
+    print(f"theta1 = {theta1} [rad]")
+    print(f"theta2 = {theta2} [rad]")
+    print(f"precession = {precession*180/np.pi*60*60} [arcsec]")
     print()
-    print(f"precession (arcsec)  = {precession*180/np.pi*60*60}")
-    print(f"precession (radians) = {precession}")
-    print(f"precession (degrees) = {precession*180/np.pi}")
+    print("Expected precession from GR")
+    print("---------------------------")
+    print(f"precession = {43} [arcsec]")
     print()
-    print(f"43 arcsec (arcsec)  = {43}")
-    print(f"43 arcsec (radians) = {43/3600*np.pi/180}")
-    print(f"43 arcsec (degrees) = {43/3600}")
-
+    print("Expected precession from Newton")
+    print("---------------------------")
+    print(f"precession = {0} [arcsec]")
     
     fig, ax = plt.subplots(figsize=(10, 8))
     
@@ -501,7 +517,7 @@ def task_5g():
     ax.tick_params(labelsize=20)
     ax.grid()
     ax.axis("equal")
-    ax.legend(fontsize=20)
+    ax.legend(fontsize=20, loc="upper left")
     plt.show()
 
 
