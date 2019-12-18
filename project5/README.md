@@ -31,3 +31,14 @@ q.solve_system(num_steps, dt, func_id, method, outfilepath); // Solves and write
 
 q.solve_system(num_steps, dt, func_id, method); // Only solving, no writing.
 ```
+
+for solving the system. The method must be specified as a ```std::string```, and can be either ```"ForwardEuler"``` or ```"VelocityVerlet"```. If no file path is specified with ```outfilepath``` for the data text file, no data will be written. This is used for benchmarking of the algorithms where we are only interested in the solve times and not the actual data. ```func_id``` specifies which ```acceleration``` method to pass to the solver. There are four methods implemented in the ```SolarSystem``` class. ```acceleration_1``` is the gravitational acceleration for a two-body problem, assuming that an object with one solar mass is stationary in the origin. ```acceleration_2``` is for a N-bod problem, also with one solar mass stationary in the origin. ```acceleration_3``` is the same as ```acceleration_2``` but with a variable exponent of ```r``` in the gravitational acceleration expression. ```acceleration_4``` is also for a N-body problem, but with the center of mass stationary in the origin and all objects moving. ```func_id = 1, 2, 3, 4``` choose one of the acceleration implementations. Again, a separate implementation for the Sun-Mercury system had to be implemented.
+
+### main.cpp
+The ```main.cpp``` file is the actual user interface file, which contains functions specific for the different tasks. They add the right celestial objects, uses the correct integration method and in general handles all the input specific for the different tasks. Just run the desired task, and all is well.
+
+### makefile
+The makefile is run by ```make``` to generate the binaries for the main program. Run with ```./main.out```. ```make clean``` cleans up all ```.out``` files, so we normally run the program by ```make clean; make``` to avoid any errors. Run ```make tests``` to generate ```test_solar_system.out``` and ```test_solver.out```. The tests use the ```catch.hpp``` file, and are run by ```./test_solar_system.out``` and ```./tes_solver.out```.
+
+### visualise_data.py
+The acompanying Python file, ```visualise_data.py``` contains exactly as many functions as ```main.cpp``` with the same name. The entire workflow for a single task is to run the ```<task_name>``` function in the ```main.cpp``` file and then the ```<task_name>``` functon in ```visualise_data.py```.
