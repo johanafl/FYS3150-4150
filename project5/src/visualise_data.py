@@ -68,6 +68,9 @@ def total_energy_earth_and_jupiter_5e(data):
 
 
 def task_5c():
+    """
+    Visualises data for task 5c.
+    """
     dts = ["0.001000", "0.010000"]
 
 
@@ -247,7 +250,9 @@ def task_5c():
 
 
 def task_5d_escape_velocity():
-    
+    """
+    Visualises data for task 5d.
+    """
     energies = []
     velocities = []
     directory = "data_files/"
@@ -286,6 +291,9 @@ def task_5d_escape_velocity():
 
 
 def task_5d_beta():
+    """
+    Visualises data for task 5d.
+    """
 
     fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(11, 9))
     ax = ax.reshape(-1)
@@ -329,6 +337,9 @@ def task_5d_beta():
 
 
 def task_5e():
+    """
+    Visualises data for task 5e.
+    """
     fig1, ax1 = plt.subplots(nrows=2, ncols=2, figsize=(11, 9))
     fig1.text(x=0.02, y=0.4, s="Position, [AU]", fontsize=20, rotation="vertical")
     fig1.text(x=0.42, y=0.03, s="Position, [AU]", fontsize=20)
@@ -395,7 +406,9 @@ def task_5e():
 
 
 def task_5f():
-
+    """
+    Visualises data for task 5f.
+    """
     # data = np.loadtxt(f"data_files/sun_earth_jupiter.txt", unpack=True)
     filepath = "data_files/sun_earth_jupiter"
     try:
@@ -453,7 +466,9 @@ def task_5f_all_planets():
 
 
 def task_5g():
-
+    """
+    Visualises data for task 5g.
+    """
     filepath_gr_newton = "data_files/task_5g_gr_newton"
     filepath_newton = "data_files/task_5g_newton"
     
