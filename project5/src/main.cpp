@@ -199,7 +199,7 @@ void task_5e()
     arma::vec jupiter_initial = all_planets_initial.col(5);
     
     int func_id = 2;    // Acceleration with the Sun fixed at the center.
-    double dt = 1e-5;
+    double dt = 1e-6;
     double simulation_time_in_years = 30;
     int num_steps = simulation_time_in_years/dt;
     // int num_steps = 10;
@@ -333,10 +333,10 @@ int main()
     // task_5c_algorithm_timing();
     // task_5d();
     // task_5d_beta();
-    // task_5e();
+    task_5e();
     // task_5f();
     // task_5f_all_planets();
-    task_5g();
+    // task_5g();
 
 
     return 0;
