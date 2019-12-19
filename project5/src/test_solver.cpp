@@ -8,9 +8,13 @@ class TestClass
 {
 public:
     TestClass() {}
-    arma::vec acceleration(arma::vec u, double t)
+    arma::vec acceleration_4(arma::vec u, double t)
     {
         return arma::vec {0,0,0};
+    }
+    arma::vec acceleration(arma::vec u, double t, int func_id)
+    {
+        return acceleration_4(u, t);
     }
 };
 
@@ -36,7 +40,7 @@ TEST_CASE("euler")
     
     ForwardEuler<TestClass> solved(10, 1);
     solved.set_initial_conditions(U0);
-    solved.solve(test, dt);
+    solved.solve(test, dt, 4);
 
     arma::mat pos = solved.get_pos();
     arma::mat vel = solved.get_vel();
