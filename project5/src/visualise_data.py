@@ -3,7 +3,6 @@ import os
 import os.path
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FormatStrFormatter
 
 # All masses in kg.
 solar_mass   = 1.9891e30
@@ -343,7 +342,7 @@ def task_5e():
     ax2 = ax2.reshape(-1)
     ax3 = ax3.reshape(-1)
 
-    dt = 1e-5   # Time step length, used for scaling the x axis.
+    dt = 1e-6   # Time step length, used for scaling the x axis.
     filenames = []
     masses = []
     
@@ -387,8 +386,10 @@ def task_5e():
         ax3[i].plot(np.arange(1, len(E)+1, 1)*dt, E/E[0], color="black")
         ax3[i].tick_params(labelsize=15)
         ax3[i].set_title(r"$M_{Jupiter}$ = " + f"{float(filenames[i][13:-4]):.3e}", fontsize=20)
-        # ax3[i].yaxis.set_major_formatter(FormatStrFormatter('%.2e'))
+        ax3[i].ticklabel_format(useOffset=False)
         ax3[i].grid()
+
+        
 
     plt.show()
 
@@ -550,7 +551,7 @@ if __name__ == "__main__":
     # task_5d_beta()
     # task_5e()
     # task_5f()
-    # task_5f_all_planets()
-    task_5g()
+    task_5f_all_planets()
+    # task_5g()
     pass
 
